@@ -24,7 +24,7 @@ public class ServicoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome", nullable = false)
+    @Column(name = "nome", nullable = false, unique = true)
     private String nome;
 
     @Column(name = "valor", nullable = false, precision = 10, scale = 2)
