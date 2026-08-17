@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.trimly.backend.entity.ServicoEntity;
 
 public interface ServicoRepository extends JpaRepository<ServicoEntity, Long> {
-    List<ServicoEntity> findByNomeEqualsIgnoreCase(String nome);
+    List<ServicoEntity> findByNomeLikeIgnoreCase(String nome);
 
-    List<Service> findByStatusEqualsIgnoreCase(String status);
+    List<ServicoEntity> findByStatusEqualsIgnoreCase(String status);
 }
