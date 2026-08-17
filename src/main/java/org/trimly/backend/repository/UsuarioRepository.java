@@ -6,5 +6,6 @@ import org.trimly.backend.entity.UsuarioEntity;
 
 public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
     Optional<UsuarioEntity> findByEmail(String email);
+    Optional<UsuarioEntity> findByNome(String nome);
     boolean existsByEmail(String email); // Verifica se já existe um usuário com aquele e-mail
 }

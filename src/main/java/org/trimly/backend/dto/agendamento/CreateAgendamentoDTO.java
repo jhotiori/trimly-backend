@@ -13,6 +13,13 @@ public record CreateAgendamentoDTO(
     @NotNull(message = "O horário é obrigatório")
     LocalTime horario,
 
+    @NotNull(message = "A duração é obrigatória")
+    Integer duracao,
+
     @NotNull(message = "O ID do serviço é obrigatório")
-    Long servicoId
+    Long servicoId,
+
+    @NotNull(message = "O ID do usuário é obrigatório")
+    Long usuarioId
+
 ) {}
