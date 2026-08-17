@@ -1,5 +1,7 @@
 package org.trimly.backend.dto.disponibilidade;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 import org.trimly.backend.entity.DisponibilidadeEntity;
 
@@ -24,5 +26,9 @@ public class DisponibilidadeMapper {
         response.setHoraFim(entity.getHoraFim());
 
         return response;
+    }
+
+    public List<DisponibilidadeResponseDTO> toResponseList(List<? extends DisponibilidadeEntity> original) {
+        return original.stream().map(this::toResponse).toList();
     }
 }

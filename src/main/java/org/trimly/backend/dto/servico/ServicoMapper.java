@@ -1,5 +1,7 @@
 package org.trimly.backend.dto.servico;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 import org.trimly.backend.entity.ServicoEntity;
 import org.trimly.backend.entity.enums.StatusServico;
@@ -27,5 +29,9 @@ public class ServicoMapper {
         response.setStatus(entity.getStatus());
 
         return response;
+    }
+
+    public List<ServicoResponseDTO> toResponseList(List<? extends ServicoEntity> original) {
+        return original.stream().map(this::toResponse).toList();
     }
 }

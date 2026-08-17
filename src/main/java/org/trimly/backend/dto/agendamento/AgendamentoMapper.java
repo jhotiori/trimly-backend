@@ -1,6 +1,7 @@
 package org.trimly.backend.dto.agendamento;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 import org.trimly.backend.entity.AgendamentoEntity;
@@ -33,5 +34,9 @@ public class AgendamentoMapper {
         response.setServicoId(entity.getServico().getId());
 
         return response;
+    }
+
+    public List<AgendamentoResponseDTO> toResponseList(List<? extends AgendamentoEntity> original) {
+        return original.stream().map(this::toResponse).toList();
     }
 }

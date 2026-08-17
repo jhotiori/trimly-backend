@@ -1,5 +1,8 @@
 package org.trimly.backend.dto.usuario;
 
+import java.util.List;
+
+import org.hibernate.mapping.Any;
 import org.springframework.stereotype.Component;
 import org.trimly.backend.entity.UsuarioEntity;
 
@@ -10,7 +13,6 @@ public class UsuarioMapper {
 
         entity.setNome(request.getNome());
         entity.setEmail(request.getEmail());
-        entity.setSenha(request.getSenha());
 
         return entity;
     }
@@ -24,5 +26,9 @@ public class UsuarioMapper {
         response.setCargo(entity.getCargo());
 
         return response;
+    }
+
+    public List<UsuarioResponseDTO> toResponseList(List<? extends UsuarioEntity> original) {
+        return original.stream().map(this::toResponse).toList();
     }
 }
