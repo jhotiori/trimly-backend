@@ -1,140 +1,78 @@
 package org.trimly.backend.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import java.util.List;
 
-import org.trimly.backend.dto.usuario.CreateUsuarioDTO;
+import jakarta.persistence.EntityNotFoundException;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.trimly.backend.dto.usuario.UsuarioCreateDTO;
+import org.trimly.backend.dto.usuario.UsuarioMapper;
+import org.trimly.backend.dto.usuario.UsuarioResponseDTO;
+import org.trimly.backend.dto.usuario.UsuarioUpdateDTO;
 import org.trimly.backend.entity.UsuarioEntity;
 import org.trimly.backend.entity.enums.CargoUsuario;
 import org.trimly.backend.repository.UsuarioRepository;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
     private final UsuarioRepository repository;
+    private final UsuarioMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
-    // ---exists---
-    public Boolean existsByEmail(String email) {
-        return repository.existsByEmail(email);
+    public UsuarioResponseDTO save(UsuarioCreateDTO request) {
+        UsuarioEntity entity = mapper.toEntity(request);
+        entity.setCargo(CargoUsuario.CLIENTE);
+        entity.setSenha(passwordEncoder.encode(request.getSenha()));
+
+        entity = repository.save(entity);
+        return mapper.toResponse(entity);
     }
 
-    public Boolean existsById(Long id) {
-        return repository.existsById(id);
-    }
+    public UsuarioResponseDTO update(Long id, UsuarioUpdateDTO request) {
+        UsuarioEntity entity = this.findByIdRaw(id);
 
-    // ---find---
-    public UsuarioEntity findById(Long id) {
-        return this.repository.findById(id).orElse(null);
-    }
-
-    // ---list---
-    public List<UsuarioEntity> findByName(String nome) {
-        return (List<UsuarioEntity>) this.repository.findByNome(nome).orElse(null);
-    }
-
-    public List<UsuarioEntity> findByMail(String mail) {
-        return (List<UsuarioEntity>) this.repository.findByEmail(mail).orElse(null);
-    }
-
-    public List<UsuarioEntity> findByCargo(CargoUsuario cargo) {
-        return null;
-    }
-
-    public List<UsuarioEntity> listAll() {
-        return this.repository.findAll();
-    }
-
-    // ---save---
-    public UsuarioEntity save(CreateUsuarioDTO dto) {
-        UsuarioEntity user = new UsuarioEntity();
-        user.setNome(dto.nome());
-        user.setEmail(dto.email());
-        user.setSenha(dto.senha());
-        user.setCargo(CargoUsuario.CLIENTE);
-
-        return this.repository.save(user);
-    }
-
-    // ---update---
-    public UsuarioEntity update(CreateUsuarioDTO dto, Long id) {
-        UsuarioEntity user = this.repository.findById(id).orElse(null);
-        if(user == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Usuário não encontrado!");
+        String nome = request.getNome();
+        if (nome != null && !nome.isBlank()) {
+            entity.setNome(nome);
         }
 
-        user.setNome(dto.nome());
-        user.setEmail(dto.email());
-        user.setSenha(dto.senha());
-
-        return this.repository.save(user);
-    }
-
-    // ---partial update---
-    public UsuarioEntity partialUpdate(CreateUsuarioDTO dto, Long id) {
-        UsuarioEntity user = this.repository.findById(id).orElse(null);
-        if(user == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Usuário não encontrado!");
+        String email = request.getEmail();
+        if (email != null && !email.isBlank()) {
+            entity.setEmail(email);
         }
 
-        if(dto.nome() != null) user.setNome(dto.nome());
-        if(dto.email() != null) user.setEmail(dto.email());
-        if(dto.senha() != null)user.setSenha(dto.senha());
-
-        return this.repository.save(user);
-    }
-
-    public UsuarioEntity SetCargoCliente(Long id) {
-        UsuarioEntity user = this.repository.findById(id).orElse(null);
-        if(user == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Usuário não encontrado!");
+        String senha = request.getSenha();
+        if (senha != null && !senha.isBlank()) {
+            entity.setSenha(passwordEncoder.encode(senha));
         }
 
-        user.setCargo(CargoUsuario.CLIENTE);
-
-        return this.repository.save(user);
+        entity = repository.save(entity);
+        return mapper.toResponse(entity);
     }
 
-    public UsuarioEntity SetCargoAdmin(Long id) {
-        UsuarioEntity user = this.repository.findById(id).orElse(null);
-        if(user == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Usuário não encontrado!");
-        }
-
-        user.setCargo(CargoUsuario.ADMIN);
-
-        return this.repository.save(user);
+    public void deleteById(Long id) {
+        repository.deleteById(id);
     }
 
-    public UsuarioEntity SetCargoDono(Long id) {
-        UsuarioEntity user = this.repository.findById(id).orElse(null);
-        if(user == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Usuário não encontrado!");
-        }
-
-        user.setCargo(CargoUsuario.DONO);
-
-        return this.repository.save(user);
+    public List<UsuarioResponseDTO> findAll() {
+        return mapper.toResponseList(repository.findAll());
     }
 
-    // ---delete---
-    public void deleteUsuario(Long id) {
-        UsuarioEntity user = this.repository.findById(id).orElse(null);
-        if(user == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Usuário não encontrado!");
-        }
+    public UsuarioResponseDTO findById(Long id) {
+        UsuarioEntity entity = this.findByIdRaw(id);
+        return mapper.toResponse(entity);
+    }
 
-        //INSERIR VALIDACOES DE DEPENDENCIAS
+    public UsuarioEntity findByIdRaw(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario com id " + id + " não foi encontrado"));
+    }
 
-        this.repository.delete(user);
+    public List<UsuarioResponseDTO> findByNome(String nome) {
+        return mapper.toResponseList(repository.findByNomeLikeIgnoreCase(nome));
     }
 }

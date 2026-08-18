@@ -13,8 +13,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class DisponibilidadeResponseDTO {
-    private Long id;
+public class DisponibilidadeUpdateDTO {
     private DiaSemana diaSemana;
     private LocalTime horaInicio;
     private LocalTime horaFim;

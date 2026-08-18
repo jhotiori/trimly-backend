@@ -1,91 +1,81 @@
 package org.trimly.backend.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-import org.trimly.backend.dto.disponibilidade.CreateDisponibilidadeDTO;
-import org.trimly.backend.entity.DisponibilidadeEntity;
-import org.trimly.backend.repository.DisponibilidadeRepository;
-
-import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+
+import jakarta.persistence.EntityNotFoundException;
+
+import org.springframework.stereotype.Service;
+import org.trimly.backend.dto.disponibilidade.DisponibilidadeCreateDTO;
+import org.trimly.backend.dto.disponibilidade.DisponibilidadeMapper;
+import org.trimly.backend.dto.disponibilidade.DisponibilidadeResponseDTO;
+import org.trimly.backend.dto.disponibilidade.DisponibilidadeUpdateDTO;
+import org.trimly.backend.entity.DisponibilidadeEntity;
+import org.trimly.backend.entity.enums.DiaSemana;
+import org.trimly.backend.exception.disponibilidade.DisponibilidadeException;
+import org.trimly.backend.repository.DisponibilidadeRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class DisponibilidadeService {
-
     private final DisponibilidadeRepository repository;
+    private final DisponibilidadeMapper mapper;
 
-    // ---exists---
+    public DisponibilidadeResponseDTO save(DisponibilidadeCreateDTO request) {
+        DisponibilidadeEntity entity = mapper.toEntity(request);
+        validateDisponibilidadeHorarios(entity);
 
-    // ---find---
-    public DisponibilidadeEntity findById(Long id) {
-        return this.repository.findById(id).orElse(null);
+        entity = repository.save(entity);
+        return mapper.toResponse(entity);
     }
 
-    // ---list---
-    public List<DisponibilidadeEntity> findByDiaSemana(DayOfWeek diaSemana) {
-        return this.repository.findByDiaSemana(diaSemana);
-    }
+    public DisponibilidadeResponseDTO update(Long id, DisponibilidadeUpdateDTO request) {
+        DisponibilidadeEntity entity = this.findByIdRaw(id);
 
-    public List<DisponibilidadeEntity> listAll() {
-        return this.repository.findAll();
-    }
-
-    // ---save---
-    public DisponibilidadeEntity save(CreateDisponibilidadeDTO dto) {
-        DisponibilidadeEntity disponibilidade = new DisponibilidadeEntity();
-        disponibilidade.setDiaSemana(dto.diaSemana());
-        disponibilidade.setHoraInicio(dto.horaInicio());
-        disponibilidade.setHoraFim(dto.horaFim());
-
-        return this.repository.save(disponibilidade);
-    }
-
-    // ---update---
-    public DisponibilidadeEntity update(CreateDisponibilidadeDTO dto, Long id) {
-        DisponibilidadeEntity disponibilidade = this.repository.findById(id).orElse(null);
-        if(disponibilidade == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Disponibilidade não encontrada!");
+        DiaSemana diaSemana = request.getDiaSemana();
+        if (diaSemana != null) {
+            entity.setDiaSemana(diaSemana);
         }
 
-        disponibilidade.setDiaSemana(dto.diaSemana());
-        disponibilidade.setHoraInicio(dto.horaInicio());
-        disponibilidade.setHoraFim(dto.horaFim());
-
-        return this.repository.save(disponibilidade);
-    }
-
-    // ---partial update---
-    public DisponibilidadeEntity partialUpdate(CreateDisponibilidadeDTO dto, Long id) {
-        DisponibilidadeEntity disponibilidade = this.repository.findById(id).orElse(null);
-        if(disponibilidade == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Disponibilidade não encontrada!");
+        LocalTime horaInicio = request.getHoraInicio();
+        if (horaInicio != null) {
+            entity.setHoraInicio(horaInicio);
         }
 
-        if(dto.diaSemana() != null) disponibilidade.setDiaSemana(dto.diaSemana());
-        if(dto.horaInicio() != null) disponibilidade.setHoraInicio(dto.horaInicio());
-        if(dto.horaFim() != null) disponibilidade.setHoraFim(dto.horaFim());
-
-        return this.repository.save(disponibilidade);
-    }
-
-
-    // ---delete---
-    public void deleteDisponibilidade(Long id) {
-        DisponibilidadeEntity disponibilidade = this.repository.findById(id).orElse(null);
-        if(disponibilidade == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Disponibilidade não encontrada!");
+        LocalTime horaFim = request.getHoraFim();
+        if (horaFim != null) {
+            entity.setHoraFim(horaFim);
         }
 
-        //INSERIR VALIDACOES DE DEPENENCIAS
+        validateDisponibilidadeHorarios(entity);
+        entity = repository.save(entity);
+        return mapper.toResponse(entity);
+    }
 
-        this.repository.delete(disponibilidade);
+    public void deleteById(Long id) {
+        repository.deleteById(id);
+    }
+
+    public DisponibilidadeResponseDTO findById(Long id) {
+        DisponibilidadeEntity entity = this.findByIdRaw(id);
+        return mapper.toResponse(entity);
+    }
+
+    public DisponibilidadeEntity findByIdRaw(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Disponibilidade com id " + id + " não foi encontrada"));
+    }
+
+    public List<DisponibilidadeResponseDTO> findByDiaSemana(DiaSemana diaSemana) {
+        return mapper.toResponseList(repository.findByDiaSemana(diaSemana));
+    }
+
+    private void validateDisponibilidadeHorarios(DisponibilidadeEntity entity) {
+        if (!entity.getHoraInicio().isBefore(entity.getHoraFim())) {
+            throw new DisponibilidadeException("Horário de inicio deve ser menor do que o horário de fim");
+        }
     }
 
 }

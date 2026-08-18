@@ -1,6 +1,6 @@
 package org.trimly.backend.dto.usuario;
 
-import org.trimly.backend.entity.enums.CargoUsuario;
+import jakarta.validation.constraints.Email;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,9 +11,11 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UsuarioResponseDTO {
-    private Long id;
+public class UsuarioUpdateDTO {
     private String nome;
+
+    @Email(message = "não foi recebido um formato de e-mail válido")
     private String email;
-    private CargoUsuario cargo;
+
+    private String senha;
 }

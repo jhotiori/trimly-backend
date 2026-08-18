@@ -1,13 +1,15 @@
 package org.trimly.backend.entity;
 
 import jakarta.persistence.*;
+
+import org.trimly.backend.entity.enums.DiaSemana;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 @Entity
@@ -24,7 +26,7 @@ public class DisponibilidadeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "dia_semana", nullable = false)
-    private DayOfWeek diaSemana;
+    private DiaSemana diaSemana;
 
     @Column(name = "hora_inicio", nullable = false)
     private LocalTime horaInicio;

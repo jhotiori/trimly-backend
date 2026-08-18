@@ -1,13 +1,23 @@
 package org.trimly.backend.dto.agendamento;
 
-import org.trimly.backend.entity.enums.StatusAgendamento;
 import java.time.LocalDateTime;
 
-public record AgendamentoResponseDTO(
-    Long id,
-    LocalDateTime horario,
-    Integer duracao,
-    StatusAgendamento status,
-    Long usuarioId,
-    Long servicoId
-) {}
+import org.trimly.backend.entity.enums.StatusAgendamento;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class AgendamentoResponseDTO {
+    private Long id;
+    private LocalDateTime horario;
+    private Integer duracao;
+    private StatusAgendamento status;
+    private Long usuarioId;
+    private Long servicoId;
+}

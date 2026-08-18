@@ -1,119 +1,86 @@
 package org.trimly.backend.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import java.math.BigDecimal;
+import java.util.List;
 
-import org.trimly.backend.dto.servico.CreateServicoDTO;
+import jakarta.persistence.EntityNotFoundException;
+
+import org.springframework.stereotype.Service;
+import org.trimly.backend.dto.servico.ServicoCreateDTO;
+import org.trimly.backend.dto.servico.ServicoMapper;
+import org.trimly.backend.dto.servico.ServicoResponseDTO;
+import org.trimly.backend.dto.servico.ServicoUpdateDTO;
 import org.trimly.backend.entity.ServicoEntity;
 import org.trimly.backend.entity.enums.StatusServico;
+import org.trimly.backend.exception.servico.ServicoException;
 import org.trimly.backend.repository.ServicoRepository;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ServicoService {
     private final ServicoRepository repository;
+    private final ServicoMapper mapper;
 
-    // ---exists---
-    public Boolean existsById(Long id) {
-        return repository.existsById(id);
-    }
+    public ServicoResponseDTO save(ServicoCreateDTO request) {
+        ServicoEntity entity = mapper.toEntity(request);
+        entity.setStatus(StatusServico.ATIVO);
 
-    // ---find---
-    public ServicoEntity findById(Long id) {
-        return this.repository.findById(id).orElse(null);
-    }
-
-    // ---list---
-    public List<ServicoEntity> findByName(String name) {
-        return this.repository.findByNomeContainingIgnoreCase(name);
-    }
-
-    public List<ServicoEntity> findStatus(StatusServico status) {
-        return this.repository.findByStatus(status);
-    }
-
-    public List<ServicoEntity> findAll() {
-        return this.repository.findAll();
-    }
-
-    // ---save---
-    public ServicoEntity save(CreateServicoDTO dto) {
-        ServicoEntity servico = new ServicoEntity();
-        servico.setNome(dto.nome());
-        servico.setValor(dto.valor());
-        servico.setDuracao(dto.duracao());
-        servico.setStatus(StatusServico.INATIVO);
-
-        return this.repository.save(servico);
-    }
-
-    // ---update---
-    public ServicoEntity update(CreateServicoDTO dto, Long id) {
-        ServicoEntity servico = this.repository.findById(id).orElse(null);
-        if(servico == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Serviço não encontrado!");
+        List<ServicoResponseDTO> existentes = findByNome(request.getNome());
+        if (!existentes.isEmpty()) {
+            throw new ServicoException("Serviço com o nome '" + request.getNome() + "' já existe");
         }
 
-        servico.setNome(dto.nome());
-        servico.setValor(dto.valor());
-        servico.setDuracao(dto.duracao());
-
-        return this.repository.save(servico);
+        entity = repository.save(entity);
+        return mapper.toResponse(entity);
     }
 
-    // ---partial update---
-    public ServicoEntity partialUpdate(CreateServicoDTO dto, Long id) {
-        ServicoEntity servico = this.repository.findById(id).orElse(null);
-        if(servico == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Serviço não encontrado!");
+    public ServicoResponseDTO update(Long id, ServicoUpdateDTO request) {
+        ServicoEntity entity = this.findByIdRaw(id);
+
+        String nome = request.getNome();
+        if (nome != null && !nome.isBlank()) {
+            entity.setNome(nome);
         }
 
-        if(dto.nome() != null) servico.setNome(dto.nome());
-        if(dto.valor() != null) servico.setValor(dto.valor());
-        if(dto.duracao() != null) servico.setDuracao(dto.duracao());
+        BigDecimal valor = request.getValor();
+        if (valor != null && valor.compareTo(BigDecimal.ZERO) > 0) {
+            entity.setValor(valor);
+        }
 
-        return this.repository.save(servico);
+        Integer duracao = request.getDuracao();
+        if (duracao != null && duracao > 0) {
+            entity.setDuracao(duracao);
+        }
+
+        entity = repository.save(entity);
+        return mapper.toResponse(entity);
     }
 
-    public ServicoEntity enableServico(Long id){
-        ServicoEntity servico = this.repository.findById(id).orElse(null);
-        if(servico == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Serviço não encontrado!");
-        }
-
-        servico.setStatus(StatusServico.ATIVO);
-
-        return this.repository.save(servico);
+    public void deleteById(Long id) {
+        repository.deleteById(id);
     }
 
-    public ServicoEntity disableServico(Long id){
-        ServicoEntity servico = this.repository.findById(id).orElse(null);
-        if(servico == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Serviço não encontrado!");
-        }
-
-        servico.setStatus(StatusServico.INATIVO);
-
-        return this.repository.save(servico);
+    public List<ServicoResponseDTO> findAll() {
+        return mapper.toResponseList(repository.findAll());
     }
 
-    // ---delete---
-    public void deleteServico(Long id){
-        ServicoEntity servico = this.repository.findById(id).orElse(null);
-        if(servico == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Serviço não encontrado!");
-        }
-        //INSERIR VALIDACOES DE DEPENDENCIAS
+    public ServicoResponseDTO findById(Long id) {
+        ServicoEntity entity = this.findByIdRaw(id);
+        return mapper.toResponse(entity);
+    }
 
-        this.repository.delete(servico);
+    public ServicoEntity findByIdRaw(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Serviço com id " + id + " não encontrado"));
+    }
+
+    public List<ServicoResponseDTO> findByNome(String nome) {
+        return mapper.toResponseList(repository.findByNomeLikeIgnoreCase(nome));
+    }
+
+    public List<ServicoResponseDTO> findByStatus(StatusServico status) {
+        return mapper.toResponseList(repository.findByStatusEqualsIgnoreCase(status.toString()));
     }
 }
