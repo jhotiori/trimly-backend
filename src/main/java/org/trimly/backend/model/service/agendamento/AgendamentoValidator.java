@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
@@ -12,15 +12,18 @@ import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoForaDoHorarioException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoNoPassadoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoSemDisponibilidadeException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoStatusException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.service.disponibilidade.DisponibilidadeService;
 
+import lombok.RequiredArgsConstructor;
+
 /**
- * Validador de agendamentos. Aplica, nesta ordem, a legalidade da transição de status, o limite de um
- * dia entre início e fim, o encaixe em uma janela de disponibilidade e a ausência de conflito com
- * outros agendamentos em {@code AGENDADO}.
+ * Validador de agendamentos. Aplica, nesta ordem, a legalidade da transição de status, o início não
+ * estar no passado, o limite de um dia entre início e fim, o encaixe em uma janela de disponibilidade
+ * e a ausência de conflito com outros agendamentos em {@code AGENDADO}.
  */
 @Component
 @RequiredArgsConstructor
@@ -60,13 +63,18 @@ public class AgendamentoValidator {
     }
 
     /**
-     * Verifica se o início e o fim do agendamento caem no mesmo dia.
+     * Verifica se o início do agendamento ainda não passou e se início e fim caem no mesmo dia.
      *
      * @param inicioAgendamento - data e hora de início do agendamento
      * @param fimAgendamento - data e hora de fim do agendamento
+     * @throws AgendamentoNoPassadoException - quando o início do agendamento já passou
      * @throws AgendamentoForaDoHorarioException - quando o agendamento passa de um dia para o outro
      */
     public void validateHorarioFuturo(LocalDateTime inicioAgendamento, LocalDateTime fimAgendamento) {
+        if (inicioAgendamento.isBefore(LocalDateTime.now())) {
+            throw new AgendamentoNoPassadoException("O agendamento não pode ser no passado");
+        }
+
         if (!inicioAgendamento.toLocalDate().equals(fimAgendamento.toLocalDate())) {
             throw new AgendamentoForaDoHorarioException(
                     "O agendamento não pode ultrapassar o horário de um dia para o outro");

@@ -20,7 +20,8 @@ messages); framework/technical scaffolding stays English.
 - Formatting: Spotless with palantir-java-format owns backend style - 4-space indent,
   120-col wrap, single sorted import group, no wildcard imports (Javadoc left as
   written). Run `./mvnw spotless:apply` before committing; `./mvnw verify` fails on
-  unformatted code.
+  unformatted code. To format only the files you touched, pass
+  `-DspotlessFiles=<regex>[,<regex>...]` (matched against the full file path).
 
 ### Javadoc
 
@@ -30,7 +31,7 @@ messages); framework/technical scaffolding stays English.
 - Block tags in method and type Javadoc: only `@param`, `@return`, `@throws`. No
   `@author`, `@since`, `@see`, `@version`, etc. (field Javadoc scopes one exception
   for `@see`, see below).
-- Language: PT-BR, in a natural, concise, direct na clear vocabulary.
+- Language: PT-BR, in a natural, concise, direct and clear vocabulary.
 - No em-dashes or filler wording.
 - Example javadoc:
 ```java
@@ -80,6 +81,7 @@ code changes (AST-only, no API cost).
 ./mvnw test -Dtest=ClassName#methodName   # one test method
 ./mvnw compile                            # compile only
 ./mvnw spotless:apply                     # format all Java sources (palantir-java-format)
+./mvnw spotless:apply -DspotlessFiles='.*/Foo\.java'  # format only matching files
 ./mvnw spotless:check                     # check formatting (also runs in the verify phase)
 ```
 
@@ -100,7 +102,9 @@ code changes (AST-only, no API cost).
     `flyway-core`): it runs validate then migrate at startup and makes
     `entityManagerFactory` depend on the Flyway initializer, so Hibernate validation
     always follows migration. Config is `spring.flyway.*` in `application.properties`
-    (`baseline-on-migrate=true`, `baseline-version=0`).
+    (`baseline-on-migrate=true`, `baseline-version=0`). `develop` H2 is in-memory, so a
+    migration edited in place simply reapplies on restart; a persisted Postgres that already
+    ran it fails checksum validation until its schema is dropped and recreated.
 - Lombok annotation processing is wired via the `maven-compiler-plugin` config in
   `pom.xml`, not the default Lombok plugin binding.
 
@@ -154,8 +158,9 @@ server-side (domain and auth at `WARN`, unexpected at `ERROR`):
 - `DomainExceptionHandler` maps the `TrimlyException` family by class, via grouped
   `@ExceptionHandler` methods (no status field on the exceptions, no class->status map):
   - `EntityNotFoundException` -> 404
-  - `AgendamentoConflitoException`, `ServicoNomeDuplicadoException`,
-    `UsuarioEmailExistenteException` -> 409
+  - `AgendamentoConflitoException`, `DisponibilidadeConflitoException`,
+    `ServicoNomeDuplicadoException`, `UsuarioEmailExistenteException`,
+    `ServicoComAgendamentoPendenteException`, `UsuarioComAgendamentoPendenteException` -> 409
   - every other `TrimlyException` -> 422
 - `GlobalExceptionHandler` is the fallback: any non-domain `Exception` -> 500 with a
   fixed generic message.
@@ -198,8 +203,11 @@ on the classpath but unused; the manual filter approach was chosen instead).
   `Optional.empty()`, so no `@RestControllerAdvice` runs for a login mismatch). The password
   comparison stays in the service; the controller only branches on the `Optional`.
 - First `ADMIN` is seeded by Flyway (`V2__seed_admin_user.sql`, `admin@trimly.com` /
-  `ADMIN0000`). `POST /api/usuarios` always creates a `CLIENTE`, so `ADMIN`/`DONO` accounts
+  `admin123`). `POST /api/usuarios` always creates a `CLIENTE`, so `ADMIN`/`DONO` accounts
   stay seed- or DB-only until an admin-gated endpoint exists.
+- `V3__seed_base_entities.sql` seeds a local dataset: 3 `CLIENTE` users (password `123456`),
+  5 `ATIVO` serviços, and disponibilidades `SEGUNDA`-`QUINTA` 07h-12h/13h-18h and `SEXTA`
+  09h-12h/13h-16h. No agendamentos, no `DONO`. Every insert is guarded by `WHERE NOT EXISTS`.
 - `UsuarioCargo`: `CLIENTE`, `ADMIN`, `DONO`.
 
 ## Agendamento (booking) business rules
@@ -226,3 +234,17 @@ update request with every field null is a no-op: the unchanged booking is return
 booking must be in `AGENDADO` to be modified at all, and when `status` is present it may
 not equal the current status. `AGENDADO` is the only non-terminal status; from it
 `status` may move to `CANCELADO`, `CONCLUIDO`, or `AUSENTE`, all terminal.
+
+## Disponibilidade (availability) business rules
+
+Rules live in `DisponibilidadeValidator`. `create` and `update` both run, in order:
+1. `validateHorarios` - `horaInicio` must be before `horaFim`, else
+   `DisponibilidadeHorarioInvalidoException`.
+2. `validateConflitoDeHorario` - no overlap with another `Disponibilidade` on the same
+   `diaSemana`, else `DisponibilidadeConflitoException` (409). Same half-open interval check
+   as Agendamento, so touching windows (`08:00-12:00` and `12:00-13:00`) do not conflict. On
+   `update` the entity's own id is passed so it is skipped; on `create` it is `null`. The
+   scope is the whole day because a `Disponibilidade` has no owner; it is an
+   application-level check with no DB constraint behind it.
+
+An `update` request with every field null is a no-op: no write, no re-validation.
