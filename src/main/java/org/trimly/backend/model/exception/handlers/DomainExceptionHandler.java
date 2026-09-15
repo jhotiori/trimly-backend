@@ -1,5 +1,6 @@
 package org.trimly.backend.model.exception.handlers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,8 +14,6 @@ import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
 import org.trimly.backend.model.exception.usuario.UsuarioComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException;
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Traduz a família {@code TrimlyException} em um status HTTP significativo.
@@ -66,7 +65,7 @@ public class DomainExceptionHandler {
      */
     @ExceptionHandler(TrimlyException.class)
     public ResponseEntity<ErrorResponseDTO> handleRegraDeDominio(TrimlyException exception) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, exception);
+        return build(HttpStatus.UNPROCESSABLE_CONTENT, exception);
     }
 
     /**
