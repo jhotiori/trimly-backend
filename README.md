@@ -25,6 +25,10 @@
 </p>
 
 <blockquote>
+    <em>
+    Aplicação Backend do Trimly, API REST para gerenciamento de agendamentos em barbearias, construída com Spring Boot.
+    </em>
+    <br><br>
     <strong>
     Projeto acadêmico de uma aplicação voltada ao gerenciamento de agendamentos em barbearias, desenvolvida a partir de uma demanda real e focada na modernização do processo de contratação de serviços de cuidados masculinos.
     </strong>
@@ -33,12 +37,15 @@
 <hr>
 
 ## 🛠️ Técnologias
-| Área                   | Tecnologias                                               |
-| ---------------------- | --------------------------------------------------------- |
-| **Backend**            | Java (17) · SpringBoot (JPA, Security, Validation)   |
-| **Banco de dados**     | PostgreSQL                                                |
-| **Infraestrutura**     | AWS Cloud                                                 |
-| **Controle de versão** | Git · GitHub                                              |
+| Área                      | Tecnologias                                               |
+| ------------------------- | ----------------------------------------------------------|
+| **Linguagem & Framework** | Java (17) · Spring Boot (JPA, Security, Validation)        |
+| **Banco de dados**        | PostgreSQL (produção) · H2 (desenvolvimento)               |
+| **Migrações**             | Flyway                                                      |
+| **Autenticação**          | JWT (auth0 java-jwt)                                        |
+| **Build & Qualidade**     | Maven · Spotless (palantir-java-format)                     |
+| **Infraestrutura**        | AWS Cloud                                                   |
+| **Controle de versão**    | Git · GitHub                                                |
 
 ## 👥 Equipe
 | Integrante             | Cargo           | Responsabilidade                |
