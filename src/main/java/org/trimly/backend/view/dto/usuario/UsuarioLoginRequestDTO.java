@@ -1,5 +1,6 @@
 package org.trimly.backend.view.dto.usuario;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -10,7 +11,11 @@ import jakarta.validation.constraints.NotBlank;
  * @param senha - senha em texto puro
  */
 public record UsuarioLoginRequestDTO(
-        @NotBlank(message = "Email não pode ser vazio") @Email(message = "Não foi recebido um formato de e-mail válido")
+        @Schema(description = "E-mail cadastrado do usuário", example = "admin@trimly.com")
+        @NotBlank(message = "Email não pode ser vazio")
+        @Email(message = "Não foi recebido um formato de e-mail válido")
         String email,
 
-        @NotBlank(message = "Senha não pode ser vazia") String senha) {}
+        @Schema(description = "Senha do usuário, em texto puro", example = "admin123")
+        @NotBlank(message = "Senha não pode ser vazia")
+        String senha) {}
