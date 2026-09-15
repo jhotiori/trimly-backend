@@ -2,17 +2,20 @@ package org.trimly.backend.model.service.disponibilidade;
 
 import java.time.LocalTime;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeHorarioInvalidoException;
 import org.trimly.backend.model.repository.DisponibilidadeRepository;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeCreateDTO;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeUpdateDTO;
 import org.trimly.backend.view.mapper.DisponibilidadeMapper;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Serviço de disponibilidades. Valida os horários via {@link DisponibilidadeValidator} e orquestra a
@@ -44,12 +47,15 @@ public class DisponibilidadeService {
      *
      * @param request - dados da disponibilidade a ser criada
      * @throws DisponibilidadeHorarioInvalidoException - quando a hora de início não é anterior à de fim
+     * @throws DisponibilidadeConflitoException - quando a janela se sobrepõe a outra do mesmo dia
      * @return DisponibilidadeEntity - a disponibilidade criada e persistida
      */
     @Transactional
     public DisponibilidadeEntity create(DisponibilidadeCreateDTO request) {
         DisponibilidadeEntity entity = mapper.toEntity(request);
         disponibilidadeValidator.validateHorarios(entity.getHoraInicio(), entity.getHoraFim());
+        disponibilidadeValidator.validateConflitoDeHorario(
+                null, entity.getDiaSemana(), entity.getHoraInicio(), entity.getHoraFim());
 
         entity = repository.save(entity);
         return entity;
@@ -65,6 +71,7 @@ public class DisponibilidadeService {
      * @param request - campos a atualizar (dia da semana e/ou horários)
      * @throws EntityNotFoundException - quando não existe disponibilidade com o id informado
      * @throws DisponibilidadeHorarioInvalidoException - quando a hora de início não é anterior à de fim
+     * @throws DisponibilidadeConflitoException - quando a janela se sobrepõe a outra do mesmo dia
      * @return DisponibilidadeEntity - a disponibilidade atualizada
      */
     @Transactional
@@ -91,6 +98,8 @@ public class DisponibilidadeService {
         }
 
         disponibilidadeValidator.validateHorarios(entity.getHoraInicio(), entity.getHoraFim());
+        disponibilidadeValidator.validateConflitoDeHorario(
+                id, entity.getDiaSemana(), entity.getHoraInicio(), entity.getHoraFim());
         entity = repository.save(entity);
         return entity;
     }

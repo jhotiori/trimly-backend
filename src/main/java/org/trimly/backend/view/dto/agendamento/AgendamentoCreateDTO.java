@@ -1,10 +1,11 @@
 package org.trimly.backend.view.dto.agendamento;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 /**
  * Dados de entrada para a criação de um agendamento.

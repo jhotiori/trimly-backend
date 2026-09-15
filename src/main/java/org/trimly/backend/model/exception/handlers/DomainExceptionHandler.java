@@ -1,6 +1,5 @@
 package org.trimly.backend.model.exception.handlers;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,11 +7,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.trimly.backend.model.exception.EntityNotFoundException;
 import org.trimly.backend.model.exception.TrimlyException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
+import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
 import org.trimly.backend.model.exception.usuario.UsuarioComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException;
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Traduz a família {@code TrimlyException} em um status HTTP significativo.
@@ -46,6 +48,7 @@ public class DomainExceptionHandler {
      */
     @ExceptionHandler({
         AgendamentoConflitoException.class,
+        DisponibilidadeConflitoException.class,
         ServicoNomeDuplicadoException.class,
         UsuarioEmailExistenteException.class,
         ServicoComAgendamentoPendenteException.class,
