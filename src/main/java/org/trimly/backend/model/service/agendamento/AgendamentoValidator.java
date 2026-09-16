@@ -10,6 +10,8 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
+import org.trimly.backend.model.entity.external.FeriadoDTO;
+import org.trimly.backend.model.entity.external.FeriadosClient;
 import org.trimly.backend.model.exception.agendamento.AgendamentoAntecedenciaExcedidaException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoForaDoHorarioException;
@@ -44,6 +46,12 @@ public class AgendamentoValidator {
      * @see {@link DisponibilidadeService}
      */
     private final DisponibilidadeService disponibilidadeService;
+
+    /**
+     * Comunicação com a API externa
+     * @see {@link FeriadosClient}
+     */
+    private final FeriadosClient feriadosClient;
 
     /**
      * Verifica se o agendamento pode ser alterado e, quando um novo status é informado, se a transição
@@ -171,6 +179,23 @@ public class AgendamentoValidator {
             if (existeConflito) {
                 throw new AgendamentoConflitoException("O horário escolhido já está ocupado por outro agendamento");
             }
+        }
+    }
+
+
+    /**
+     * Verifica se está tentando agendar para um feriado.
+     *
+     * @param data - data de um agendamento
+     */
+    public void validateIsFeriado(LocalDate data){
+        List<FeriadoDTO> feriados = feriadosClient.listarPorAno(data.getYear());
+        boolean isFeriado = feriados.stream()
+            .map(f -> LocalDate.parse(f.date()))
+            .anyMatch(data::isEqual);
+
+        if (isFeriado) {
+            throw new AgendamentoConflitoException("O dia selecionado é feriado nacional");
         }
     }
 }
