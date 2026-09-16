@@ -220,10 +220,12 @@ End time = `data` + `Servico.duracao` minutes (`calculateFimAgendamento`).
 `create` and `update` both run, in order:
 1. `validateHorarioFuturo` - start and end must fall on the same calendar day, else
    `AgendamentoForaDoHorarioException`.
-2. `validateDisponibilidade` - the day of week must have a `Disponibilidade`, and the
+2. `validateLimiteAntecedencia` - start must not be after `LocalDateTime.now().plusDays(14)`
+   (exactly 14 days ahead is accepted), else `AgendamentoAntecedenciaExcedidaException` (422).
+3. `validateDisponibilidade` - the day of week must have a `Disponibilidade`, and the
    booking must fit fully inside one of its windows, else
    `AgendamentoSemDisponibilidadeException`.
-3. `validateConflitoDeHorario` - no interval overlap with other `AGENDADO` bookings the
+4. `validateConflitoDeHorario` - no interval overlap with other `AGENDADO` bookings the
    same day, else `AgendamentoConflitoException`. On `update` the booking's own id is
    passed so it is skipped; on `create` it is `null`.
 

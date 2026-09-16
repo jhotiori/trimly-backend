@@ -11,6 +11,7 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
 import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoAntecedenciaExcedidaException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoForaDoHorarioException;
@@ -69,6 +70,7 @@ public class AgendamentoService {
      * @param request - dados do agendamento a ser criado
      * @throws EntityNotFoundException - quando o usuário ou o serviço informado não existe
      * @throws AgendamentoForaDoHorarioException - quando o agendamento ultrapassa o limite de um dia
+     * @throws AgendamentoAntecedenciaExcedidaException - quando o início ultrapassa o limite de 14 dias de antecedência
      * @throws AgendamentoSemDisponibilidadeException - quando não há disponibilidade que comporte o horário
      * @throws AgendamentoConflitoException - quando o horário conflita com outro agendamento
      * @return AgendamentoEntity - o agendamento criado e persistido
@@ -84,6 +86,9 @@ public class AgendamentoService {
 
         log.debug("validate agendamento horario futuro: inicio={}, fim={}", inicioAgendamento, fimAgendamento);
         agendamentoValidator.validateHorarioFuturo(inicioAgendamento, fimAgendamento);
+
+        log.debug("validate agendamento limite antecedencia: inicio={}", inicioAgendamento);
+        agendamentoValidator.validateLimiteAntecedencia(inicioAgendamento);
 
         log.debug("validate agendamento disponibilidade: inicio={}, fim={}", inicioAgendamento, fimAgendamento);
         agendamentoValidator.validateDisponibilidade(inicioAgendamento, fimAgendamento);
@@ -106,6 +111,7 @@ public class AgendamentoService {
      * @throws EntityNotFoundException - quando o agendamento ou o serviço informado não existe
      * @throws AgendamentoException - quando o agendamento não está agendado ou a transição de status não é permitida
      * @throws AgendamentoForaDoHorarioException - quando o agendamento ultrapassa o limite de um dia
+     * @throws AgendamentoAntecedenciaExcedidaException - quando o início ultrapassa o limite de 14 dias de antecedência
      * @throws AgendamentoSemDisponibilidadeException - quando não há disponibilidade que comporte o horário
      * @throws AgendamentoConflitoException - quando o horário conflita com outro agendamento
      * @return AgendamentoEntity - o agendamento atualizado
@@ -137,6 +143,9 @@ public class AgendamentoService {
 
         log.debug("validate agendamento horario futuro: inicio={}, fim={}", novaData, novoFimData);
         agendamentoValidator.validateHorarioFuturo(novaData, novoFimData);
+
+        log.debug("validate agendamento limite antecedencia: inicio={}", novaData);
+        agendamentoValidator.validateLimiteAntecedencia(novaData);
 
         log.debug("validate agendamento disponibilidade: inicio={}, fim={}", novaData, novoFimData);
         agendamentoValidator.validateDisponibilidade(novaData, novoFimData);
