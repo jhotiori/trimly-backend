@@ -4,12 +4,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
+import org.trimly.backend.model.exception.agendamento.AgendamentoAntecedenciaExcedidaException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoForaDoHorarioException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoNoPassadoException;
@@ -18,16 +19,20 @@ import org.trimly.backend.model.exception.agendamento.AgendamentoStatusException
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.service.disponibilidade.DisponibilidadeService;
 
-import lombok.RequiredArgsConstructor;
-
 /**
  * Validador de agendamentos. Aplica, nesta ordem, a legalidade da transição de status, o início não
- * estar no passado, o limite de um dia entre início e fim, o encaixe em uma janela de disponibilidade
- * e a ausência de conflito com outros agendamentos em {@code AGENDADO}.
+ * estar no passado, o limite de um dia entre início e fim, o limite de 14 dias de antecedência, o
+ * encaixe em uma janela de disponibilidade e a ausência de conflito com outros agendamentos em
+ * {@code AGENDADO}.
  */
 @Component
 @RequiredArgsConstructor
 public class AgendamentoValidator {
+    /**
+     * Quantidade máxima de dias entre o momento atual e o início do agendamento.
+     */
+    private static final int LIMITE_ANTECEDENCIA_DIAS = 14;
+
     /**
      * Repositório de agendamentos, usado para checar conflitos de horário.
      * @see {@link AgendamentoRepository}
@@ -78,6 +83,19 @@ public class AgendamentoValidator {
         if (!inicioAgendamento.toLocalDate().equals(fimAgendamento.toLocalDate())) {
             throw new AgendamentoForaDoHorarioException(
                     "O agendamento não pode ultrapassar o horário de um dia para o outro");
+        }
+    }
+
+    /**
+     * Verifica se o início do agendamento não ultrapassa o limite de 14 dias a partir do momento atual.
+     *
+     * @param inicioAgendamento - data e hora de início do agendamento
+     * @throws AgendamentoAntecedenciaExcedidaException - quando o início é posterior a 14 dias a partir de agora
+     */
+    public void validateLimiteAntecedencia(LocalDateTime inicioAgendamento) {
+        if (inicioAgendamento.isAfter(LocalDateTime.now().plusDays(LIMITE_ANTECEDENCIA_DIAS))) {
+            throw new AgendamentoAntecedenciaExcedidaException(
+                    "O agendamento não pode ser marcado com mais de 14 dias de antecedência");
         }
     }
 

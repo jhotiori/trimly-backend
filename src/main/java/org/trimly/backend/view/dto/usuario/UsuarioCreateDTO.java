@@ -1,8 +1,10 @@
 package org.trimly.backend.view.dto.usuario;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Dados de entrada para a criação de um usuário.
@@ -23,4 +25,5 @@ public record UsuarioCreateDTO(
 
         @Schema(description = "Senha em texto puro; é armazenada criptografada com BCrypt", example = "123456")
         @NotBlank(message = "Senha não pode ser vazia")
+        @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
         String senha) {}

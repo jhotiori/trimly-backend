@@ -2,7 +2,7 @@ package org.trimly.backend.model.service.usuario;
 
 import java.util.List;
 import java.util.Optional;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +16,6 @@ import org.trimly.backend.model.repository.UsuarioRepository;
 import org.trimly.backend.view.dto.usuario.UsuarioCreateDTO;
 import org.trimly.backend.view.dto.usuario.UsuarioUpdateDTO;
 import org.trimly.backend.view.mapper.UsuarioMapper;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * Serviço de usuários. Aplica BCrypt à senha, valida a unicidade do e-mail e as reatribuições de
@@ -54,11 +52,14 @@ public class UsuarioService {
      * Cria um novo usuário com cargo cliente e senha criptografada após validar a unicidade do e-mail.
      *
      * @param request - dados do usuário a ser criado
+     * @throws UsuarioException - quando a senha tem menos de 6 caracteres
      * @throws UsuarioEmailExistenteException - quando já existe um usuário com o mesmo e-mail
      * @return UsuarioEntity - o usuário criado e persistido
      */
     @Transactional
     public UsuarioEntity create(UsuarioCreateDTO request) {
+        usuarioValidator.validateSenha(request.senha());
+
         UsuarioEntity entity = mapper.toEntity(request);
         entity.setCargo(UsuarioCargo.CLIENTE);
         entity.setSenha(passwordEncoder.encode(request.senha()));
@@ -79,7 +80,7 @@ public class UsuarioService {
      * @param request - campos a atualizar (nome, e-mail, senha e/ou cargo)
      * @throws EntityNotFoundException - quando não existe usuário com o id informado
      * @throws UsuarioEmailExistenteException - quando o e-mail informado já pertence a outro usuário
-     * @throws UsuarioException - quando a reatribuição de cargo não é permitida
+     * @throws UsuarioException - quando a reatribuição de cargo não é permitida ou a nova senha tem menos de 6 caracteres
      * @return UsuarioEntity - o usuário atualizado
      */
     @Transactional
@@ -107,6 +108,7 @@ public class UsuarioService {
 
         String senha = request.senha();
         if (senha != null && !senha.isBlank()) {
+            usuarioValidator.validateSenha(senha);
             entity.setSenha(passwordEncoder.encode(senha));
         }
 

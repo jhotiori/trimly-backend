@@ -2,6 +2,7 @@ package org.trimly.backend.view.dto.usuario;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
 
 /**
@@ -22,6 +23,7 @@ public record UsuarioUpdateDTO(
         String email,
 
         @Schema(description = "Opcional. Nova senha em texto puro, recriptografada ao salvar", example = "novaSenha123")
+        @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
         String senha,
 
         @Schema(description = "Opcional. Novo cargo", example = "ADMIN")

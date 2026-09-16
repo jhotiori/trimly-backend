@@ -66,8 +66,8 @@ public class UsuarioController {
     @PostMapping
     @Operation(
             summary = "Cria um usuário",
-            description = "Cadastra um usuário sempre com cargo CLIENTE. O e-mail deve ser único e a senha é"
-                    + " armazenada criptografada; a resposta nunca expõe a senha.")
+            description = "Cadastra um usuário sempre com cargo CLIENTE. O e-mail deve ser único e a senha, com no"
+                    + " mínimo 6 caracteres, é armazenada criptografada; a resposta nunca expõe a senha.")
     @ApiResponse(
             responseCode = "201",
             description = "Usuário criado",
@@ -172,7 +172,8 @@ public class UsuarioController {
     @Operation(
             summary = "Atualiza um usuário",
             description = "Atualiza os campos informados. Campos nulos ou em branco são ignorados; com todos nulos,"
-                    + " devolve o usuário sem alterações. O novo e-mail deve ser único, a nova senha é recriptografada,"
+                    + " devolve o usuário sem alterações. O novo e-mail deve ser único, a nova senha deve ter no mínimo"
+                    + " 6 caracteres e é recriptografada,"
                     + " o novo cargo não pode repetir o atual e o único DONO cadastrado não pode perder o cargo.")
     @ApiResponse(
             responseCode = "200",

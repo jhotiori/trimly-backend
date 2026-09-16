@@ -26,9 +26,10 @@ public final class OpenApiExamples {
             {"status": 400, "error": "Bad Request", "message": "Duração deve ser positiva; Valor deve ser positivo"}""";
     public static final String USUARIO_CRIACAO_INVALIDA = """
             {"status": 400, "error": "Bad Request", "message": "Email não pode ser vazio; Nome não pode ser vazio; \
-            Senha não pode ser vazia"}""";
+            Senha deve ter no mínimo 6 caracteres; Senha não pode ser vazia"}""";
     public static final String USUARIO_ATUALIZACAO_INVALIDA = """
-            {"status": 400, "error": "Bad Request", "message": "Não foi recebido um formato de e-mail válido"}""";
+            {"status": 400, "error": "Bad Request", "message": "Não foi recebido um formato de e-mail válido; \
+            Senha deve ter no mínimo 6 caracteres"}""";
     public static final String LOGIN_INVALIDO = """
             {"status": 400, "error": "Bad Request", "message": "Email não pode ser vazio; Senha não pode ser vazia"}""";
 
@@ -65,6 +66,9 @@ public final class OpenApiExamples {
     public static final String AGENDAMENTO_FORA_DO_HORARIO = """
             {"status": 422, "error": "Unprocessable Content", "message": "O agendamento não pode ultrapassar o \
             horário de um dia para o outro"}""";
+    public static final String AGENDAMENTO_ANTECEDENCIA_EXCEDIDA = """
+            {"status": 422, "error": "Unprocessable Content", "message": "O agendamento não pode ser marcado com mais \
+            de 14 dias de antecedência"}""";
     public static final String AGENDAMENTO_SEM_DISPONIBILIDADE = """
             {"status": 422, "error": "Unprocessable Content", "message": "Não há nenhuma disponibilidade nesse dia \
             para realizar este agendamento"}""";
