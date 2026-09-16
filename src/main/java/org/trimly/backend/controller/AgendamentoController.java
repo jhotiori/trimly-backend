@@ -1,10 +1,18 @@
 package org.trimly.backend.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
-
-import jakarta.validation.Valid;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,17 +35,6 @@ import org.trimly.backend.view.dto.agendamento.AgendamentoResponseDTO;
 import org.trimly.backend.view.dto.agendamento.AgendamentoUpdateDTO;
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 import org.trimly.backend.view.mapper.AgendamentoMapper;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Controller para agendamentos, com base em {@code /api/agendamentos}.
@@ -72,9 +69,10 @@ public class AgendamentoController {
             description =
                     "Cria um agendamento em AGENDADO para o usuário e o serviço informados, com fim calculado pela"
                             + " duração do serviço. Após localizar usuário e serviço, as regras são aplicadas nesta ordem:"
-                            + " início no futuro, início e fim no mesmo dia, uma janela de disponibilidade que comporte todo o"
-                            + " horário e nenhuma sobreposição com outro agendamento em AGENDADO. Uma data anterior a hoje é"
-                            + " barrada pela validação do corpo (400); hoje com horário já passado retorna 422.")
+                            + " início no futuro, início e fim no mesmo dia, início em no máximo 14 dias a partir de agora,"
+                            + " uma janela de disponibilidade que comporte todo o horário e nenhuma sobreposição com outro"
+                            + " agendamento em AGENDADO. Uma data anterior a hoje é barrada pela validação do corpo (400);"
+                            + " hoje com horário já passado retorna 422.")
     @ApiResponse(
             responseCode = "201",
             description = "Agendamento criado",
@@ -111,7 +109,8 @@ public class AgendamentoController {
                             examples = @ExampleObject(value = OpenApiExamples.AGENDAMENTO_CONFLITO)))
     @ApiResponse(
             responseCode = "422",
-            description = "Início no passado, agendamento que atravessa a meia-noite ou sem disponibilidade no horário",
+            description = "Início no passado, agendamento que atravessa a meia-noite, início além de 14 dias de"
+                    + " antecedência ou sem disponibilidade no horário",
             content =
                     @Content(
                             schema = @Schema(implementation = ErrorResponseDTO.class),
@@ -120,6 +119,9 @@ public class AgendamentoController {
                                 @ExampleObject(
                                         name = "Fora do horário",
                                         value = OpenApiExamples.AGENDAMENTO_FORA_DO_HORARIO),
+                                @ExampleObject(
+                                        name = "Antecedência excedida",
+                                        value = OpenApiExamples.AGENDAMENTO_ANTECEDENCIA_EXCEDIDA),
                                 @ExampleObject(
                                         name = "Dia sem disponibilidade",
                                         value = OpenApiExamples.AGENDAMENTO_SEM_DISPONIBILIDADE),
@@ -158,8 +160,9 @@ public class AgendamentoController {
             summary = "Atualiza um agendamento",
             description = "Atualiza data, status e/ou serviço. Campos nulos são ignorados; com todos nulos, devolve o"
                     + " agendamento sem alterações e sem revalidar. Só agendamentos em AGENDADO podem ser alterados, e"
-                    + " o novo status não pode repetir o atual. Valem as mesmas regras de horário, disponibilidade e"
-                    + " conflito da criação, ignorando o próprio agendamento na checagem de conflito.")
+                    + " o novo status não pode repetir o atual. Valem as mesmas regras de horário, antecedência,"
+                    + " disponibilidade e conflito da criação, ignorando o próprio agendamento na checagem de"
+                    + " conflito.")
     @ApiResponse(
             responseCode = "200",
             description = "Agendamento atualizado, ou inalterado quando todos os campos são nulos",
@@ -200,8 +203,8 @@ public class AgendamentoController {
                             examples = @ExampleObject(value = OpenApiExamples.AGENDAMENTO_CONFLITO)))
     @ApiResponse(
             responseCode = "422",
-            description = "Status que não permite alteração, status repetido ou regra de horário e disponibilidade"
-                    + " violada",
+            description = "Status que não permite alteração, status repetido ou regra de horário, antecedência e"
+                    + " disponibilidade violada",
             content =
                     @Content(
                             schema = @Schema(implementation = ErrorResponseDTO.class),
@@ -216,6 +219,9 @@ public class AgendamentoController {
                                 @ExampleObject(
                                         name = "Fora do horário",
                                         value = OpenApiExamples.AGENDAMENTO_FORA_DO_HORARIO),
+                                @ExampleObject(
+                                        name = "Antecedência excedida",
+                                        value = OpenApiExamples.AGENDAMENTO_ANTECEDENCIA_EXCEDIDA),
                                 @ExampleObject(
                                         name = "Dia sem disponibilidade",
                                         value = OpenApiExamples.AGENDAMENTO_SEM_DISPONIBILIDADE),

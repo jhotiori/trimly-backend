@@ -1,6 +1,5 @@
 package org.trimly.backend.model.service.usuario;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
@@ -11,13 +10,21 @@ import org.trimly.backend.model.exception.usuario.UsuarioException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.UsuarioRepository;
 
+import lombok.RequiredArgsConstructor;
+
 /**
- * Validador de usuários. Garante a unicidade do e-mail, a legalidade da reatribuição de cargo, a
- * preservação do único {@code DONO} cadastrado e a ausência de agendamento pendente na remoção.
+ * Validador de usuários. Garante a unicidade do e-mail, o comprimento mínimo da senha, a legalidade da
+ * reatribuição de cargo, a preservação do único {@code DONO} cadastrado e a ausência de agendamento
+ * pendente na remoção.
  */
 @Component
 @RequiredArgsConstructor
 public class UsuarioValidator {
+    /**
+     * Quantidade mínima de caracteres aceita para a senha.
+     */
+    private static final int SENHA_TAMANHO_MINIMO = 6;
+
     /**
      * Repositório de usuários, usado para checar a unicidade do e-mail e a contagem de donos.
      * @see {@link UsuarioRepository}
@@ -43,6 +50,18 @@ public class UsuarioValidator {
                 : repository.existsByEmailAndIdNot(email, idExcluido);
         if (emUso) {
             throw new UsuarioEmailExistenteException("Já existe um usuário com esse e-mail");
+        }
+    }
+
+    /**
+     * Verifica se a senha informada tem o comprimento mínimo exigido.
+     *
+     * @param senha - senha em texto puro a ser verificada
+     * @throws UsuarioException - quando a senha é nula ou tem menos de 6 caracteres
+     */
+    public void validateSenha(String senha) {
+        if (senha == null || senha.length() < SENHA_TAMANHO_MINIMO) {
+            throw new UsuarioException("A senha deve ter no mínimo 6 caracteres");
         }
     }
 
