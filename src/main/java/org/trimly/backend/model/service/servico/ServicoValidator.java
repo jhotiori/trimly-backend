@@ -59,9 +59,11 @@ public class ServicoValidator {
             throw new ServicoException("O serviço já está nesse status");
         }
 
-        if (novo == ServicoStatus.INATIVO
-                && agendamentoRepository.existsByServicoIdAndStatusAndDataAfter(
-                        servico.getId(), AgendamentoStatus.AGENDADO, LocalDateTime.now())) {
+        if (novo == ServicoStatus.INATIVO && agendamentoRepository.existsByServicoIdAndStatusAndDataAfter(
+                servico.getId(),
+                AgendamentoStatus.AGENDADO,
+                LocalDateTime.now()
+        )) {
             throw new ServicoException("O serviço não pode ser desativado enquanto tiver agendamentos futuros");
         }
     }
@@ -75,7 +77,8 @@ public class ServicoValidator {
     public void validateSemAgendamentoPendente(Long servicoId) {
         if (agendamentoRepository.existsByServicoIdAndStatus(servicoId, AgendamentoStatus.AGENDADO)) {
             throw new ServicoComAgendamentoPendenteException(
-                    "Não é possível remover um serviço com agendamento pendente");
+                    "Não é possível remover um serviço com agendamento pendente"
+            );
         }
     }
 }

@@ -13,7 +13,9 @@ import org.trimly.backend.model.entity.usuario.UsuarioEntity;
  * derivadas de conflito, período e vínculo com usuário ou serviço.
  */
 public interface AgendamentoRepository
-        extends JpaRepository<AgendamentoEntity, Long>, JpaSpecificationExecutor<AgendamentoEntity> {
+        extends
+            JpaRepository<AgendamentoEntity, Long>,
+            JpaSpecificationExecutor<AgendamentoEntity> {
     /**
      * Retorna os agendamentos vinculados ao usuário informado.
      *
@@ -39,7 +41,10 @@ public interface AgendamentoRepository
      * @return List - agendamentos que atendem ao status e ao período, vazia quando não houver nenhum
      */
     List<AgendamentoEntity> findByStatusAndDataGreaterThanEqualAndDataLessThan(
-            AgendamentoStatus status, LocalDateTime inicio, LocalDateTime fim);
+            AgendamentoStatus status,
+            LocalDateTime inicio,
+            LocalDateTime fim
+    );
 
     /**
      * Retorna os agendamentos marcados exatamente para a data e hora informadas.

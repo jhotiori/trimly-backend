@@ -7,13 +7,7 @@ import java.time.DayOfWeek;
  * com conversão de e para {@link DayOfWeek}.
  */
 public enum DiaSemana {
-    SEGUNDA,
-    TERCA,
-    QUARTA,
-    QUINTA,
-    SEXTA,
-    SABADO,
-    DOMINGO;
+    SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO, DOMINGO;
 
     /**
      * Converte um {@link DayOfWeek} no valor correspondente de {@code DiaSemana}.

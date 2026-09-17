@@ -75,9 +75,7 @@ public class ServicoService {
     public ServicoEntity update(Long id, ServicoUpdateDTO request) {
         ServicoEntity entity = this.findById(id);
 
-        if (request.nome() == null
-                && request.valor() == null
-                && request.duracao() == null
+        if (request.nome() == null && request.valor() == null && request.duracao() == null
                 && request.status() == null) {
             return entity;
         }

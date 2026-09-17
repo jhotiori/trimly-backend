@@ -28,12 +28,6 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<!--
-			Testes pausados durante o rework de autenticação: as classes de teste ainda
-			referenciam o layout de pacotes anterior e não compilam. Reative com
-			./mvnw -Dmaven.test.skip=false test quando forem corrigidas.
-		-->
-		<maven.test.skip>true</maven.test.skip>
         <spring-cloud.version>2025.1.2</spring-cloud.version>
 	</properties>
 	<dependencies>
@@ -159,11 +153,14 @@
 					<java>
 						<includes>
 							<include>src/main/java/**/*.java</include>
-							<include>src/test/java/**/*.java</include>
 						</includes>
-						<palantirJavaFormat>
-							<style>PALANTIR</style>
-						</palantirJavaFormat>
+						<eclipse>
+							<version>4.40</version>
+							<file>${project.basedir}/eclipse-formatter.prefs</file>
+						</eclipse>
+						<importOrder>
+							<order></order>
+						</importOrder>
 						<removeUnusedImports/>
 						<trimTrailingWhitespace/>
 						<endWithNewline/>

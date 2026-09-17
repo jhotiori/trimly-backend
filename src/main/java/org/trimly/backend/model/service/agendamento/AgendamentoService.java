@@ -222,7 +222,10 @@ public class AgendamentoService {
      * @return List - lista de agendamentos no período
      */
     public List<AgendamentoEntity> findByStatusAndPeriodo(
-            AgendamentoStatus status, LocalDateTime inicio, LocalDateTime fim) {
+            AgendamentoStatus status,
+            LocalDateTime inicio,
+            LocalDateTime fim
+    ) {
         return repository.findByStatusAndDataGreaterThanEqualAndDataLessThan(status, inicio, fim);
     }
 

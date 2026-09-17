@@ -13,14 +13,14 @@ import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
  * @param horaFim - hora de fim da janela
  */
 public record DisponibilidadeResponseDTO(
-        @Schema(description = "Identificador da disponibilidade", example = "1")
-        Long id,
+        @Schema(description = "Identificador da disponibilidade", example = "1") Long id,
 
-        @Schema(description = "Dia da semana em que a janela de atendimento se repete", example = "SEGUNDA")
-        DiaSemana diaSemana,
+        @Schema(
+                description = "Dia da semana em que a janela de atendimento se repete",
+                example = "SEGUNDA"
+        ) DiaSemana diaSemana,
 
-        @Schema(description = "Início da janela", example = "07:00:00")
-        LocalTime horaInicio,
+        @Schema(description = "Início da janela", example = "07:00:00") LocalTime horaInicio,
 
-        @Schema(description = "Fim da janela", example = "12:00:00")
-        LocalTime horaFim) {}
+        @Schema(description = "Fim da janela", example = "12:00:00") LocalTime horaFim
+) {}

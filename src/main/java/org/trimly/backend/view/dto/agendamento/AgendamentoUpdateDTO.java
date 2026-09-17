@@ -17,16 +17,16 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 public record AgendamentoUpdateDTO(
         @Schema(
                 description = "Opcional. Nova data e hora de início, no formato yyyy-MM-ddTHH:mm:ss",
-                example = "2027-03-16T14:00:00")
-        @FutureOrPresent(message = "Horario deve estar no presente ou futuro")
-        LocalDateTime data,
+                example = "2027-03-16T14:00:00"
+        ) @FutureOrPresent(message = "Horario deve estar no presente ou futuro") LocalDateTime data,
 
         @Schema(
                 description = "Opcional. Novo status; a partir de AGENDADO pode seguir para CANCELADO, CONCLUIDO ou"
                         + " AUSENTE",
-                example = "CANCELADO")
-        AgendamentoStatus status,
+                example = "CANCELADO"
+        ) AgendamentoStatus status,
 
-        @Schema(description = "Opcional. Identificador do novo serviço", example = "2")
-        @Positive(message = "Id do Serviço deve ser positivo")
-        Long servicoId) {}
+        @Schema(description = "Opcional. Identificador do novo serviço", example = "2") @Positive(
+                message = "Id do Serviço deve ser positivo"
+        ) Long servicoId
+) {}

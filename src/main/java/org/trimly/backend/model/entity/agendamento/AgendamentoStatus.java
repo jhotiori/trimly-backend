@@ -5,8 +5,5 @@ package org.trimly.backend.model.entity.agendamento;
  * o agendamento pode seguir para {@code CANCELADO}, {@code CONCLUIDO} ou {@code AUSENTE}, todos finais.
  */
 public enum AgendamentoStatus {
-    AGENDADO,
-    CANCELADO,
-    CONCLUIDO,
-    AUSENTE
+    AGENDADO, CANCELADO, CONCLUIDO, AUSENTE
 }

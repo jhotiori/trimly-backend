@@ -5,7 +5,5 @@ package org.trimly.backend.model.entity.usuario;
  * {@code ADMIN} e {@code DONO} administram a barbearia.
  */
 public enum UsuarioCargo {
-    CLIENTE,
-    ADMIN,
-    DONO
+    CLIENTE, ADMIN, DONO
 }
