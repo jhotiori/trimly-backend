@@ -31,24 +31,42 @@ import org.trimly.backend.model.entity.usuario.UsuarioEntity;
 @Entity(name = "Agendamento")
 @Table(name = "agendamentos")
 public class AgendamentoEntity {
+    /**
+     * Identificador do agendamento.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Data e hora de início do atendimento.
+     */
     @Column(name = "data", nullable = false)
     private LocalDateTime data;
 
+    /**
+     * Duração do atendimento em minutos, herdada do serviço no momento da criação.
+     */
     @Column(name = "duracao", nullable = false)
     private Integer duracao;
 
+    /**
+     * Status atual do agendamento no ciclo de vida.
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private AgendamentoStatus status;
 
+    /**
+     * Usuário dono do agendamento.
+     */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
     private UsuarioEntity usuario;
 
+    /**
+     * Serviço agendado.
+     */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "servico_id", nullable = false)
     private ServicoEntity servico;

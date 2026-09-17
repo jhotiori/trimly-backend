@@ -2,7 +2,7 @@ package org.trimly.backend.model.service.servico;
 
 import java.math.BigDecimal;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
@@ -15,6 +15,8 @@ import org.trimly.backend.model.repository.ServicoRepository;
 import org.trimly.backend.view.dto.servico.ServicoCreateDTO;
 import org.trimly.backend.view.dto.servico.ServicoUpdateDTO;
 import org.trimly.backend.view.mapper.ServicoMapper;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Serviço de serviços. Valida a unicidade do nome e as transições de status via
@@ -107,6 +109,20 @@ public class ServicoService {
     }
 
     /**
+     * Remove o serviço com o identificador informado.
+     *
+     * @param id - identificador do serviço a ser removido
+     * @throws EntityNotFoundException - quando não existe serviço com o id informado
+     * @throws ServicoComAgendamentoPendenteException - quando o serviço possui agendamento em {@code AGENDADO}
+     */
+    @Transactional
+    public void deleteById(Long id) {
+        ServicoEntity entity = this.findById(id);
+        servicoValidator.validateSemAgendamentoPendente(id);
+        repository.delete(entity);
+    }
+
+    /**
      * Retorna todos os serviços cadastrados.
      *
      * @return List - lista de todos os serviços
@@ -144,19 +160,5 @@ public class ServicoService {
      */
     public List<ServicoEntity> findByStatus(ServicoStatus status) {
         return repository.findByStatus(status);
-    }
-
-    /**
-     * Remove o serviço com o identificador informado.
-     *
-     * @param id - identificador do serviço a ser removido
-     * @throws EntityNotFoundException - quando não existe serviço com o id informado
-     * @throws ServicoComAgendamentoPendenteException - quando o serviço possui agendamento em {@code AGENDADO}
-     */
-    @Transactional
-    public void deleteById(Long id) {
-        ServicoEntity entity = this.findById(id);
-        servicoValidator.validateSemAgendamentoPendente(id);
-        repository.delete(entity);
     }
 }

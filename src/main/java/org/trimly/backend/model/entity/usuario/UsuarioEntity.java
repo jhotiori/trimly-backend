@@ -32,19 +32,34 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity(name = "Usuario")
 @Table(name = "usuarios")
 public class UsuarioEntity implements UserDetails {
+    /**
+     * Identificador do usuário.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Nome completo do usuário.
+     */
     @Column(name = "nome", nullable = false)
     private String nome;
 
+    /**
+     * E-mail de acesso, único entre os usuários.
+     */
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    /**
+     * Senha criptografada com BCrypt.
+     */
     @Column(name = "senha", nullable = false)
     private String senha;
 
+    /**
+     * Cargo do usuário, que define seu papel no sistema.
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "cargo", nullable = false)
     private UsuarioCargo cargo;

@@ -26,19 +26,34 @@ import lombok.Setter;
 @Entity(name = "Servico")
 @Table(name = "servicos")
 public class ServicoEntity {
+    /**
+     * Identificador do serviço.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Nome do serviço, único no catálogo.
+     */
     @Column(name = "nome", nullable = false, unique = true)
     private String nome;
 
+    /**
+     * Valor cobrado pelo serviço.
+     */
     @Column(name = "valor", nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
 
+    /**
+     * Duração do atendimento em minutos.
+     */
     @Column(name = "duracao", nullable = false)
     private Integer duracao;
 
+    /**
+     * Status do serviço no catálogo (ativo ou inativo).
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private ServicoStatus status;

@@ -103,6 +103,18 @@ public class DisponibilidadeService {
     }
 
     /**
+     * Remove a disponibilidade com o identificador informado.
+     *
+     * @param id - identificador da disponibilidade a ser removida
+     * @throws EntityNotFoundException - quando não existe disponibilidade com o id informado
+     */
+    @Transactional
+    public void deleteById(Long id) {
+        DisponibilidadeEntity entity = this.findById(id);
+        repository.delete(entity);
+    }
+
+    /**
      * Retorna todas as disponibilidades cadastradas.
      *
      * @return List - lista de todas as disponibilidades
@@ -131,17 +143,5 @@ public class DisponibilidadeService {
      */
     public List<DisponibilidadeEntity> findByDiaSemana(DiaSemana diaSemana) {
         return repository.findByDiaSemana(diaSemana);
-    }
-
-    /**
-     * Remove a disponibilidade com o identificador informado.
-     *
-     * @param id - identificador da disponibilidade a ser removida
-     * @throws EntityNotFoundException - quando não existe disponibilidade com o id informado
-     */
-    @Transactional
-    public void deleteById(Long id) {
-        DisponibilidadeEntity entity = this.findById(id);
-        repository.delete(entity);
     }
 }
