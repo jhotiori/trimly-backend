@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.trimly.backend.model.exception.EntityNotFoundException;
 import org.trimly.backend.model.exception.TrimlyException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
@@ -27,7 +28,6 @@ import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 @Slf4j
 @RestControllerAdvice
 public class DomainExceptionHandler {
-
     /**
      * Mapeia a entidade não encontrada para {@code 404}.
      *
@@ -45,14 +45,16 @@ public class DomainExceptionHandler {
      * @param exception - falha de conflito da família {@code TrimlyException}
      * @return ResponseEntity - resposta {@code 409} com o corpo de erro
      */
-    @ExceptionHandler({
-        AgendamentoConflitoException.class,
-        DisponibilidadeConflitoException.class,
-        ServicoNomeDuplicadoException.class,
-        UsuarioEmailExistenteException.class,
-        ServicoComAgendamentoPendenteException.class,
-        UsuarioComAgendamentoPendenteException.class
-    })
+    @ExceptionHandler(
+        {
+                AgendamentoConflitoException.class,
+                AgendamentoFeriadoException.class,
+                DisponibilidadeConflitoException.class,
+                ServicoNomeDuplicadoException.class,
+                UsuarioEmailExistenteException.class,
+                ServicoComAgendamentoPendenteException.class,
+                UsuarioComAgendamentoPendenteException.class}
+    )
     public ResponseEntity<ErrorResponseDTO> handleConflito(TrimlyException exception) {
         return build(HttpStatus.CONFLICT, exception);
     }
@@ -76,10 +78,13 @@ public class DomainExceptionHandler {
      * @return ResponseEntity - resposta com o status e o corpo de erro
      */
     private ResponseEntity<ErrorResponseDTO> build(HttpStatus status, TrimlyException exception) {
-        log.warn("domain error: {}", exception);
+        log.warn("domain error: {}", exception.getMessage(), exception);
 
-        ErrorResponseDTO response =
-                new ErrorResponseDTO(status.value(), status.getReasonPhrase(), exception.getMessage());
+        ErrorResponseDTO response = new ErrorResponseDTO(
+                status.value(),
+                status.getReasonPhrase(),
+                exception.getMessage()
+        );
 
         return ResponseEntity.status(status).body(response);
     }

@@ -48,7 +48,8 @@ public class AgendamentoMapper {
                 entity.getDuracao(),
                 entity.getStatus(),
                 entity.getUsuario().getId(),
-                entity.getServico().getId());
+                entity.getServico().getId()
+        );
     }
 
     /**

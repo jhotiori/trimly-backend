@@ -12,10 +12,13 @@ import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 import org.trimly.backend.model.exception.agendamento.AgendamentoAntecedenciaExcedidaException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoForaDoHorarioException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoNoPassadoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoSemDisponibilidadeException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoStatusException;
+import org.trimly.backend.model.integration.feriados.FeriadoResponseDTO;
+import org.trimly.backend.model.integration.feriados.FeriadosClient;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.service.disponibilidade.DisponibilidadeService;
 
@@ -44,6 +47,12 @@ public class AgendamentoValidator {
      * @see {@link DisponibilidadeService}
      */
     private final DisponibilidadeService disponibilidadeService;
+
+    /**
+     * Cliente da API de feriados nacionais (BrasilAPI), usado para bloquear agendamentos em datas de feriado.
+     * @see {@link FeriadosClient}
+     */
+    private final FeriadosClient feriadosClient;
 
     /**
      * Verifica se o agendamento pode ser alterado e, quando um novo status é informado, se a transição
@@ -82,7 +91,8 @@ public class AgendamentoValidator {
 
         if (!inicioAgendamento.toLocalDate().equals(fimAgendamento.toLocalDate())) {
             throw new AgendamentoForaDoHorarioException(
-                    "O agendamento não pode ultrapassar o horário de um dia para o outro");
+                    "O agendamento não pode ultrapassar o horário de um dia para o outro"
+            );
         }
     }
 
@@ -95,7 +105,8 @@ public class AgendamentoValidator {
     public void validateLimiteAntecedencia(LocalDateTime inicioAgendamento) {
         if (inicioAgendamento.isAfter(LocalDateTime.now().plusDays(LIMITE_ANTECEDENCIA_DIAS))) {
             throw new AgendamentoAntecedenciaExcedidaException(
-                    "O agendamento não pode ser marcado com mais de 14 dias de antecedência");
+                    "O agendamento não pode ser marcado com mais de 14 dias de antecedência"
+            );
         }
     }
 
@@ -112,7 +123,8 @@ public class AgendamentoValidator {
 
         if (disponibilidades.isEmpty()) {
             throw new AgendamentoSemDisponibilidadeException(
-                    "Não há nenhuma disponibilidade nesse dia para realizar este agendamento");
+                    "Não há nenhuma disponibilidade nesse dia para realizar este agendamento"
+            );
         }
 
         LocalTime horaInicioAgendamento = inicioAgendamento.toLocalTime();
@@ -134,7 +146,8 @@ public class AgendamentoValidator {
 
         if (!estaDentroDeUmaDisponibilidade) {
             throw new AgendamentoSemDisponibilidadeException(
-                    "Não há disponibilidade suficiente nesse dia para realizar este agendamento");
+                    "Não há disponibilidade suficiente nesse dia para realizar este agendamento"
+            );
         }
     }
 
@@ -147,12 +160,18 @@ public class AgendamentoValidator {
      * @throws AgendamentoConflitoException - quando o horário conflita com outro agendamento
      */
     public void validateConflitoDeHorario(
-            Long id, LocalDateTime inicioNovoAgendamento, LocalDateTime fimNovoAgendamento) {
+            Long id,
+            LocalDateTime inicioNovoAgendamento,
+            LocalDateTime fimNovoAgendamento
+    ) {
         LocalDate dataAgendamento = inicioNovoAgendamento.toLocalDate();
         LocalDateTime inicioDoDia = dataAgendamento.atStartOfDay();
         LocalDateTime inicioDoProximoDia = dataAgendamento.plusDays(1).atStartOfDay();
         List<AgendamentoEntity> agendamentosExistentes = repository.findByStatusAndDataGreaterThanEqualAndDataLessThan(
-                AgendamentoStatus.AGENDADO, inicioDoDia, inicioDoProximoDia);
+                AgendamentoStatus.AGENDADO,
+                inicioDoDia,
+                inicioDoProximoDia
+        );
 
         for (AgendamentoEntity agendamentoExistente : agendamentosExistentes) {
             // Durante um update, ignora o próprio agendamento.
@@ -161,8 +180,8 @@ public class AgendamentoValidator {
             }
 
             LocalDateTime inicioAgendamentoExistente = agendamentoExistente.getData();
-            LocalDateTime fimAgendamentoExistente =
-                    inicioAgendamentoExistente.plusMinutes(agendamentoExistente.getDuracao());
+            LocalDateTime fimAgendamentoExistente = inicioAgendamentoExistente
+                    .plusMinutes(agendamentoExistente.getDuracao());
 
             boolean inicioExistenteAntesDoFimNovo = inicioAgendamentoExistente.isBefore(fimNovoAgendamento);
             boolean fimExistenteDepoisDoInicioNovo = fimAgendamentoExistente.isAfter(inicioNovoAgendamento);
@@ -171,6 +190,21 @@ public class AgendamentoValidator {
             if (existeConflito) {
                 throw new AgendamentoConflitoException("O horário escolhido já está ocupado por outro agendamento");
             }
+        }
+    }
+
+    /**
+     * Verifica se está tentando agendar para um feriado.
+     *
+     * @param data - data de um agendamento
+     * @throws AgendamentoFeriadoException - quando a data coincide com um feriado nacional
+     */
+    public void validateIsFeriado(LocalDate data) {
+        List<FeriadoResponseDTO> feriados = feriadosClient.listarPorAno(data.getYear());
+        boolean isFeriado = feriados.stream().map(f -> LocalDate.parse(f.date())).anyMatch(data::isEqual);
+
+        if (isFeriado) {
+            throw new AgendamentoFeriadoException("O dia selecionado é feriado nacional");
         }
     }
 }

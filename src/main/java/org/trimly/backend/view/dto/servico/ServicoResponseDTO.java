@@ -14,17 +14,16 @@ import org.trimly.backend.model.entity.servico.ServicoStatus;
  * @param status - status atual do serviço
  */
 public record ServicoResponseDTO(
-        @Schema(description = "Identificador do serviço", example = "1")
-        Long id,
+        @Schema(description = "Identificador do serviço", example = "1") Long id,
 
-        @Schema(description = "Nome do serviço, único no catálogo", example = "Corte Masculino")
-        String nome,
+        @Schema(description = "Nome do serviço, único no catálogo", example = "Corte Masculino") String nome,
 
-        @Schema(description = "Preço cobrado, em reais", example = "40.00")
-        BigDecimal valor,
+        @Schema(description = "Preço cobrado, em reais", example = "40.00") BigDecimal valor,
 
-        @Schema(description = "Duração do atendimento em minutos", example = "30")
-        Integer duracao,
+        @Schema(description = "Duração do atendimento em minutos", example = "30") Integer duracao,
 
-        @Schema(description = "Status no catálogo; só ATIVO aceita novos agendamentos", example = "ATIVO")
-        ServicoStatus status) {}
+        @Schema(
+                description = "Status no catálogo; só ATIVO aceita novos agendamentos",
+                example = "ATIVO"
+        ) ServicoStatus status
+) {}

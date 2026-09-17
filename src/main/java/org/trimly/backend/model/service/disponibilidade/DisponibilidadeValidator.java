@@ -2,15 +2,13 @@ package org.trimly.backend.model.service.disponibilidade;
 
 import java.time.LocalTime;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeHorarioInvalidoException;
 import org.trimly.backend.model.repository.DisponibilidadeRepository;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * Validador de disponibilidades. Aplica, nesta ordem, a hora de início anterior à hora de fim e a
@@ -35,7 +33,8 @@ public class DisponibilidadeValidator {
     public void validateHorarios(LocalTime horaInicio, LocalTime horaFim) {
         if (!horaInicio.isBefore(horaFim)) {
             throw new DisponibilidadeHorarioInvalidoException(
-                    "Horário de inicio deve ser menor do que o horário de fim");
+                    "Horário de inicio deve ser menor do que o horário de fim"
+            );
         }
     }
 
@@ -57,15 +56,14 @@ public class DisponibilidadeValidator {
                 continue;
             }
 
-            boolean inicioExistenteAntesDoFimNovo =
-                    disponibilidadeExistente.getHoraInicio().isBefore(horaFim);
-            boolean fimExistenteDepoisDoInicioNovo =
-                    disponibilidadeExistente.getHoraFim().isAfter(horaInicio);
+            boolean inicioExistenteAntesDoFimNovo = disponibilidadeExistente.getHoraInicio().isBefore(horaFim);
+            boolean fimExistenteDepoisDoInicioNovo = disponibilidadeExistente.getHoraFim().isAfter(horaInicio);
             boolean existeConflito = inicioExistenteAntesDoFimNovo && fimExistenteDepoisDoInicioNovo;
 
             if (existeConflito) {
                 throw new DisponibilidadeConflitoException(
-                        "O horário informado já está ocupado por outra disponibilidade nesse dia");
+                        "O horário informado já está ocupado por outra disponibilidade nesse dia"
+                );
             }
         }
     }

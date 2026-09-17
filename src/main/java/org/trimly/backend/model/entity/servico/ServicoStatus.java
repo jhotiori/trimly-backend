@@ -5,6 +5,5 @@ package org.trimly.backend.model.entity.servico;
  * oferta e não aceita novos agendamentos.
  */
 public enum ServicoStatus {
-    ATIVO,
-    INATIVO
+    ATIVO, INATIVO
 }

@@ -10,11 +10,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param usuario - usuário autenticado, ou nulo quando o login falha
  */
 public record UsuarioLoginResponseDTO(
-        @Schema(description = "Indica se o e-mail e a senha conferem", example = "true")
-        boolean sucesso,
+        @Schema(description = "Indica se o e-mail e a senha conferem", example = "true") boolean sucesso,
 
         @Schema(
                 description = "Usuário autenticado; nulo quando sucesso é false",
-                example =
-                        "{\"id\": 1, \"nome\": \"Administrador\", \"email\": \"admin@trimly.com\", \"cargo\": \"ADMIN\"}")
-        UsuarioResponseDTO usuario) {}
+                example = "{\"id\": 1, \"nome\": \"Administrador\", \"email\": \"admin@trimly.com\", \"cargo\": \"ADMIN\"}"
+        ) UsuarioResponseDTO usuario
+) {}

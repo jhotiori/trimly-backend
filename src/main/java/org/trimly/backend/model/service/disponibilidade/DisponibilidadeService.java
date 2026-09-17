@@ -2,7 +2,7 @@ package org.trimly.backend.model.service.disponibilidade;
 
 import java.time.LocalTime;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
@@ -14,8 +14,6 @@ import org.trimly.backend.model.repository.DisponibilidadeRepository;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeCreateDTO;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeUpdateDTO;
 import org.trimly.backend.view.mapper.DisponibilidadeMapper;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * Serviço de disponibilidades. Valida os horários via {@link DisponibilidadeValidator} e orquestra a
@@ -54,8 +52,8 @@ public class DisponibilidadeService {
     public DisponibilidadeEntity create(DisponibilidadeCreateDTO request) {
         DisponibilidadeEntity entity = mapper.toEntity(request);
         disponibilidadeValidator.validateHorarios(entity.getHoraInicio(), entity.getHoraFim());
-        disponibilidadeValidator.validateConflitoDeHorario(
-                null, entity.getDiaSemana(), entity.getHoraInicio(), entity.getHoraFim());
+        disponibilidadeValidator
+                .validateConflitoDeHorario(null, entity.getDiaSemana(), entity.getHoraInicio(), entity.getHoraFim());
 
         entity = repository.save(entity);
         return entity;
@@ -98,8 +96,8 @@ public class DisponibilidadeService {
         }
 
         disponibilidadeValidator.validateHorarios(entity.getHoraInicio(), entity.getHoraFim());
-        disponibilidadeValidator.validateConflitoDeHorario(
-                id, entity.getDiaSemana(), entity.getHoraInicio(), entity.getHoraFim());
+        disponibilidadeValidator
+                .validateConflitoDeHorario(id, entity.getDiaSemana(), entity.getHoraInicio(), entity.getHoraFim());
         entity = repository.save(entity);
         return entity;
     }
@@ -121,8 +119,7 @@ public class DisponibilidadeService {
      * @return DisponibilidadeEntity - a disponibilidade encontrada
      */
     public DisponibilidadeEntity findById(Long id) {
-        return repository
-                .findById(id)
+        return repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Disponibilidade não foi encontrada"));
     }
 

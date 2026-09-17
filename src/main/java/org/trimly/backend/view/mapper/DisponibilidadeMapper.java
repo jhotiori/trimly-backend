@@ -47,7 +47,11 @@ public class DisponibilidadeMapper {
      */
     public DisponibilidadeResponseDTO toResponse(DisponibilidadeEntity entity) {
         return new DisponibilidadeResponseDTO(
-                entity.getId(), entity.getDiaSemana(), entity.getHoraInicio(), entity.getHoraFim());
+                entity.getId(),
+                entity.getDiaSemana(),
+                entity.getHoraInicio(),
+                entity.getHoraFim()
+        );
     }
 
     /**

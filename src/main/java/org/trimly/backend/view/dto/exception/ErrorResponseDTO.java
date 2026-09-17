@@ -10,13 +10,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param message - mensagem descritiva do erro
  */
 public record ErrorResponseDTO(
-        @Schema(description = "Código HTTP da resposta", example = "404")
-        Integer status,
+        @Schema(description = "Código HTTP da resposta", example = "404") Integer status,
 
-        @Schema(description = "Frase padrão do código HTTP", example = "Not Found")
-        String error,
+        @Schema(description = "Frase padrão do código HTTP", example = "Not Found") String error,
 
         @Schema(
                 description = "Descrição fixa do erro, sem dados da requisição",
-                example = "Agendamento não foi encontrado")
-        String message) {}
+                example = "Agendamento não foi encontrado"
+        ) String message
+) {}

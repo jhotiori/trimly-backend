@@ -1,5 +1,6 @@
 package org.trimly.backend.model.service.agendamento;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +85,9 @@ public class AgendamentoService {
         LocalDateTime inicioAgendamento = entity.getData();
         LocalDateTime fimAgendamento = calculateFimAgendamento(inicioAgendamento, servico.getDuracao());
 
+        log.debug("validate agendamento data: date={} ", inicioAgendamento);
+        agendamentoValidator.validateIsFeriado(LocalDate.from(inicioAgendamento));
+
         log.debug("validate agendamento horario futuro: inicio={}, fim={}", inicioAgendamento, fimAgendamento);
         agendamentoValidator.validateHorarioFuturo(inicioAgendamento, fimAgendamento);
 
@@ -140,6 +144,9 @@ public class AgendamentoService {
 
         // 3. Calcula o novo fim
         LocalDateTime novoFimData = calculateFimAgendamento(novaData, novaDuracao);
+
+        log.debug("validate agendamento data: date={} ", novaData);
+        agendamentoValidator.validateIsFeriado(LocalDate.from(novaData));
 
         log.debug("validate agendamento horario futuro: inicio={}, fim={}", novaData, novoFimData);
         agendamentoValidator.validateHorarioFuturo(novaData, novoFimData);
@@ -215,7 +222,10 @@ public class AgendamentoService {
      * @return List - lista de agendamentos no período
      */
     public List<AgendamentoEntity> findByStatusAndPeriodo(
-            AgendamentoStatus status, LocalDateTime inicio, LocalDateTime fim) {
+            AgendamentoStatus status,
+            LocalDateTime inicio,
+            LocalDateTime fim
+    ) {
         return repository.findByStatusAndDataGreaterThanEqualAndDataLessThan(status, inicio, fim);
     }
 

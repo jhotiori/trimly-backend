@@ -1,5 +1,6 @@
 package org.trimly.backend.config.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -9,8 +10,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.trimly.backend.model.service.auth.TokenService;
 import org.trimly.backend.model.service.usuario.UsuarioService;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * Monta a cadeia de filtros do Spring Security: CSRF desabilitado, sessão {@code STATELESS} e o
@@ -48,7 +47,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .addFilterBefore(
-                        new SecurityFilter(tokenService, usuarioService), UsernamePasswordAuthenticationFilter.class)
+                        new SecurityFilter(tokenService, usuarioService),
+                        UsernamePasswordAuthenticationFilter.class
+                )
                 .build();
     }
 }

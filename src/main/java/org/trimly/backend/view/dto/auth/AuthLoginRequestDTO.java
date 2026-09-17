@@ -11,11 +11,11 @@ import jakarta.validation.constraints.NotBlank;
  * @param senha - senha em texto puro
  */
 public record AuthLoginRequestDTO(
-        @Schema(description = "E-mail cadastrado do usuário", example = "admin@trimly.com")
-        @NotBlank(message = "Email não pode ser vazio")
-        @Email(message = "Não foi recebido um formato de e-mail válido")
-        String email,
+        @Schema(description = "E-mail cadastrado do usuário", example = "admin@trimly.com") @NotBlank(
+                message = "Email não pode ser vazio"
+        ) @Email(message = "Não foi recebido um formato de e-mail válido") String email,
 
-        @Schema(description = "Senha do usuário, em texto puro", example = "admin123")
-        @NotBlank(message = "Senha não pode ser vazia")
-        String senha) {}
+        @Schema(description = "Senha do usuário, em texto puro", example = "admin123") @NotBlank(
+                message = "Senha não pode ser vazia"
+        ) String senha
+) {}

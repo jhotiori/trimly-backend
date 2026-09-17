@@ -159,8 +159,7 @@ public class UsuarioService {
      * @return UsuarioEntity - o usuário encontrado
      */
     public UsuarioEntity findByEmail(String email) {
-        return repository
-                .findByEmail(email)
+        return repository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario com email não foi encontrado"));
     }
 

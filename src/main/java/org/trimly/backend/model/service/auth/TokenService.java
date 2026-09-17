@@ -32,7 +32,8 @@ public class TokenService {
      */
     public TokenService(
             @Value("${trimly.security.jwt.secret}") String secret,
-            @Value("${trimly.security.jwt.expiration}") Integer expiration) {
+            @Value("${trimly.security.jwt.expiration}") Integer expiration
+    ) {
         this.secret = secret;
         this.expiration = expiration;
     }
