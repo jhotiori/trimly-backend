@@ -26,17 +26,29 @@ import lombok.Setter;
 @Entity(name = "Disponibilidade")
 @Table(name = "disponibilidades")
 public class DisponibilidadeEntity {
+    /**
+     * Identificador da disponibilidade.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Dia da semana da janela de atendimento.
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "dia_semana", nullable = false)
     private DiaSemana diaSemana;
 
+    /**
+     * Hora de início da janela de atendimento.
+     */
     @Column(name = "hora_inicio", nullable = false)
     private LocalTime horaInicio;
 
+    /**
+     * Hora de fim da janela de atendimento.
+     */
     @Column(name = "hora_fim", nullable = false)
     private LocalTime horaFim;
 }

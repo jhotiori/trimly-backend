@@ -16,7 +16,13 @@ messages); framework/technical scaffolding stays English.
 - Naming: English verb (`find`, `get`, `delete`) + language-specific spec:
   `findByNome`, `deleteByStatus`, `getByEmail`. Variables: shortest name that stays
   descriptive (`nome`, `usuarioId`, `isAtivo`).
-- Method ordering: by action then specificity (`create > update > findAll > findById > findByX > deleteById`); public methods first, private last.
+- Method ordering: by action then specificity - `create` > `update` > `delete` >
+  `findAll` > `findById` > `findByX` (multi-result finders); public methods first,
+  private last. In `*Mapper` classes, each direction keeps its pair together and the
+  single conversion comes before the list one: `toEntity`, `toEntityList`, then
+  `toResponse`, `toResponseList`. `*Validator` classes are exempt: their methods follow
+  the validation-execution order documented in each class and in the business-rule
+  sections below.
 - Formatting: Spotless with the Eclipse JDT formatter (4.40) owns backend style; its
   settings live in `eclipse-formatter.prefs` (only overridden keys, the rest are Eclipse
   defaults). 4-space indent, 8-space continuation, 120-col wrap. Once a parameter,

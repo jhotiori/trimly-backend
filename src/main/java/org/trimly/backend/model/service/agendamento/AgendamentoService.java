@@ -3,8 +3,7 @@ package org.trimly.backend.model.service.agendamento;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
@@ -25,6 +24,9 @@ import org.trimly.backend.view.dto.agendamento.AgendamentoCreateDTO;
 import org.trimly.backend.view.dto.agendamento.AgendamentoFilter;
 import org.trimly.backend.view.dto.agendamento.AgendamentoUpdateDTO;
 import org.trimly.backend.view.mapper.AgendamentoMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Serviço de agendamentos. Carrega usuário e serviço, delega a {@link AgendamentoValidator} a
@@ -174,6 +176,18 @@ public class AgendamentoService {
     }
 
     /**
+     * Remove o agendamento com o identificador informado.
+     *
+     * @param id - identificador do agendamento a ser removido
+     * @throws EntityNotFoundException - quando não existe agendamento com o id informado
+     */
+    @Transactional
+    public void deleteById(Long id) {
+        AgendamentoEntity entity = this.findById(id);
+        repository.delete(entity);
+    }
+
+    /**
      * Retorna todos os agendamentos cadastrados.
      *
      * @return List - lista de todos os agendamentos
@@ -227,18 +241,6 @@ public class AgendamentoService {
             LocalDateTime fim
     ) {
         return repository.findByStatusAndDataGreaterThanEqualAndDataLessThan(status, inicio, fim);
-    }
-
-    /**
-     * Remove o agendamento com o identificador informado.
-     *
-     * @param id - identificador do agendamento a ser removido
-     * @throws EntityNotFoundException - quando não existe agendamento com o id informado
-     */
-    @Transactional
-    public void deleteById(Long id) {
-        AgendamentoEntity entity = this.findById(id);
-        repository.delete(entity);
     }
 
     /**

@@ -46,12 +46,10 @@ public class AuthenticationController {
      * @return ResponseEntity - resposta com o token do usuário recém-criado
      */
     @PostMapping("/register")
-    @Operation(
-            summary = "Cadastra um usuário e emite um token",
-            description = "Cria um usuário com cargo CLIENTE, com as mesmas regras de POST /api/usuarios, e devolve um"
-                    + " token JWT. Fluxo independente do login de /api/usuarios/login e não utilizado pelo frontend"
-                    + " atualmente. Nenhuma rota exige o token hoje, por isso o Swagger UI não oferece autorização."
-    )
+    @Operation(summary = "Cadastra um usuário e emite um token", description = """
+            Cria um usuário CLIENTE (mesmas regras de POST /api/usuarios) e devolve um token JWT. Fluxo \
+            independente do login de /api/usuarios/login, não usado pelo frontend hoje; nenhuma rota exige \
+            token, por isso o Swagger UI não oferece autorização.""")
     @ApiResponse(
             responseCode = "201",
             description = "Usuário criado e token emitido",
@@ -97,12 +95,10 @@ public class AuthenticationController {
      * @return ResponseEntity - resposta com o token do usuário autenticado
      */
     @PostMapping("/login")
-    @Operation(
-            summary = "Autentica e emite um token",
-            description = "Confere e-mail e senha e devolve um token JWT. Credenciais inválidas retornam 401 com"
-                    + " mensagem fixa, sem indicar se o e-mail ou a senha falhou. Fluxo independente do login de"
-                    + " /api/usuarios/login e não utilizado pelo frontend atualmente."
-    )
+    @Operation(summary = "Autentica e emite um token", description = """
+            Confere e-mail e senha e devolve um token JWT. Credenciais inválidas retornam 401 com mensagem \
+            fixa, sem indicar qual campo falhou. Fluxo independente do login de /api/usuarios/login, não \
+            usado pelo frontend hoje.""")
     @ApiResponse(
             responseCode = "200",
             description = "Credenciais conferem e o token foi emitido",

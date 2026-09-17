@@ -64,11 +64,9 @@ public class UsuarioController {
      * @return ResponseEntity - resposta com o usuário criado
      */
     @PostMapping
-    @Operation(
-            summary = "Cria um usuário",
-            description = "Cadastra um usuário sempre com cargo CLIENTE. O e-mail deve ser único e a senha, com no"
-                    + " mínimo 6 caracteres, é armazenada criptografada; a resposta nunca expõe a senha."
-    )
+    @Operation(summary = "Cria um usuário", description = """
+            Cadastra um usuário com cargo CLIENTE. E-mail deve ser único; senha (mínimo 6 caracteres) é \
+            armazenada criptografada e nunca aparece na resposta.""")
     @ApiResponse(
             responseCode = "201",
             description = "Usuário criado",
@@ -115,12 +113,10 @@ public class UsuarioController {
      * @return ResponseEntity - resposta com o resultado da autenticação
      */
     @PostMapping("/login")
-    @Operation(
-            summary = "Autentica um usuário por credenciais",
-            description = "Confere e-mail e senha sem emitir token. A resposta é sempre 200, inclusive quando as"
-                    + " credenciais não conferem: nesse caso sucesso vem false e usuario vem nulo, sem indicar se o"
-                    + " e-mail ou a senha falhou. Este login nunca retorna 401."
-    )
+    @Operation(summary = "Autentica um usuário por credenciais", description = """
+            Confere e-mail e senha sem emitir token. Resposta é sempre 200: sucesso indica o resultado e \
+            usuario vem nulo quando as credenciais não conferem, sem indicar qual campo falhou. Nunca \
+            retorna 401.""")
     @ApiResponse(
             responseCode = "200",
             description = "Resultado da autenticação; sucesso indica se as credenciais conferem",
@@ -171,13 +167,10 @@ public class UsuarioController {
      * @return ResponseEntity - resposta com o usuário atualizado
      */
     @PatchMapping("/{id}")
-    @Operation(
-            summary = "Atualiza um usuário",
-            description = "Atualiza os campos informados. Campos nulos ou em branco são ignorados; com todos nulos,"
-                    + " devolve o usuário sem alterações. O novo e-mail deve ser único, a nova senha deve ter no mínimo"
-                    + " 6 caracteres e é recriptografada,"
-                    + " o novo cargo não pode repetir o atual e o único DONO cadastrado não pode perder o cargo."
-    )
+    @Operation(summary = "Atualiza um usuário", description = """
+            Atualiza os campos informados; nulos são ignorados e todos nulos é um no-op. Novo e-mail deve \
+            ser único, nova senha (mínimo 6 caracteres) é recriptografada, novo cargo não pode repetir o \
+            atual e o único DONO cadastrado não pode perder o cargo.""")
     @ApiResponse(
             responseCode = "200",
             description = "Usuário atualizado, ou inalterado quando todos os campos são nulos",
@@ -248,6 +241,58 @@ public class UsuarioController {
     }
 
     /**
+     * Remove o usuário com o identificador informado.
+     *
+     * @param id - identificador do usuário a ser removido
+     * @return ResponseEntity - resposta sem conteúdo
+     */
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Remove um usuário", description = """
+            Remove o usuário com o identificador informado, desde que não tenha agendamento em AGENDADO \
+            vinculado.""")
+    @ApiResponse(responseCode = "204", description = "Usuário removido", content = @Content)
+    @ApiResponse(
+            responseCode = "400",
+            description = "Identificador não numérico",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
+            )
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Usuário não encontrado",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.USUARIO_NAO_ENCONTRADO)
+            )
+    )
+    @ApiResponse(
+            responseCode = "409",
+            description = "Usuário com agendamento em AGENDADO vinculado",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.USUARIO_COM_AGENDAMENTO_PENDENTE)
+            )
+    )
+    @ApiResponse(
+            responseCode = "500",
+            description = "Erro inesperado",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
+            )
+    )
+    public ResponseEntity<Void> deleteById(
+            @Parameter(description = "Identificador do usuário", example = "1") @PathVariable Long id
+    ) {
+        log.debug("delete usuario: id={}", id);
+
+        service.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * Lista todos os usuários cadastrados.
      *
      * @return ResponseEntity - resposta com a lista de usuários
@@ -314,59 +359,5 @@ public class UsuarioController {
     ) {
         UsuarioEntity entity = service.findById(id);
         return ResponseEntity.ok(mapper.toResponse(entity));
-    }
-
-    /**
-     * Remove o usuário com o identificador informado.
-     *
-     * @param id - identificador do usuário a ser removido
-     * @return ResponseEntity - resposta sem conteúdo
-     */
-    @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Remove um usuário",
-            description = "Remove o usuário com o identificador informado, desde que não tenha agendamento em"
-                    + " AGENDADO vinculado."
-    )
-    @ApiResponse(responseCode = "204", description = "Usuário removido", content = @Content)
-    @ApiResponse(
-            responseCode = "400",
-            description = "Identificador não numérico",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
-            )
-    )
-    @ApiResponse(
-            responseCode = "404",
-            description = "Usuário não encontrado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.USUARIO_NAO_ENCONTRADO)
-            )
-    )
-    @ApiResponse(
-            responseCode = "409",
-            description = "Usuário com agendamento em AGENDADO vinculado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.USUARIO_COM_AGENDAMENTO_PENDENTE)
-            )
-    )
-    @ApiResponse(
-            responseCode = "500",
-            description = "Erro inesperado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
-            )
-    )
-    public ResponseEntity<Void> deleteById(
-            @Parameter(description = "Identificador do usuário", example = "1") @PathVariable Long id
-    ) {
-        log.debug("delete usuario: id={}", id);
-
-        service.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 }

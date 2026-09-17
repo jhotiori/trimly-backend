@@ -122,6 +122,20 @@ public class UsuarioService {
     }
 
     /**
+     * Remove o usuário com o identificador informado.
+     *
+     * @param id - identificador do usuário a ser removido
+     * @throws EntityNotFoundException - quando não existe usuário com o id informado
+     * @throws UsuarioComAgendamentoPendenteException - quando o usuário possui agendamento em {@code AGENDADO}
+     */
+    @Transactional
+    public void deleteById(Long id) {
+        UsuarioEntity entity = this.findById(id);
+        usuarioValidator.validateSemAgendamentoPendente(id);
+        repository.delete(entity);
+    }
+
+    /**
      * Retorna todos os usuários cadastrados.
      *
      * @return List - lista de todos os usuários
@@ -176,19 +190,5 @@ public class UsuarioService {
      */
     public Optional<UsuarioEntity> findByCredenciais(String email, String senha) {
         return repository.findByEmail(email).filter(usuario -> passwordEncoder.matches(senha, usuario.getSenha()));
-    }
-
-    /**
-     * Remove o usuário com o identificador informado.
-     *
-     * @param id - identificador do usuário a ser removido
-     * @throws EntityNotFoundException - quando não existe usuário com o id informado
-     * @throws UsuarioComAgendamentoPendenteException - quando o usuário possui agendamento em {@code AGENDADO}
-     */
-    @Transactional
-    public void deleteById(Long id) {
-        UsuarioEntity entity = this.findById(id);
-        usuarioValidator.validateSemAgendamentoPendente(id);
-        repository.delete(entity);
     }
 }
