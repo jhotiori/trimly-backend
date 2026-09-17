@@ -64,8 +64,11 @@ public class SecurityFilter extends OncePerRequestFilter {
             try {
                 String email = tokenService.validateToken(token);
                 UsuarioEntity usuario = usuarioService.findByEmail(email);
-                Authentication authentication =
-                        new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        usuario,
+                        null,
+                        usuario.getAuthorities()
+                );
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception exception) {
                 log.debug("token rejeitado: {}", exception.toString());

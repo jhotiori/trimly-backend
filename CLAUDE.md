@@ -17,10 +17,18 @@ messages); framework/technical scaffolding stays English.
   `findByNome`, `deleteByStatus`, `getByEmail`. Variables: shortest name that stays
   descriptive (`nome`, `usuarioId`, `isAtivo`).
 - Method ordering: by action then specificity (`create > update > findAll > findById > findByX > deleteById`); public methods first, private last.
-- Formatting: Spotless with palantir-java-format owns backend style - 4-space indent,
-  120-col wrap, single sorted import group, no wildcard imports (Javadoc left as
-  written). Run `./mvnw spotless:apply` before committing; `./mvnw verify` fails on
-  unformatted code. To format only the files you touched, pass
+- Formatting: Spotless with the Eclipse JDT formatter (4.40) owns backend style; its
+  settings live in `eclipse-formatter.prefs` (only overridden keys, the rest are Eclipse
+  defaults). 4-space indent, 8-space continuation, 120-col wrap. Once a parameter,
+  argument, annotation-argument or array list wraps, it puts one element per line, and a
+  wrapped method/record/annotation list closes with `)` on its own line. A wrapped chain
+  keeps its first call on the receiver's line, the rest one per line. Existing line breaks
+  are joined before wrapping, so output does not depend on how the code was typed. At most
+  one blank line is kept; none right after a type's opening brace. Empty bodies stay `{}`.
+  Comments (Javadoc, block, line) are left as written. Eclipse does not order imports:
+  Spotless `importOrder` (empty order) keeps a single sorted group, `removeUnusedImports`
+  drops unused ones, no wildcard imports. Run `./mvnw spotless:apply` before committing;
+  `./mvnw verify` fails on unformatted code. To format only the files you touched, pass
   `-DspotlessFiles=<regex>[,<regex>...]` (matched against the full file path).
 
 ### Javadoc
@@ -76,19 +84,13 @@ code changes (AST-only, no API cost).
 
 ```bash
 ./mvnw spring-boot:run                    # run API (dev profile, in-memory H2)
-./mvnw test                               # all tests
-./mvnw test -Dtest=ClassName              # one test class
-./mvnw test -Dtest=ClassName#methodName   # one test method
 ./mvnw compile                            # compile only
-./mvnw spotless:apply                     # format all Java sources (palantir-java-format)
+./mvnw spotless:apply                     # format all Java sources (Eclipse JDT)
 ./mvnw spotless:apply -DspotlessFiles='.*/Foo\.java'  # format only matching files
 ./mvnw spotless:check                     # check formatting (also runs in the verify phase)
 ```
 
-- Tests are paused: `maven.test.skip=true` in `pom.xml` skips test compilation and
-  execution while the auth rework lands (the test sources still target the old package
-  layout). Re-enable per command with `./mvnw -Dmaven.test.skip=false test`, or delete the
-  property once the suite is fixed.
+- The backend has no tests: `src/test` was removed. Do not add test classes unless asked.
 
 - Active profile: `spring.profiles.active` in `application.properties` (currently `develop`).
   - `develop` - H2 in-memory, H2 console at `/h2-console`, SQL logging on.
@@ -158,7 +160,7 @@ server-side (domain and auth at `WARN`, unexpected at `ERROR`):
 - `DomainExceptionHandler` maps the `TrimlyException` family by class, via grouped
   `@ExceptionHandler` methods (no status field on the exceptions, no class->status map):
   - `EntityNotFoundException` -> 404
-  - `AgendamentoConflitoException`, `DisponibilidadeConflitoException`,
+  - `AgendamentoConflitoException`, `AgendamentoFeriadoException`, `DisponibilidadeConflitoException`,
     `ServicoNomeDuplicadoException`, `UsuarioEmailExistenteException`,
     `ServicoComAgendamentoPendenteException`, `UsuarioComAgendamentoPendenteException` -> 409
   - every other `TrimlyException` -> 422
@@ -213,19 +215,23 @@ on the classpath but unused; the manual filter approach was chosen instead).
 ## Agendamento (booking) business rules
 
 Rules live in `AgendamentoValidator`. Preserve the validation order and the distinct
-exception types - callers/tests depend on which one is thrown.
+exception types - callers depend on which one is thrown.
 
 End time = `data` + `Servico.duracao` minutes (`calculateFimAgendamento`).
 
 `create` and `update` both run, in order:
-1. `validateHorarioFuturo` - start and end must fall on the same calendar day, else
+1. `validateIsFeriado` - the start date must not match a national holiday returned by
+   BrasilAPI (`FeriadosClient.listarPorAno`, one call per request), else
+   `AgendamentoFeriadoException` (409). It runs before every other check, so a holiday
+   is reported even when the date is also past the 14-day window.
+2. `validateHorarioFuturo` - start and end must fall on the same calendar day, else
    `AgendamentoForaDoHorarioException`.
-2. `validateLimiteAntecedencia` - start must not be after `LocalDateTime.now().plusDays(14)`
+3. `validateLimiteAntecedencia` - start must not be after `LocalDateTime.now().plusDays(14)`
    (exactly 14 days ahead is accepted), else `AgendamentoAntecedenciaExcedidaException` (422).
-3. `validateDisponibilidade` - the day of week must have a `Disponibilidade`, and the
+4. `validateDisponibilidade` - the day of week must have a `Disponibilidade`, and the
    booking must fit fully inside one of its windows, else
    `AgendamentoSemDisponibilidadeException`.
-4. `validateConflitoDeHorario` - no interval overlap with other `AGENDADO` bookings the
+5. `validateConflitoDeHorario` - no interval overlap with other `AGENDADO` bookings the
    same day, else `AgendamentoConflitoException`. On `update` the booking's own id is
    passed so it is skipped; on `create` it is `null`.
 

@@ -65,51 +65,57 @@ public class DisponibilidadeController {
             summary = "Cria uma disponibilidade",
             description = "Cria uma janela de atendimento semanal. A hora de início deve ser anterior à de fim, e a"
                     + " janela não pode se sobrepor a outra do mesmo dia da semana; janelas que apenas se tocam, como"
-                    + " 08:00-12:00 e 12:00-13:00, não conflitam.")
+                    + " 08:00-12:00 e 12:00-13:00, não conflitam."
+    )
     @ApiResponse(
             responseCode = "201",
             description = "Disponibilidade criada",
-            content = @Content(schema = @Schema(implementation = DisponibilidadeResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))
+    )
     @ApiResponse(
             responseCode = "400",
-            description =
-                    "Corpo ausente, mal formatado ou com campos inválidos; message reúne as mensagens de validação",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = {
-                                @ExampleObject(
-                                        name = "Campos inválidos",
-                                        value = OpenApiExamples.DISPONIBILIDADE_CRIACAO_INVALIDA),
-                                @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)
-                            }))
+            description = "Corpo ausente, mal formatado ou com campos inválidos; message reúne as mensagens de validação",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = {
+                            @ExampleObject(
+                                    name = "Campos inválidos",
+                                    value = OpenApiExamples.DISPONIBILIDADE_CRIACAO_INVALIDA
+                            ),
+                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)}
+            )
+    )
     @ApiResponse(
             responseCode = "409",
             description = "Janela sobreposta a outra disponibilidade no mesmo dia da semana",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_CONFLITO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_CONFLITO)
+            )
+    )
     @ApiResponse(
             responseCode = "422",
             description = "Hora de início igual ou posterior à hora de fim",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_HORARIO_INVALIDO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_HORARIO_INVALIDO)
+            )
+    )
     @ApiResponse(
             responseCode = "500",
             description = "Erro inesperado",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
+            )
+    )
     public ResponseEntity<DisponibilidadeResponseDTO> create(@Valid @RequestBody DisponibilidadeCreateDTO request) {
         log.debug(
                 "create disponibilidade: diaSemana={}, horaInicio={}, horaFim={}",
                 request.diaSemana(),
                 request.horaInicio(),
-                request.horaFim());
+                request.horaFim()
+        );
 
         DisponibilidadeEntity entity = service.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(entity));
@@ -127,60 +133,66 @@ public class DisponibilidadeController {
             summary = "Atualiza uma disponibilidade",
             description = "Atualiza os campos informados. Campos nulos são ignorados; com todos nulos, devolve a"
                     + " disponibilidade sem alterações e sem revalidar. Valem as mesmas regras da criação sobre os"
-                    + " valores resultantes, ignorando a própria disponibilidade na checagem de conflito.")
+                    + " valores resultantes, ignorando a própria disponibilidade na checagem de conflito."
+    )
     @ApiResponse(
             responseCode = "200",
             description = "Disponibilidade atualizada, ou inalterada quando todos os campos são nulos",
-            content = @Content(schema = @Schema(implementation = DisponibilidadeResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))
+    )
     @ApiResponse(
             responseCode = "400",
             description = "Corpo mal formatado ou identificador não numérico",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = {
-                                @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
-                                @ExampleObject(
-                                        name = "Identificador inválido",
-                                        value = OpenApiExamples.PARAMETRO_INVALIDO)
-                            }))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = {
+                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
+                            @ExampleObject(name = "Identificador inválido", value = OpenApiExamples.PARAMETRO_INVALIDO)}
+            )
+    )
     @ApiResponse(
             responseCode = "404",
             description = "Disponibilidade não encontrada",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_NAO_ENCONTRADA)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_NAO_ENCONTRADA)
+            )
+    )
     @ApiResponse(
             responseCode = "409",
             description = "Janela resultante sobreposta a outra disponibilidade no mesmo dia da semana",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_CONFLITO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_CONFLITO)
+            )
+    )
     @ApiResponse(
             responseCode = "422",
             description = "Hora de início resultante igual ou posterior à hora de fim",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_HORARIO_INVALIDO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_HORARIO_INVALIDO)
+            )
+    )
     @ApiResponse(
             responseCode = "500",
             description = "Erro inesperado",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
+            )
+    )
     public ResponseEntity<DisponibilidadeResponseDTO> update(
             @Parameter(description = "Identificador da disponibilidade", example = "1") @PathVariable Long id,
-            @Valid @RequestBody DisponibilidadeUpdateDTO request) {
+            @Valid @RequestBody DisponibilidadeUpdateDTO request
+    ) {
         log.debug(
                 "update disponibilidade: id={}, diaSemana={}, horaInicio={}, horaFim={}",
                 id,
                 request.diaSemana(),
                 request.horaInicio(),
-                request.horaFim());
+                request.horaFim()
+        );
 
         DisponibilidadeEntity entity = service.update(id, request);
         return ResponseEntity.ok(mapper.toResponse(entity));
@@ -196,15 +208,18 @@ public class DisponibilidadeController {
     @ApiResponse(
             responseCode = "200",
             description = "Lista de disponibilidades, possivelmente vazia",
-            content =
-                    @Content(array = @ArraySchema(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))))
+            content = @Content(
+                    array = @ArraySchema(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))
+            )
+    )
     @ApiResponse(
             responseCode = "500",
             description = "Erro inesperado",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
+            )
+    )
     public ResponseEntity<List<DisponibilidadeResponseDTO>> findAll() {
         List<DisponibilidadeEntity> entities = service.findAll();
         return ResponseEntity.ok(mapper.toResponseList(entities));
@@ -221,30 +236,35 @@ public class DisponibilidadeController {
     @ApiResponse(
             responseCode = "200",
             description = "Disponibilidade encontrada",
-            content = @Content(schema = @Schema(implementation = DisponibilidadeResponseDTO.class)))
+            content = @Content(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))
+    )
     @ApiResponse(
             responseCode = "400",
             description = "Identificador não numérico",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
+            )
+    )
     @ApiResponse(
             responseCode = "404",
             description = "Disponibilidade não encontrada",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_NAO_ENCONTRADA)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_NAO_ENCONTRADA)
+            )
+    )
     @ApiResponse(
             responseCode = "500",
             description = "Erro inesperado",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
+            )
+    )
     public ResponseEntity<DisponibilidadeResponseDTO> findById(
-            @Parameter(description = "Identificador da disponibilidade", example = "1") @PathVariable Long id) {
+            @Parameter(description = "Identificador da disponibilidade", example = "1") @PathVariable Long id
+    ) {
         DisponibilidadeEntity entity = service.findById(id);
         return ResponseEntity.ok(mapper.toResponse(entity));
     }
@@ -260,22 +280,29 @@ public class DisponibilidadeController {
             summary = "Lista disponibilidades de um dia da semana",
             description = "Lista as janelas de atendimento do dia informado, de SEGUNDA a DOMINGO, sem diferenciar"
                     + " maiúsculas de minúsculas. Um valor que não corresponde a nenhum dia retorna 500, e não 400:"
-                    + " a conversão do dia ainda não tem tratamento dedicado e cai no erro genérico.")
+                    + " a conversão do dia ainda não tem tratamento dedicado e cai no erro genérico."
+    )
     @ApiResponse(
             responseCode = "200",
             description = "Lista de disponibilidades do dia, possivelmente vazia",
-            content =
-                    @Content(array = @ArraySchema(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))))
+            content = @Content(
+                    array = @ArraySchema(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))
+            )
+    )
     @ApiResponse(
             responseCode = "500",
             description = "Dia da semana inválido (comportamento atual) ou erro inesperado",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
+            )
+    )
     public ResponseEntity<List<DisponibilidadeResponseDTO>> findByDiaSemana(
-            @Parameter(description = "Dia da semana, de SEGUNDA a DOMINGO", example = "SEGUNDA") @PathVariable
-                    String diaSemana) {
+            @Parameter(
+                    description = "Dia da semana, de SEGUNDA a DOMINGO",
+                    example = "SEGUNDA"
+            ) @PathVariable String diaSemana
+    ) {
         List<DisponibilidadeEntity> entities = service.findByDiaSemana(DiaSemana.fromString(diaSemana));
         return ResponseEntity.ok(mapper.toResponseList(entities));
     }
@@ -289,31 +316,36 @@ public class DisponibilidadeController {
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Remove uma disponibilidade",
-            description = "Remove a disponibilidade com o identificador informado.")
+            description = "Remove a disponibilidade com o identificador informado."
+    )
     @ApiResponse(responseCode = "204", description = "Disponibilidade removida", content = @Content)
     @ApiResponse(
             responseCode = "400",
             description = "Identificador não numérico",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
+            )
+    )
     @ApiResponse(
             responseCode = "404",
             description = "Disponibilidade não encontrada",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_NAO_ENCONTRADA)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_NAO_ENCONTRADA)
+            )
+    )
     @ApiResponse(
             responseCode = "500",
             description = "Erro inesperado",
-            content =
-                    @Content(
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)))
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
+            )
+    )
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "Identificador da disponibilidade", example = "1") @PathVariable Long id) {
+            @Parameter(description = "Identificador da disponibilidade", example = "1") @PathVariable Long id
+    ) {
         log.debug("delete disponibilidade: id={}", id);
 
         service.deleteById(id);

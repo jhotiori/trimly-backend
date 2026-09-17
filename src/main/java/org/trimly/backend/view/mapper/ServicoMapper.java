@@ -47,7 +47,12 @@ public class ServicoMapper {
      */
     public ServicoResponseDTO toResponse(ServicoEntity entity) {
         return new ServicoResponseDTO(
-                entity.getId(), entity.getNome(), entity.getValor(), entity.getDuracao(), entity.getStatus());
+                entity.getId(),
+                entity.getNome(),
+                entity.getValor(),
+                entity.getDuracao(),
+                entity.getStatus()
+        );
     }
 
     /**

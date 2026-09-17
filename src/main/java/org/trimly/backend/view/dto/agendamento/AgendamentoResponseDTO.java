@@ -15,20 +15,21 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
  * @param servicoId - identificador do serviço agendado
  */
 public record AgendamentoResponseDTO(
-        @Schema(description = "Identificador do agendamento", example = "1")
-        Long id,
+        @Schema(description = "Identificador do agendamento", example = "1") Long id,
 
-        @Schema(description = "Data e hora de início do atendimento", example = "2027-03-15T09:00:00")
-        LocalDateTime data,
+        @Schema(
+                description = "Data e hora de início do atendimento",
+                example = "2027-03-15T09:00:00"
+        ) LocalDateTime data,
 
-        @Schema(description = "Duração do atendimento em minutos, herdada do serviço", example = "30")
-        Integer duracao,
+        @Schema(description = "Duração do atendimento em minutos, herdada do serviço", example = "30") Integer duracao,
 
-        @Schema(description = "Status atual; AGENDADO é o único status não terminal", example = "AGENDADO")
-        AgendamentoStatus status,
+        @Schema(
+                description = "Status atual; AGENDADO é o único status não terminal",
+                example = "AGENDADO"
+        ) AgendamentoStatus status,
 
-        @Schema(description = "Identificador do usuário atendido", example = "2")
-        Long usuarioId,
+        @Schema(description = "Identificador do usuário atendido", example = "2") Long usuarioId,
 
-        @Schema(description = "Identificador do serviço agendado", example = "1")
-        Long servicoId) {}
+        @Schema(description = "Identificador do serviço agendado", example = "1") Long servicoId
+) {}

@@ -12,14 +12,11 @@ import org.trimly.backend.model.entity.usuario.UsuarioCargo;
  * @param cargo - cargo atual do usuário
  */
 public record UsuarioResponseDTO(
-        @Schema(description = "Identificador do usuário", example = "1")
-        Long id,
+        @Schema(description = "Identificador do usuário", example = "1") Long id,
 
-        @Schema(description = "Nome completo do usuário", example = "Administrador")
-        String nome,
+        @Schema(description = "Nome completo do usuário", example = "Administrador") String nome,
 
-        @Schema(description = "E-mail de acesso, único entre os usuários", example = "admin@trimly.com")
-        String email,
+        @Schema(description = "E-mail de acesso, único entre os usuários", example = "admin@trimly.com") String email,
 
-        @Schema(description = "Cargo que define o nível de acesso", example = "ADMIN")
-        UsuarioCargo cargo) {}
+        @Schema(description = "Cargo que define o nível de acesso", example = "ADMIN") UsuarioCargo cargo
+) {}

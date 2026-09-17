@@ -22,7 +22,6 @@ import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 public class AuthenticationExceptionHandler {
-
     /**
      * Registra a falha de autenticação e devolve {@code 401} com mensagem fixa.
      *
@@ -34,8 +33,11 @@ public class AuthenticationExceptionHandler {
         log.warn("auth error: {}", exception.toString());
 
         HttpStatus status = HttpStatus.UNAUTHORIZED;
-        ErrorResponseDTO response =
-                new ErrorResponseDTO(status.value(), status.getReasonPhrase(), exception.getMessage());
+        ErrorResponseDTO response = new ErrorResponseDTO(
+                status.value(),
+                status.getReasonPhrase(),
+                exception.getMessage()
+        );
 
         return ResponseEntity.status(status).body(response);
     }

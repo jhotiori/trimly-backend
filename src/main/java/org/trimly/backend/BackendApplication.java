@@ -2,11 +2,13 @@ package org.trimly.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * Ponto de entrada da aplicação Spring Boot do Trimly.
  */
 @SpringBootApplication
+@EnableFeignClients
 public class BackendApplication {
     /**
      * Sobe o contexto Spring Boot da aplicação.

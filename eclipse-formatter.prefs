@@ -1,0 +1,57 @@
+# Eclipse JDT formatter settings for Spotless (pom.xml <eclipse><file>).
+# Only overridden keys are listed; every other key uses the Eclipse built-in defaults.
+
+# Indentation: 4 spaces, wrapped lines indented 2 levels (8 spaces)
+org.eclipse.jdt.core.formatter.tabulation.char=space
+org.eclipse.jdt.core.formatter.tabulation.size=4
+org.eclipse.jdt.core.formatter.indentation.size=4
+org.eclipse.jdt.core.formatter.continuation_indentation=2
+org.eclipse.jdt.core.formatter.continuation_indentation_for_array_initializer=2
+
+# Line width
+org.eclipse.jdt.core.formatter.lineSplit=120
+org.eclipse.jdt.core.formatter.comment.line_length=120
+
+# Blank lines: keep at most one existing blank line, none right after a type's opening brace
+org.eclipse.jdt.core.formatter.number_of_empty_lines_to_preserve=1
+org.eclipse.jdt.core.formatter.blank_lines_before_first_class_body_declaration=-1
+
+# Comments (Javadoc, block, line) are left as written
+org.eclipse.jdt.core.formatter.comment.format_javadoc_comments=false
+org.eclipse.jdt.core.formatter.comment.format_block_comments=false
+org.eclipse.jdt.core.formatter.comment.format_line_comments=false
+
+# Wrapping: existing line breaks are joined first, so the output does not depend on how code was written
+org.eclipse.jdt.core.formatter.join_wrapped_lines=true
+# Parameters, arguments (calls, new X(...), this(...)/super(...), enum constants, annotations) and array elements:
+# once wrapped, one element per line (48)
+org.eclipse.jdt.core.formatter.alignment_for_parameters_in_method_declaration=48
+org.eclipse.jdt.core.formatter.alignment_for_arguments_in_method_invocation=48
+org.eclipse.jdt.core.formatter.alignment_for_arguments_in_allocation_expression=48
+org.eclipse.jdt.core.formatter.alignment_for_arguments_in_qualified_allocation_expression=48
+org.eclipse.jdt.core.formatter.alignment_for_arguments_in_explicit_constructor_call=48
+org.eclipse.jdt.core.formatter.alignment_for_arguments_in_enum_constant=48
+org.eclipse.jdt.core.formatter.alignment_for_arguments_in_annotation=48
+org.eclipse.jdt.core.formatter.alignment_for_expressions_in_array_initializer=48
+# Chains: first call stays on the receiver's line, the rest one per line once wrapped (80)
+org.eclipse.jdt.core.formatter.alignment_for_selector_in_method_invocation=80
+
+# Closing parenthesis on its own line when the list wraps
+# ("delcaration" is Eclipse's own spelling of this key)
+org.eclipse.jdt.core.formatter.parentheses_positions_in_method_delcaration=separate_lines_if_wrapped
+org.eclipse.jdt.core.formatter.parentheses_positions_in_method_invocation=separate_lines_if_wrapped
+org.eclipse.jdt.core.formatter.parentheses_positions_in_record_declaration=separate_lines_if_wrapped
+org.eclipse.jdt.core.formatter.parentheses_positions_in_annotation=separate_lines_if_wrapped
+
+# Array initializers: space before the brace (new String[] {...}); closing brace stays on the last element's line
+org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_array_initializer=insert
+
+# Empty bodies stay on one line: {}
+org.eclipse.jdt.core.formatter.keep_method_body_on_one_line=one_line_if_empty
+org.eclipse.jdt.core.formatter.keep_type_declaration_on_one_line=one_line_if_empty
+org.eclipse.jdt.core.formatter.keep_record_declaration_on_one_line=one_line_if_empty
+org.eclipse.jdt.core.formatter.keep_record_constructor_on_one_line=one_line_if_empty
+org.eclipse.jdt.core.formatter.keep_enum_declaration_on_one_line=one_line_if_empty
+org.eclipse.jdt.core.formatter.keep_annotation_declaration_on_one_line=one_line_if_empty
+org.eclipse.jdt.core.formatter.keep_anonymous_type_declaration_on_one_line=one_line_if_empty
+org.eclipse.jdt.core.formatter.keep_lambda_body_block_on_one_line=one_line_if_empty

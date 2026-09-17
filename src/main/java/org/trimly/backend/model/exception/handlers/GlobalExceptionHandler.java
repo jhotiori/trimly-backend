@@ -23,7 +23,6 @@ import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     /**
      * Mapeia a falha de {@code @Valid} no corpo da requisição para {@code 400}, reunindo em ordem
      * alfabética as mensagens de validação dos campos rejeitados.
@@ -33,7 +32,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDTO> handleValidacao(MethodArgumentNotValidException exception) {
-        String message = exception.getBindingResult().getAllErrors().stream()
+        String message = exception.getBindingResult()
+                .getAllErrors()
+                .stream()
                 .map(ObjectError::getDefaultMessage)
                 .sorted()
                 .collect(Collectors.joining("; "));
@@ -73,12 +74,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleUnexpected(Exception exception) {
-        log.error("unexpected error: {}", exception);
+        log.error("unexpected error: {}", exception.getMessage(), exception);
 
         ErrorResponseDTO response = new ErrorResponseDTO(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                "Ocorreu um erro inesperado ao processar a requisição");
+                "Ocorreu um erro inesperado ao processar a requisição"
+        );
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }

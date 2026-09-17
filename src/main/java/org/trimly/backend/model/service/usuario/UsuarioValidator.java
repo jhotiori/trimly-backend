@@ -1,5 +1,6 @@
 package org.trimly.backend.model.service.usuario;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
@@ -9,8 +10,6 @@ import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException
 import org.trimly.backend.model.exception.usuario.UsuarioException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.UsuarioRepository;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * Validador de usuários. Garante a unicidade do e-mail, o comprimento mínimo da senha, a legalidade da
@@ -94,7 +93,8 @@ public class UsuarioValidator {
     public void validateSemAgendamentoPendente(Long usuarioId) {
         if (agendamentoRepository.existsByUsuarioIdAndStatus(usuarioId, AgendamentoStatus.AGENDADO)) {
             throw new UsuarioComAgendamentoPendenteException(
-                    "Não é possível remover um usuário com agendamento pendente");
+                    "Não é possível remover um usuário com agendamento pendente"
+            );
         }
     }
 }
