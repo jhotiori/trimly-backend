@@ -111,12 +111,10 @@ public class ServicoController {
      * @return ResponseEntity - resposta com o serviço atualizado
      */
     @PatchMapping("/{id}")
-    @Operation(
-            summary = "Atualiza um serviço",
-            description = "Atualiza os campos informados. Campos nulos ou em branco são ignorados; com todos nulos,"
-                    + " devolve o serviço sem alterações. O novo nome deve ser único, o novo status não pode repetir o"
-                    + " atual, e o serviço não pode ser desativado enquanto tiver agendamentos futuros."
-    )
+    @Operation(summary = "Atualiza um serviço", description = """
+            Atualiza os campos informados; nulos são ignorados e todos nulos é um no-op. Novo nome deve ser \
+            único, novo status não pode repetir o atual, e o serviço não pode ser desativado com \
+            agendamentos futuros.""")
     @ApiResponse(
             responseCode = "200",
             description = "Serviço atualizado, ou inalterado quando todos os campos são nulos",
@@ -188,6 +186,58 @@ public class ServicoController {
 
         ServicoEntity entity = service.update(id, request);
         return ResponseEntity.ok(mapper.toResponse(entity));
+    }
+
+    /**
+     * Remove o serviço com o identificador informado.
+     *
+     * @param id - identificador do serviço a ser removido
+     * @return ResponseEntity - resposta sem conteúdo
+     */
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Remove um serviço", description = """
+            Remove o serviço com o identificador informado, desde que não tenha agendamento em AGENDADO \
+            vinculado.""")
+    @ApiResponse(responseCode = "204", description = "Serviço removido", content = @Content)
+    @ApiResponse(
+            responseCode = "400",
+            description = "Identificador não numérico",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
+            )
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Serviço não encontrado",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.SERVICO_NAO_ENCONTRADO)
+            )
+    )
+    @ApiResponse(
+            responseCode = "409",
+            description = "Serviço com agendamento em AGENDADO vinculado",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.SERVICO_COM_AGENDAMENTO_PENDENTE)
+            )
+    )
+    @ApiResponse(
+            responseCode = "500",
+            description = "Erro inesperado",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
+            )
+    )
+    public ResponseEntity<Void> deleteById(
+            @Parameter(description = "Identificador do serviço", example = "1") @PathVariable Long id
+    ) {
+        log.debug("delete servico: id={}", id);
+
+        service.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -299,59 +349,5 @@ public class ServicoController {
     ) {
         List<ServicoEntity> entities = service.findByStatus(status);
         return ResponseEntity.ok(mapper.toResponseList(entities));
-    }
-
-    /**
-     * Remove o serviço com o identificador informado.
-     *
-     * @param id - identificador do serviço a ser removido
-     * @return ResponseEntity - resposta sem conteúdo
-     */
-    @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Remove um serviço",
-            description = "Remove o serviço com o identificador informado, desde que não tenha agendamento em"
-                    + " AGENDADO vinculado."
-    )
-    @ApiResponse(responseCode = "204", description = "Serviço removido", content = @Content)
-    @ApiResponse(
-            responseCode = "400",
-            description = "Identificador não numérico",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
-            )
-    )
-    @ApiResponse(
-            responseCode = "404",
-            description = "Serviço não encontrado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.SERVICO_NAO_ENCONTRADO)
-            )
-    )
-    @ApiResponse(
-            responseCode = "409",
-            description = "Serviço com agendamento em AGENDADO vinculado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.SERVICO_COM_AGENDAMENTO_PENDENTE)
-            )
-    )
-    @ApiResponse(
-            responseCode = "500",
-            description = "Erro inesperado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
-            )
-    )
-    public ResponseEntity<Void> deleteById(
-            @Parameter(description = "Identificador do serviço", example = "1") @PathVariable Long id
-    ) {
-        log.debug("delete servico: id={}", id);
-
-        service.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 }

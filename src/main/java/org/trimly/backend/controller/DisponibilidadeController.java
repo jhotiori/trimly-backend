@@ -61,12 +61,10 @@ public class DisponibilidadeController {
      * @return ResponseEntity - resposta com a disponibilidade criada
      */
     @PostMapping
-    @Operation(
-            summary = "Cria uma disponibilidade",
-            description = "Cria uma janela de atendimento semanal. A hora de início deve ser anterior à de fim, e a"
-                    + " janela não pode se sobrepor a outra do mesmo dia da semana; janelas que apenas se tocam, como"
-                    + " 08:00-12:00 e 12:00-13:00, não conflitam."
-    )
+    @Operation(summary = "Cria uma disponibilidade", description = """
+            Cria uma janela de atendimento semanal. Início deve ser anterior ao fim, e a janela não pode se \
+            sobrepor a outra do mesmo dia; janelas que só se tocam (08:00-12:00 e 12:00-13:00) não \
+            conflitam.""")
     @ApiResponse(
             responseCode = "201",
             description = "Disponibilidade criada",
@@ -129,12 +127,10 @@ public class DisponibilidadeController {
      * @return ResponseEntity - resposta com a disponibilidade atualizada
      */
     @PatchMapping("/{id}")
-    @Operation(
-            summary = "Atualiza uma disponibilidade",
-            description = "Atualiza os campos informados. Campos nulos são ignorados; com todos nulos, devolve a"
-                    + " disponibilidade sem alterações e sem revalidar. Valem as mesmas regras da criação sobre os"
-                    + " valores resultantes, ignorando a própria disponibilidade na checagem de conflito."
-    )
+    @Operation(summary = "Atualiza uma disponibilidade", description = """
+            Atualiza os campos informados; nulos são ignorados e todos nulos é um no-op. Valem as mesmas \
+            regras da criação sobre os valores resultantes, ignorando a própria disponibilidade no \
+            conflito.""")
     @ApiResponse(
             responseCode = "200",
             description = "Disponibilidade atualizada, ou inalterada quando todos os campos são nulos",
@@ -196,6 +192,51 @@ public class DisponibilidadeController {
 
         DisponibilidadeEntity entity = service.update(id, request);
         return ResponseEntity.ok(mapper.toResponse(entity));
+    }
+
+    /**
+     * Remove a disponibilidade com o identificador informado.
+     *
+     * @param id - identificador da disponibilidade a ser removida
+     * @return ResponseEntity - resposta sem conteúdo
+     */
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Remove uma disponibilidade",
+            description = "Remove a disponibilidade com o identificador informado."
+    )
+    @ApiResponse(responseCode = "204", description = "Disponibilidade removida", content = @Content)
+    @ApiResponse(
+            responseCode = "400",
+            description = "Identificador não numérico",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
+            )
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Disponibilidade não encontrada",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_NAO_ENCONTRADA)
+            )
+    )
+    @ApiResponse(
+            responseCode = "500",
+            description = "Erro inesperado",
+            content = @Content(
+                    schema = @Schema(implementation = ErrorResponseDTO.class),
+                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
+            )
+    )
+    public ResponseEntity<Void> deleteById(
+            @Parameter(description = "Identificador da disponibilidade", example = "1") @PathVariable Long id
+    ) {
+        log.debug("delete disponibilidade: id={}", id);
+
+        service.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -276,12 +317,10 @@ public class DisponibilidadeController {
      * @return ResponseEntity - resposta com a lista de disponibilidades do dia
      */
     @GetMapping("/dia/{diaSemana}")
-    @Operation(
-            summary = "Lista disponibilidades de um dia da semana",
-            description = "Lista as janelas de atendimento do dia informado, de SEGUNDA a DOMINGO, sem diferenciar"
-                    + " maiúsculas de minúsculas. Um valor que não corresponde a nenhum dia retorna 500, e não 400:"
-                    + " a conversão do dia ainda não tem tratamento dedicado e cai no erro genérico."
-    )
+    @Operation(summary = "Lista disponibilidades de um dia da semana", description = """
+            Lista as janelas do dia informado, de SEGUNDA a DOMINGO, sem diferenciar maiúsculas de \
+            minúsculas. Um dia inválido retorna 500, não 400: a conversão ainda não tem tratamento \
+            dedicado.""")
     @ApiResponse(
             responseCode = "200",
             description = "Lista de disponibilidades do dia, possivelmente vazia",
@@ -305,50 +344,5 @@ public class DisponibilidadeController {
     ) {
         List<DisponibilidadeEntity> entities = service.findByDiaSemana(DiaSemana.fromString(diaSemana));
         return ResponseEntity.ok(mapper.toResponseList(entities));
-    }
-
-    /**
-     * Remove a disponibilidade com o identificador informado.
-     *
-     * @param id - identificador da disponibilidade a ser removida
-     * @return ResponseEntity - resposta sem conteúdo
-     */
-    @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Remove uma disponibilidade",
-            description = "Remove a disponibilidade com o identificador informado."
-    )
-    @ApiResponse(responseCode = "204", description = "Disponibilidade removida", content = @Content)
-    @ApiResponse(
-            responseCode = "400",
-            description = "Identificador não numérico",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
-            )
-    )
-    @ApiResponse(
-            responseCode = "404",
-            description = "Disponibilidade não encontrada",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_NAO_ENCONTRADA)
-            )
-    )
-    @ApiResponse(
-            responseCode = "500",
-            description = "Erro inesperado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
-            )
-    )
-    public ResponseEntity<Void> deleteById(
-            @Parameter(description = "Identificador da disponibilidade", example = "1") @PathVariable Long id
-    ) {
-        log.debug("delete disponibilidade: id={}", id);
-
-        service.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 }
