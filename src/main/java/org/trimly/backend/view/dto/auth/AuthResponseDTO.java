@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 public record AuthResponseDTO(
         @Schema(
-                description = "Token JWT assinado com HMAC256, com o e-mail como subject e o cargo como claim",
+                description = "Token JWT assinado (HMAC256); subject = e-mail, claim = cargo",
                 example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0cmltbHktYXV0aC1hcGkiLCJzdWIiOiJhZG1pbkB0cmltbHkuY29tIn0.c2lnbmF0dXJl"
         ) String token
 ) {}

@@ -112,12 +112,12 @@ public class ServicoController {
      */
     @PatchMapping("/{id}")
     @Operation(summary = "Atualiza um serviço", description = """
-            Atualiza os campos informados; nulos são ignorados e todos nulos é um no-op. Novo nome deve ser \
-            único, novo status não pode repetir o atual, e o serviço não pode ser desativado com \
+            Atualiza os campos informados; nulos são ignorados, todos nulos é no-op. Novo nome deve ser \
+            único, novo status não pode repetir o atual, e não é possível desativar serviço com \
             agendamentos futuros.""")
     @ApiResponse(
             responseCode = "200",
-            description = "Serviço atualizado, ou inalterado quando todos os campos são nulos",
+            description = "Serviço atualizado, ou inalterado se todos os campos forem nulos",
             content = @Content(schema = @Schema(implementation = ServicoResponseDTO.class))
     )
     @ApiResponse(
