@@ -62,9 +62,9 @@ public class DisponibilidadeController {
      */
     @PostMapping
     @Operation(summary = "Cria uma disponibilidade", description = """
-            Cria uma janela de atendimento semanal. Início deve ser anterior ao fim, e a janela não pode se \
-            sobrepor a outra do mesmo dia; janelas que só se tocam (08:00-12:00 e 12:00-13:00) não \
-            conflitam.""")
+            Cria uma janela de atendimento semanal. Início deve anteceder o fim; sem sobreposição com \
+            outra janela do mesmo dia (janelas que só se tocam, ex. 08:00-12:00 e 12:00-13:00, não \
+            conflitam).""")
     @ApiResponse(
             responseCode = "201",
             description = "Disponibilidade criada",
@@ -128,12 +128,11 @@ public class DisponibilidadeController {
      */
     @PatchMapping("/{id}")
     @Operation(summary = "Atualiza uma disponibilidade", description = """
-            Atualiza os campos informados; nulos são ignorados e todos nulos é um no-op. Valem as mesmas \
-            regras da criação sobre os valores resultantes, ignorando a própria disponibilidade no \
-            conflito.""")
+            Atualiza os campos informados; nulos são ignorados, todos nulos é no-op. Valem as regras da \
+            criação sobre os valores resultantes, ignorando a própria disponibilidade no conflito.""")
     @ApiResponse(
             responseCode = "200",
-            description = "Disponibilidade atualizada, ou inalterada quando todos os campos são nulos",
+            description = "Disponibilidade atualizada, ou inalterada se todos os campos forem nulos",
             content = @Content(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))
     )
     @ApiResponse(
@@ -318,9 +317,8 @@ public class DisponibilidadeController {
      */
     @GetMapping("/dia/{diaSemana}")
     @Operation(summary = "Lista disponibilidades de um dia da semana", description = """
-            Lista as janelas do dia informado, de SEGUNDA a DOMINGO, sem diferenciar maiúsculas de \
-            minúsculas. Um dia inválido retorna 500, não 400: a conversão ainda não tem tratamento \
-            dedicado.""")
+            Lista as janelas do dia informado (SEGUNDA-DOMINGO, sem diferenciar maiúsculas/minúsculas). \
+            Dia inválido retorna 500, não 400 (sem tratamento dedicado ainda).""")
     @ApiResponse(
             responseCode = "200",
             description = "Lista de disponibilidades do dia, possivelmente vazia",

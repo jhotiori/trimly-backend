@@ -114,9 +114,8 @@ public class UsuarioController {
      */
     @PostMapping("/login")
     @Operation(summary = "Autentica um usuário por credenciais", description = """
-            Confere e-mail e senha sem emitir token. Resposta é sempre 200: sucesso indica o resultado e \
-            usuario vem nulo quando as credenciais não conferem, sem indicar qual campo falhou. Nunca \
-            retorna 401.""")
+            Confere e-mail e senha sem emitir token. Sempre 200: sucesso indica o resultado, usuario vem \
+            nulo se as credenciais não conferem (sem indicar qual campo falhou). Nunca 401.""")
     @ApiResponse(
             responseCode = "200",
             description = "Resultado da autenticação; sucesso indica se as credenciais conferem",
@@ -168,12 +167,12 @@ public class UsuarioController {
      */
     @PatchMapping("/{id}")
     @Operation(summary = "Atualiza um usuário", description = """
-            Atualiza os campos informados; nulos são ignorados e todos nulos é um no-op. Novo e-mail deve \
-            ser único, nova senha (mínimo 6 caracteres) é recriptografada, novo cargo não pode repetir o \
-            atual e o único DONO cadastrado não pode perder o cargo.""")
+            Atualiza os campos informados; nulos são ignorados, todos nulos é no-op. Novo e-mail deve ser \
+            único, nova senha (mín. 6 caracteres) é recriptografada, novo cargo não pode repetir o atual, e \
+            o único DONO não pode perder o cargo.""")
     @ApiResponse(
             responseCode = "200",
-            description = "Usuário atualizado, ou inalterado quando todos os campos são nulos",
+            description = "Usuário atualizado, ou inalterado se todos os campos forem nulos",
             content = @Content(schema = @Schema(implementation = UsuarioResponseDTO.class))
     )
     @ApiResponse(

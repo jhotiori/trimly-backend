@@ -47,9 +47,9 @@ public class AuthenticationController {
      */
     @PostMapping("/register")
     @Operation(summary = "Cadastra um usuário e emite um token", description = """
-            Cria um usuário CLIENTE (mesmas regras de POST /api/usuarios) e devolve um token JWT. Fluxo \
-            independente do login de /api/usuarios/login, não usado pelo frontend hoje; nenhuma rota exige \
-            token, por isso o Swagger UI não oferece autorização.""")
+            Cria um usuário CLIENTE (mesmas regras de POST /api/usuarios) e devolve token JWT. Independente \
+            do login de /api/usuarios/login (não usado pelo frontend). Nenhuma rota exige token; por isso o \
+            Swagger UI não oferece autorização.""")
     @ApiResponse(
             responseCode = "201",
             description = "Usuário criado e token emitido",
@@ -96,9 +96,9 @@ public class AuthenticationController {
      */
     @PostMapping("/login")
     @Operation(summary = "Autentica e emite um token", description = """
-            Confere e-mail e senha e devolve um token JWT. Credenciais inválidas retornam 401 com mensagem \
-            fixa, sem indicar qual campo falhou. Fluxo independente do login de /api/usuarios/login, não \
-            usado pelo frontend hoje.""")
+            Confere e-mail e senha e devolve token JWT. Credenciais inválidas retornam 401 com mensagem \
+            fixa (sem indicar o campo). Fluxo independente do login de /api/usuarios/login, não usado pelo \
+            frontend.""")
     @ApiResponse(
             responseCode = "200",
             description = "Credenciais conferem e o token foi emitido",
