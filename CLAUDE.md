@@ -1,9 +1,8 @@
 # CLAUDE.md
 
-Trimly backend is an academic barbershop-scheduling API, built with Spring Boot.
+Academic barbershop-scheduling API, Spring Boot.
 
-Backend domain language is Portuguese (entities, DTOs, exceptions, validation
-messages); framework/technical scaffolding stays English.
+Domain language: PT-BR (entities, DTOs, exceptions, validation messages). Framework/scaffolding: English.
 - `Servico` - service
 - `Usuario` - user
 - `Agendamento` - appointment/booking
@@ -11,43 +10,32 @@ messages); framework/technical scaffolding stays English.
 
 ## Conventions
 
-- Casing: `camelCase` for methods, variables, properties; `PascalCase` for class
-  names and objects.
-- Naming: English verb (`find`, `get`, `delete`) + language-specific spec:
-  `findByNome`, `deleteByStatus`, `getByEmail`. Variables: shortest name that stays
-  descriptive (`nome`, `usuarioId`, `isAtivo`).
-- Method ordering: by action then specificity - `create` > `update` > `delete` >
-  `findAll` > `findById` > `findByX` (multi-result finders); public methods first,
-  private last. In `*Mapper` classes, each direction keeps its pair together and the
-  single conversion comes before the list one: `toEntity`, `toEntityList`, then
-  `toResponse`, `toResponseList`. `*Validator` classes are exempt: their methods follow
-  the validation-execution order documented in each class and in the business-rule
-  sections below.
-- Formatting: Spotless with the Eclipse JDT formatter (4.40) owns backend style; its
-  settings live in `eclipse-formatter.prefs` (only overridden keys, the rest are Eclipse
-  defaults). 4-space indent, 8-space continuation, 120-col wrap. Once a parameter,
-  argument, annotation-argument or array list wraps, it puts one element per line, and a
-  wrapped method/record/annotation list closes with `)` on its own line. A wrapped chain
-  keeps its first call on the receiver's line, the rest one per line. Existing line breaks
-  are joined before wrapping, so output does not depend on how the code was typed. At most
-  one blank line is kept; none right after a type's opening brace. Empty bodies stay `{}`.
-  Comments (Javadoc, block, line) are left as written. Eclipse does not order imports:
-  Spotless `importOrder` (empty order) keeps a single sorted group, `removeUnusedImports`
-  drops unused ones, no wildcard imports. Run `./mvnw spotless:apply` before committing;
-  `./mvnw verify` fails on unformatted code. To format only the files you touched, pass
-  `-DspotlessFiles=<regex>[,<regex>...]` (matched against the full file path).
+- Casing: `camelCase` (methods, vars, properties); `PascalCase` (classes, objects).
+- Naming: English verb (`find`/`get`/`delete`) + language-specific spec: `findByNome`, `deleteByStatus`,
+  `getByEmail`. Vars: shortest descriptive name (`nome`, `usuarioId`, `isAtivo`).
+- Method order: by action then specificity - `create` > `update` > `delete` > `findAll` > `findById` >
+  `findByX`; public before private. `*Mapper` classes: each direction paired, single conversion before list
+  (`toEntity`, `toEntityList`, then `toResponse`, `toResponseList`). `*Validator` exempt: methods follow each
+  class's own documented validation-execution order (see business-rule sections below).
+- Formatting: Spotless + Eclipse JDT (4.40) owns backend style; settings in `eclipse-formatter.prefs`
+  (overridden keys only, rest = Eclipse defaults). 4-space indent, 8-space continuation, 120-col wrap. Once a
+  parameter/argument/annotation-argument/array list wraps: one element per line, closing `)` on its own line. A
+  wrapped chain keeps its first call on the receiver's line, rest one per line. Existing line breaks are joined
+  before rewrap - output independent of original formatting. Max 1 blank line; none right after a type's
+  opening brace. Empty bodies: `{}`. Comments (Javadoc/block/line) left as written. Imports: Spotless
+  `importOrder` (empty order = single sorted group) + `removeUnusedImports`, no wildcards. Run
+  `./mvnw spotless:apply` before committing; `./mvnw verify` fails on unformatted code.
+  `-DspotlessFiles=<regex>[,<regex>...]` formats only matching files (full path match).
 
 ### Javadoc
 
-- No HTML tags (`<p>`, `<ul>`, `<li>`, ...). Separate paragraphs with a blank ` *`
-  line only.
-- Javadoc inline tags (`{@code ...}`, `{@link ...}`) are fine.
-- Block tags in method and type Javadoc: only `@param`, `@return`, `@throws`. No
-  `@author`, `@since`, `@see`, `@version`, etc. (field Javadoc scopes one exception
-  for `@see`, see below).
-- Language: PT-BR, in a natural, concise, direct and clear vocabulary.
-- No em-dashes or filler wording.
-- Example javadoc:
+- No HTML tags (`<p>`, `<ul>`, `<li>`...). Separate paragraphs with a blank ` *` line only.
+- Inline tags fine (`{@code ...}`, `{@link ...}`).
+- Block tags (method/type Javadoc): `@param`, `@return`, `@throws` only. No `@author`, `@since`, `@see`,
+  `@version` (field Javadoc scopes one exception for `@see`, below).
+- Language: PT-BR, natural, concise, direct, clear.
+- No em-dashes, no filler wording.
+- Example:
 ```java
 /**
  * Brief description of method.
@@ -60,14 +48,11 @@ messages); framework/technical scaffolding stays English.
 
 #### Field Javadoc
 
-- Injected collaborators (`*Service`, `*Mapper`, `*Validator`, sibling repositories,
-  `PasswordEncoder`, ...) carry a one-line PT-BR description followed by
-  `@see {@link Type}` on the next line, with no blank ` *` line between them.
-- `@see` is allowed only in field Javadoc: it is the single scoped exception to the
-  "only `@param`, `@return`, `@throws`" block-tag rule above, and never appears in
-  method or type Javadoc.
-- Self-explanatory fields (`String`, `Boolean`, numeric wrappers, primitives and
-  similar) get Javadoc, but no `@see` annotation.
+- Injected collaborators (`*Service`, `*Mapper`, `*Validator`, sibling repositories, `PasswordEncoder`...):
+  1-line PT-BR description + `@see {@link Type}` on next line, no blank ` *` line between.
+- `@see`: allowed only in field Javadoc - the sole scoped exception to the
+  `@param`/`@return`/`@throws`-only rule; never in method or type Javadoc.
+- Self-explanatory fields (`String`, `Boolean`, numeric wrappers, primitives...): Javadoc, no `@see`.
 - Example:
 ```java
 public class ExampleController {
@@ -81,10 +66,10 @@ public class ExampleController {
 
 ## Graphify
 
-Knowledge graph at `graphify-out/`. For dependency/call-graph or codebase questions,
-use `graphify query "<question>"` / `path "<A>" "<B>"` / `explain "<concept>"` before
-grep; `graphify-out/wiki/index.md` for broad navigation. Run `graphify update .` after
-code changes (AST-only, no API cost).
+Knowledge graph at `graphify-out/`. For dependency/call-graph or codebase questions, use
+`graphify query "<question>"` / `path "<A>" "<B>"` / `explain "<concept>"` before grep;
+`graphify-out/wiki/index.md` for broad navigation. Run `graphify update .` after code changes (AST-only, no
+API cost).
 
 ## Commands
 
@@ -96,169 +81,141 @@ code changes (AST-only, no API cost).
 ./mvnw spotless:check                     # check formatting (also runs in the verify phase)
 ```
 
-- The backend has no tests: `src/test` was removed. Do not add test classes unless asked.
-
+- No tests: `src/test` was removed. Don't add test classes unless asked.
 - Active profile: `spring.profiles.active` in `application.properties` (currently `develop`).
   - `develop` - H2 in-memory, H2 console at `/h2-console`, SQL logging on.
   - `production` - PostgreSQL at `localhost:5432/trimly`.
-  - Flyway owns schema creation for both profiles: migrations live under
-    `src/main/resources/db/migration`, named `V<n>__<description>.sql`. `ddl-auto=validate`
-    in both profiles, so Hibernate only checks its entity mappings against the schema
-    Flyway created - it never generates or alters schema itself. Migrations run through
-    Spring Boot's stock Flyway autoconfiguration (the `spring-boot-flyway` module, added
-    explicitly to `pom.xml` since Boot 4 no longer pulls it in transitively with
-    `flyway-core`): it runs validate then migrate at startup and makes
-    `entityManagerFactory` depend on the Flyway initializer, so Hibernate validation
-    always follows migration. Config is `spring.flyway.*` in `application.properties`
-    (`baseline-on-migrate=true`, `baseline-version=0`). `develop` H2 is in-memory, so a
-    migration edited in place simply reapplies on restart; a persisted Postgres that already
-    ran it fails checksum validation until its schema is dropped and recreated.
-- Lombok annotation processing is wired via the `maven-compiler-plugin` config in
-  `pom.xml`, not the default Lombok plugin binding.
+  - Flyway owns schema creation for both: migrations under `src/main/resources/db/migration`, named
+    `V<n>__<description>.sql`. `ddl-auto=validate` in both profiles - Hibernate only checks entity mappings
+    against the schema Flyway created, never generates/alters it. Runs through Spring Boot's stock Flyway
+    autoconfiguration (`spring-boot-flyway` module, added explicitly to `pom.xml` since Boot 4 no longer pulls
+    it in transitively with `flyway-core`): validate then migrate at startup;
+    `entityManagerFactory` depends on the Flyway initializer, so Hibernate validation always follows
+    migration. Config: `spring.flyway.*` in `application.properties` (`baseline-on-migrate=true`,
+    `baseline-version=0`). `develop` H2 is in-memory - an edited migration simply reapplies on restart; a
+    persisted Postgres that already ran it fails checksum validation until its schema is dropped/recreated.
+- Lombok annotation processing: wired via `maven-compiler-plugin` config in `pom.xml`, not the default Lombok
+  plugin binding.
 
 ## Architecture
 
-Code is grouped into three tiers under `org.trimly.backend`: `model/`, `view/`, and
-`controller/`. Within `model/` there is one layered structure per domain module
-(`servico`, `usuario`, `agendamento`, `disponibilidade`); all four share the same
-shape, so read one to understand the rest. `auth` is a fifth, deliberately partial
-module: it is orchestration only (`AuthenticationService`, `TokenService`), with no
-entity, repository, or validator of its own - it drives `usuario` and mints JWTs.
+3 tiers under `org.trimly.backend`: `model/`, `view/`, `controller/`. `model/`: one layered structure per
+domain module (`servico`, `usuario`, `agendamento`, `disponibilidade`) - all share the same shape, read one to
+understand the rest. `auth` = 5th, deliberately partial module: orchestration only (`AuthenticationService`,
+`TokenService`), no entity/repository/validator of its own - drives `usuario`, mints JWTs.
 
-- `model/entity/` - JPA entities (`*Entity`); enums under `model/entity/enums/`, named
-  `<Entity><Aspect>` (`UsuarioCargo`, `AgendamentoStatus`, `ServicoStatus`; `DiaSemana`
-  is a calendar primitive, not entity-scoped).
-- `model/repository/` - Spring Data JPA interfaces (plus `AgendamentoSpecification`).
-- `model/service/<domain>/` - one folder per domain (`servico`, `usuario`, `agendamento`,
-  `disponibilidade`, plus `auth`), each holding that domain's `*Service` and its
-  `*Validator`. Services carry the business logic and orchestration and call each other
-  directly (e.g. `AgendamentoService` -> `UsuarioService`, `ServicoService`,
-  `DisponibilidadeService`; `AuthenticationService` -> `UsuarioService`), not via
-  controllers. `*Validator` `@Component`s hold the validation rules a service applies
-  (e.g. `AgendamentoValidator`) and depend on repositories, not on sibling services, to
-  avoid bean cycles. `auth` has no validator.
-- `model/exception/` - `TrimlyException` (a `RuntimeException`), `EntityNotFoundException`,
-  the `<module>/` domain exceptions, and `handlers/` (see below). `auth/` sits apart:
-  `AuthException` extends `RuntimeException` directly, not `TrimlyException`, so auth
-  failures never fall into the domain 404/409/422 groups.
-- `view/dto/<module>/` - `*CreateDTO`, `*UpdateDTO`, `*ResponseDTO`, `*Filter`, plus
-  `view/dto/exception/ErrorResponseDTO` and `view/dto/auth/` (`AuthLoginRequestDTO`,
-  `AuthResponseDTO`; registration reuses `UsuarioCreateDTO`). Update DTOs use nullable
-  fields for PATCH semantics; services apply only non-null/non-blank fields onto the
-  existing entity (see `ServicoService.update`). All DTOs and entities carry `@Builder`.
-- `view/mapper/` - the four `*Mapper` `@Component`s that hand-convert entity <-> DTO (no
-  MapStruct), in one flat package.
-- `controller/` - thin `@RestController`s under `/api/<resource>`, delegating straight
-  to the matching service. All four domain modules have a controller, plus
-  `AuthenticationController` at `/api/auth` (`POST /register`, `POST /login`).
-- `config/` stays at the repository root; `config/security/` holds the Spring Security
-  wiring (`SecurityConfig`, `SecurityFilter`, `CorsConfig`, `PasswordConfig`).
+- `model/entity/` - JPA entities (`*Entity`); enums under `model/entity/enums/`, named `<Entity><Aspect>`
+  (`UsuarioCargo`, `AgendamentoStatus`, `ServicoStatus`; `DiaSemana` = calendar primitive, not entity-scoped).
+- `model/repository/` - Spring Data JPA interfaces (+ `AgendamentoSpecification`).
+- `model/service/<domain>/` - one folder per domain (`servico`, `usuario`, `agendamento`, `disponibilidade`,
+  `auth`), each holding that domain's `*Service` + `*Validator`. Services carry business logic/orchestration,
+  call each other directly (`AgendamentoService` -> `UsuarioService`, `ServicoService`,
+  `DisponibilidadeService`; `AuthenticationService` -> `UsuarioService`), not via controllers. `*Validator`
+  `@Component`s hold validation rules a service applies (`AgendamentoValidator`), depend on repositories not
+  sibling services (avoids bean cycles). `auth` has no validator.
+- `model/exception/` - `TrimlyException` (`RuntimeException`), `EntityNotFoundException`, `<module>/` domain
+  exceptions, `handlers/` (below). `auth/` sits apart: `AuthException` extends `RuntimeException` directly, not
+  `TrimlyException` - auth failures never fall into the domain 404/409/422 groups.
+- `view/dto/<module>/` - `*CreateDTO`, `*UpdateDTO`, `*ResponseDTO`, `*Filter`, + `view/dto/exception/ErrorResponseDTO`,
+  `view/dto/auth/` (`AuthLoginRequestDTO`, `AuthResponseDTO`; registration reuses `UsuarioCreateDTO`). Update
+  DTOs: nullable fields for PATCH semantics; services apply only non-null/non-blank fields onto the existing
+  entity (see `ServicoService.update`). All DTOs/entities: `@Builder`.
+- `view/mapper/` - the 4 `*Mapper` `@Component`s, hand-convert entity <-> DTO (no MapStruct), one flat package.
+- `controller/` - thin `@RestController`s under `/api/<resource>`, delegate straight to the matching service.
+  All 4 domain modules have a controller, + `AuthenticationController` at `/api/auth`
+  (`POST /register`, `POST /login`).
+- `config/` at repo root; `config/security/` - Spring Security wiring (`SecurityConfig`, `SecurityFilter`,
+  `CorsConfig`, `PasswordConfig`).
 
-## Exception to HTTP status
+## Exception -> HTTP status
 
-Three `@RestControllerAdvice` classes under `model/exception/handlers/`, all returning an
-`ErrorResponseDTO` (`status`, `error`, `message`) and logging the full exception
-server-side (domain and auth at `WARN`, unexpected at `ERROR`):
+3 `@RestControllerAdvice` classes under `model/exception/handlers/`, all return `ErrorResponseDTO` (`status`,
+`error`, `message`), log the full exception server-side (domain/auth: `WARN`, unexpected: `ERROR`):
 
-- `AuthenticationExceptionHandler` (`@Order(HIGHEST_PRECEDENCE)`) maps the `AuthException`
-  family -> 401 with a fixed message that does not say whether it was the e-mail or the
-  password.
-- `DomainExceptionHandler` maps the `TrimlyException` family by class, via grouped
-  `@ExceptionHandler` methods (no status field on the exceptions, no class->status map):
+- `AuthenticationExceptionHandler` (`@Order(HIGHEST_PRECEDENCE)`): `AuthException` family -> 401, fixed
+  message (doesn't reveal whether it was the e-mail or the password).
+- `DomainExceptionHandler`: `TrimlyException` family by class, grouped `@ExceptionHandler` methods (no status
+  field on the exceptions, no class->status map):
   - `EntityNotFoundException` -> 404
   - `AgendamentoConflitoException`, `AgendamentoFeriadoException`, `DisponibilidadeConflitoException`,
-    `ServicoNomeDuplicadoException`, `UsuarioEmailExistenteException`,
-    `ServicoComAgendamentoPendenteException`, `UsuarioComAgendamentoPendenteException` -> 409
+    `ServicoNomeDuplicadoException`, `UsuarioEmailExistenteException`, `ServicoComAgendamentoPendenteException`,
+    `UsuarioComAgendamentoPendenteException` -> 409
   - every other `TrimlyException` -> 422
-- `GlobalExceptionHandler` is the fallback: any non-domain `Exception` -> 500 with a
-  fixed generic message.
-- A new domain exception inherits 422 by default; it needs to be added to a group only to
-  return 404 or 409. A new auth exception extends `AuthException` and is 401 with no
-  further wiring.
-- Invalid/expired JWTs thrown inside `SecurityFilter` do not reach any handler (filters
-  run before the `DispatcherServlet`); the filter currently swallows them and continues
-  anonymous. Routing filter failures to a 401 response is deferred with the rest of
-  authorization enforcement.
-- Thrown domain-exception messages carry no interpolated values (no id, e-mail, name, or
-  enum value); they are fixed strings. Server logs keep the full original detail.
+- `GlobalExceptionHandler` - fallback: any non-domain `Exception` -> 500, fixed generic message.
+- A new domain exception defaults to 422; add to a group only to return 404/409. A new auth exception extends
+  `AuthException` -> 401, no further wiring.
+- Invalid/expired JWTs thrown inside `SecurityFilter` never reach a handler (filters run before the
+  `DispatcherServlet`) - the filter currently swallows them, continues anonymous. Routing filter failures to a
+  401 is deferred with the rest of authorization enforcement.
+- Domain-exception messages carry no interpolated values (id/e-mail/name/enum) - fixed strings. Server logs
+  keep the full detail.
 
 ## Security
 
-Stateless JWT, hand-rolled (no `spring-security-oauth2-resource-server` - the starter is
-on the classpath but unused; the manual filter approach was chosen instead).
+Stateless JWT, hand-rolled (no `spring-security-oauth2-resource-server` - starter on classpath but unused;
+manual filter approach chosen instead).
 
-- `TokenService` (`model/service/auth/`) mints and verifies tokens with `com.auth0:java-jwt`
-  (HMAC256). Subject = e-mail, plus a `cargo` claim; issuer `trimly-auth-api`; expiry from
-  `trimly.security.jwt.expiration` seconds. Secret from `trimly.security.jwt.secret`
-  (env `JWT_SECRET`, with a dev fallback).
-- `AuthenticationService` (`model/service/auth/`): `register` delegates to
-  `UsuarioService.create` (keeps e-mail uniqueness, BCrypt, `cargo = CLIENTE`) then mints a
-  token; `login` loads by e-mail and checks the password with `PasswordEncoder.matches`
-  directly - no `AuthenticationManager`, no `UserDetailsService` bean.
-- `SecurityFilter` (`config/security/`, plain class, `new`ed in `SecurityConfig` - not a
-  `@Component`, to avoid double registration) reads the `Bearer` token, resolves the
-  `UsuarioEntity`, and populates the `SecurityContext`. `UsuarioEntity implements
-  UserDetails` for now; `getAuthorities()` returns the `cargo` name prefixed with `ROLE_`.
-- `SecurityConfig` disables CSRF, is `STATELESS`, and still `permitAll()` on every
-  request - authorization is not enforced yet. Locking it down, role checks, and turning
-  filter/login failures into real 401/403 responses are the deferred next step.
-- `PasswordConfig` - the BCrypt `PasswordEncoder` bean. `CorsConfig` - allows the
-  frontend origin (`EndpointConfig.FRONTEND_ENDPOINT`).
-- The frontend does not use the JWT stack at all. It registers through
-  `POST /api/usuarios` and signs in through `POST /api/usuarios/login`, which always answers
-  `200` with `{ sucesso, usuario }` - never `401` - backed by the non-throwing
-  `UsuarioService.findByCredenciais` (an unknown e-mail or a wrong password is
-  `Optional.empty()`, so no `@RestControllerAdvice` runs for a login mismatch). The password
-  comparison stays in the service; the controller only branches on the `Optional`.
-- First `ADMIN` is seeded by Flyway (`V2__seed_admin_user.sql`, `admin@trimly.com` /
-  `admin123`). `POST /api/usuarios` always creates a `CLIENTE`, so `ADMIN`/`DONO` accounts
-  stay seed- or DB-only until an admin-gated endpoint exists.
-- `V3__seed_base_entities.sql` seeds a local dataset: 3 `CLIENTE` users (password `123456`),
-  5 `ATIVO` serviços, and disponibilidades `SEGUNDA`-`QUINTA` 07h-12h/13h-18h and `SEXTA`
-  09h-12h/13h-16h. No agendamentos, no `DONO`. Every insert is guarded by `WHERE NOT EXISTS`.
+- `TokenService` (`model/service/auth/`): mints/verifies tokens with `com.auth0:java-jwt` (HMAC256). Subject =
+  e-mail + `cargo` claim; issuer `trimly-auth-api`; expiry from `trimly.security.jwt.expiration` (seconds).
+  Secret: `trimly.security.jwt.secret` (env `JWT_SECRET`, dev fallback).
+- `AuthenticationService` (`model/service/auth/`): `register` -> `UsuarioService.create` (e-mail uniqueness,
+  BCrypt, `cargo = CLIENTE`) then mints token; `login` loads by e-mail, checks password via
+  `PasswordEncoder.matches` directly - no `AuthenticationManager`, no `UserDetailsService` bean.
+- `SecurityFilter` (`config/security/`, plain class, `new`ed in `SecurityConfig` - not `@Component`, avoids
+  double registration): reads the `Bearer` token, resolves `UsuarioEntity`, populates `SecurityContext`.
+  `UsuarioEntity implements UserDetails` for now; `getAuthorities()` = `cargo` name prefixed `ROLE_`.
+- `SecurityConfig`: CSRF disabled, `STATELESS`, still `permitAll()` on every request - authorization not
+  enforced yet. Locking it down, role checks, and turning filter/login failures into real 401/403: deferred
+  next step.
+- `PasswordConfig` - BCrypt `PasswordEncoder` bean. `CorsConfig` - allows the frontend origin
+  (`EndpointConfig.FRONTEND_ENDPOINT`).
+- Frontend doesn't use the JWT stack: registers via `POST /api/usuarios`, signs in via
+  `POST /api/usuarios/login` - always `200` with `{ sucesso, usuario }`, never `401` (backed by the
+  non-throwing `UsuarioService.findByCredenciais`: unknown e-mail or wrong password = `Optional.empty()`, no
+  `@RestControllerAdvice` runs). Password comparison stays in the service; controller only branches on the
+  `Optional`.
+- First `ADMIN` seeded by Flyway (`V2__seed_admin_user.sql`, `admin@trimly.com` / `admin123`).
+  `POST /api/usuarios` always creates `CLIENTE` - `ADMIN`/`DONO` stay seed-/DB-only until an admin-gated
+  endpoint exists.
+- `V3__seed_base_entities.sql`: local dataset - 3 `CLIENTE` users (password `123456`), 5 `ATIVO` serviços,
+  disponibilidades `SEGUNDA`-`QUINTA` 07h-12h/13h-18h + `SEXTA` 09h-12h/13h-16h. No agendamentos, no `DONO`.
+  Every insert guarded by `WHERE NOT EXISTS`.
 - `UsuarioCargo`: `CLIENTE`, `ADMIN`, `DONO`.
 
 ## Agendamento (booking) business rules
 
-Rules live in `AgendamentoValidator`. Preserve the validation order and the distinct
-exception types - callers depend on which one is thrown.
+Rules in `AgendamentoValidator`. Preserve validation order + distinct exception types - callers depend on
+which one is thrown.
 
-End time = `data` + `Servico.duracao` minutes (`calculateFimAgendamento`).
+End time = `data` + `Servico.duracao` min (`calculateFimAgendamento`).
 
-`create` and `update` both run, in order:
-1. `validateIsFeriado` - the start date must not match a national holiday returned by
-   BrasilAPI (`FeriadosClient.listarPorAno`, one call per request), else
-   `AgendamentoFeriadoException` (409). It runs before every other check, so a holiday
-   is reported even when the date is also past the 14-day window.
-2. `validateHorarioFuturo` - start and end must fall on the same calendar day, else
+`create`/`update` both run, in order:
+1. `validateIsFeriado` - start date must not match a national holiday (BrasilAPI,
+   `FeriadosClient.listarPorAno`, 1 call/request), else `AgendamentoFeriadoException` (409). Runs before every
+   other check, so a holiday is reported even when the date is also past the 14-day window.
+2. `validateHorarioFuturo` - start/end must fall on the same calendar day, else
    `AgendamentoForaDoHorarioException`.
-3. `validateLimiteAntecedencia` - start must not be after `LocalDateTime.now().plusDays(14)`
-   (exactly 14 days ahead is accepted), else `AgendamentoAntecedenciaExcedidaException` (422).
-4. `validateDisponibilidade` - the day of week must have a `Disponibilidade`, and the
-   booking must fit fully inside one of its windows, else
-   `AgendamentoSemDisponibilidadeException`.
-5. `validateConflitoDeHorario` - no interval overlap with other `AGENDADO` bookings the
-   same day, else `AgendamentoConflitoException`. On `update` the booking's own id is
-   passed so it is skipped; on `create` it is `null`.
+3. `validateLimiteAntecedencia` - start must not be after `LocalDateTime.now().plusDays(14)` (exactly 14 days
+   ahead = accepted), else `AgendamentoAntecedenciaExcedidaException` (422).
+4. `validateDisponibilidade` - day of week must have a `Disponibilidade`, booking must fit fully inside one of
+   its windows, else `AgendamentoSemDisponibilidadeException`.
+5. `validateConflitoDeHorario` - no interval overlap with other `AGENDADO` bookings same day, else
+   `AgendamentoConflitoException`. `update`: booking's own id passed (skipped); `create`: `null`.
 
-`update` applies `data`, `servicoId`, and `status` (from `AgendamentoUpdateDTO`). An
-update request with every field null is a no-op: the unchanged booking is returned with
-`200`, no write, no re-validation. Otherwise `update` first runs
-`validateStatusUpdate(entity, dto.status)` (throws `AgendamentoStatusException`): the
-booking must be in `AGENDADO` to be modified at all, and when `status` is present it may
-not equal the current status. `AGENDADO` is the only non-terminal status; from it
-`status` may move to `CANCELADO`, `CONCLUIDO`, or `AUSENTE`, all terminal.
+`update` applies `data`, `servicoId`, `status` (`AgendamentoUpdateDTO`). All-null request = no-op: unchanged
+booking returned `200`, no write, no re-validation. Otherwise first runs `validateStatusUpdate(entity, dto.status)`
+(throws `AgendamentoStatusException`): booking must be `AGENDADO` to be modified at all, and if `status` is
+present it may not equal the current status. `AGENDADO` = only non-terminal status; from it, `status` may move
+to `CANCELADO`, `CONCLUIDO`, or `AUSENTE`, all terminal.
 
 ## Disponibilidade (availability) business rules
 
-Rules live in `DisponibilidadeValidator`. `create` and `update` both run, in order:
-1. `validateHorarios` - `horaInicio` must be before `horaFim`, else
-   `DisponibilidadeHorarioInvalidoException`.
-2. `validateConflitoDeHorario` - no overlap with another `Disponibilidade` on the same
-   `diaSemana`, else `DisponibilidadeConflitoException` (409). Same half-open interval check
-   as Agendamento, so touching windows (`08:00-12:00` and `12:00-13:00`) do not conflict. On
-   `update` the entity's own id is passed so it is skipped; on `create` it is `null`. The
-   scope is the whole day because a `Disponibilidade` has no owner; it is an
-   application-level check with no DB constraint behind it.
+Rules in `DisponibilidadeValidator`. `create`/`update` both run, in order:
+1. `validateHorarios` - `horaInicio` must be before `horaFim`, else `DisponibilidadeHorarioInvalidoException`.
+2. `validateConflitoDeHorario` - no overlap with another `Disponibilidade` on the same `diaSemana`, else
+   `DisponibilidadeConflitoException` (409). Same half-open interval check as Agendamento, so touching windows
+   (`08:00-12:00`/`12:00-13:00`) don't conflict. `update`: entity's own id passed (skipped); `create`: `null`.
+   Scope = whole day, since a `Disponibilidade` has no owner - an application-level check, no DB constraint
+   behind it.
 
-An `update` request with every field null is a no-op: no write, no re-validation.
+An `update` request with every field null = no-op: no write, no re-validation.

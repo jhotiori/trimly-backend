@@ -1,10 +1,18 @@
 package org.trimly.backend.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
-
-import jakarta.validation.Valid;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,17 +35,6 @@ import org.trimly.backend.view.dto.agendamento.AgendamentoResponseDTO;
 import org.trimly.backend.view.dto.agendamento.AgendamentoUpdateDTO;
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 import org.trimly.backend.view.mapper.AgendamentoMapper;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Controller para agendamentos, com base em {@code /api/agendamentos}.
@@ -68,11 +65,10 @@ public class AgendamentoController {
      */
     @PostMapping
     @Operation(summary = "Cria um agendamento", description = """
-            Cria um agendamento em AGENDADO para o usuário e o serviço informados, com fim calculado pela \
-            duração do serviço. As regras são: início no futuro, início e fim no mesmo dia, início em no \
-            máximo 14 dias, uma janela de disponibilidade que comporte todo o horário e nenhuma \
-            sobreposição com outro agendamento em AGENDADO. Uma data anterior a hoje é barrada pela \
-            validação do corpo (400); hoje com horário já passado retorna 422.""")
+            Cria um agendamento em AGENDADO para o usuário e serviço informados; fim = início + duração do \
+            serviço. Regras: início no futuro, início e fim no mesmo dia, início em até 14 dias, \
+            disponibilidade que cubra todo o horário, sem sobreposição com outro AGENDADO. Data passada é \
+            barrada no corpo (400); hoje com horário já passado retorna 422.""")
     @ApiResponse(
             responseCode = "201",
             description = "Agendamento criado",
@@ -112,8 +108,8 @@ public class AgendamentoController {
     @ApiResponse(
             responseCode = "422",
             description = """
-                    Início no passado, agendamento que atravessa a meia-noite, início além de 14 dias de \
-                    antecedência ou sem disponibilidade no horário""",
+                    Início no passado, agendamento atravessando a meia-noite, mais de 14 dias de antecedência ou \
+                    sem disponibilidade no horário""",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -166,13 +162,13 @@ public class AgendamentoController {
      */
     @PatchMapping("/{id}")
     @Operation(summary = "Atualiza um agendamento", description = """
-            Atualiza data, status e/ou serviço; campos nulos são ignorados e todos nulos é um no-op. Só \
-            agendamentos em AGENDADO podem ser alterados, e o novo status não pode repetir o atual. Valem \
-            as mesmas regras de horário, antecedência, disponibilidade e conflito da criação, ignorando o \
-            próprio agendamento no conflito.""")
+            Atualiza data, status e/ou serviço; nulos são ignorados, todos nulos é no-op. Só AGENDADO pode \
+            ser alterado, e o novo status não pode repetir o atual. Valem as regras de horário, \
+            antecedência, disponibilidade e conflito da criação, ignorando o próprio agendamento no \
+            conflito.""")
     @ApiResponse(
             responseCode = "200",
-            description = "Agendamento atualizado, ou inalterado quando todos os campos são nulos",
+            description = "Agendamento atualizado, ou inalterado se todos os campos forem nulos",
             content = @Content(schema = @Schema(implementation = AgendamentoResponseDTO.class))
     )
     @ApiResponse(
@@ -210,7 +206,7 @@ public class AgendamentoController {
     @ApiResponse(
             responseCode = "422",
             description = """
-                    Status que não permite alteração, status repetido ou regra de horário, antecedência e \
+                    Status inalterável, status repetido, ou regra de horário, antecedência ou \
                     disponibilidade violada""",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
@@ -328,7 +324,7 @@ public class AgendamentoController {
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Filtro com valor inválido, como status fora do enum ou data fora do formato yyyy-MM-dd",
+            description = "Filtro inválido: status fora do enum ou data fora do formato yyyy-MM-dd",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
