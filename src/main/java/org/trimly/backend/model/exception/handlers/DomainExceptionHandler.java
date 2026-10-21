@@ -17,22 +17,16 @@ import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 
 /**
- * Traduz a família {@code TrimlyException} em um status HTTP significativo.
- *
- * O mapeamento é feito por classe, sem campo de status na exceção nem mapa
- * classe-para-status: {@link EntityNotFoundException} vira {@code 404}, os conflitos
- * de unicidade e de horário viram {@code 409}, e qualquer outra
- * {@link TrimlyException} cai no {@code 422}. Um novo subtipo herda o {@code 422}
- * por padrão e só precisa entrar em um grupo para ser {@code 404} ou {@code 409}.
+ * Traduz `TrimlyException` em `404`, `409` ou `422` por classe; novos subtipos herdam `422`.
  */
 @Slf4j
 @RestControllerAdvice
 public class DomainExceptionHandler {
     /**
-     * Mapeia a entidade não encontrada para {@code 404}.
+     * Mapeia a entidade não encontrada para `404`.
      *
      * @param exception - falha de entidade inexistente
-     * @return ResponseEntity - resposta {@code 404} com o corpo de erro
+     * @return ResponseEntity - resposta `404` com o corpo de erro
      */
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleNotFound(EntityNotFoundException exception) {
@@ -40,10 +34,10 @@ public class DomainExceptionHandler {
     }
 
     /**
-     * Mapeia os conflitos de unicidade e de agendamento pendente para {@code 409}.
+     * Mapeia os conflitos de unicidade e de agendamento pendente para `409`.
      *
-     * @param exception - falha de conflito da família {@code TrimlyException}
-     * @return ResponseEntity - resposta {@code 409} com o corpo de erro
+     * @param exception - falha de conflito da família `TrimlyException`
+     * @return ResponseEntity - resposta `409` com o corpo de erro
      */
     @ExceptionHandler(
         {
@@ -60,10 +54,10 @@ public class DomainExceptionHandler {
     }
 
     /**
-     * Mapeia qualquer outra {@link TrimlyException} para {@code 422}.
+     * Mapeia qualquer outra {@link TrimlyException} para `422`.
      *
      * @param exception - falha de regra de domínio sem grupo específico
-     * @return ResponseEntity - resposta {@code 422} com o corpo de erro
+     * @return ResponseEntity - resposta `422` com o corpo de erro
      */
     @ExceptionHandler(TrimlyException.class)
     public ResponseEntity<ErrorResponseDTO> handleRegraDeDominio(TrimlyException exception) {
@@ -80,12 +74,6 @@ public class DomainExceptionHandler {
     private ResponseEntity<ErrorResponseDTO> build(HttpStatus status, TrimlyException exception) {
         log.warn("domain error: {}", exception.getMessage(), exception);
 
-        ErrorResponseDTO response = new ErrorResponseDTO(
-                status.value(),
-                status.getReasonPhrase(),
-                exception.getMessage()
-        );
-
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(status).body(ErrorResponseDTO.of(status, exception.getMessage()));
     }
 }

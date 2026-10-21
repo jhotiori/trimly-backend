@@ -15,10 +15,7 @@ import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
 public record DisponibilidadeResponseDTO(
         @Schema(description = "Identificador da disponibilidade", example = "1") Long id,
 
-        @Schema(
-                description = "Dia da semana em que a janela de atendimento se repete",
-                example = "SEGUNDA"
-        ) DiaSemana diaSemana,
+        @Schema(description = "Dia da semana da janela", example = "SEGUNDA") DiaSemana diaSemana,
 
         @Schema(description = "Início da janela", example = "07:00:00") LocalTime horaInicio,
 

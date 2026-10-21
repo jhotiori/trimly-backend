@@ -4,12 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
 
 /**
- * Representação de resposta de um usuário. Não expõe a senha.
- *
- * @param id - identificador do usuário
- * @param nome - nome do usuário
- * @param email - e-mail do usuário
- * @param cargo - cargo atual do usuário
+ * Resposta de um usuário, sem a senha.
  */
 public record UsuarioResponseDTO(
         @Schema(description = "Identificador do usuário", example = "1") Long id,

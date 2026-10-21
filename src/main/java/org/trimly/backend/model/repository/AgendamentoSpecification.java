@@ -9,10 +9,11 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.view.dto.agendamento.AgendamentoFilter;
 
 /**
- * Monta a {@link Specification} que consulta {@link AgendamentoEntity} a partir dos campos preenchidos
- * de um {@link AgendamentoFilter}.
+ * Monta a {@link Specification} de {@link AgendamentoEntity} a partir de um {@link AgendamentoFilter}.
  */
-public class AgendamentoSpecification {
+public final class AgendamentoSpecification {
+    private AgendamentoSpecification() {}
+
     /**
      * Monta uma especificação que aplica apenas os filtros preenchidos.
      *

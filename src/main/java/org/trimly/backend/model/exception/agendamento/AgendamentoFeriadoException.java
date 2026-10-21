@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.agendamento;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza que a data selecionada coincide com um feriado nacional.
+ * Data do agendamento é feriado nacional.
  */
-public class AgendamentoFeriadoException extends AgendamentoException {
+public class AgendamentoFeriadoException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

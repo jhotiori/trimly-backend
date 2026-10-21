@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.agendamento;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza que o agendamento ultrapassa o limite de um dia, com início e fim em datas diferentes.
+ * Agendamento com início e fim em dias diferentes.
  */
-public class AgendamentoForaDoHorarioException extends AgendamentoException {
+public class AgendamentoForaDoHorarioException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

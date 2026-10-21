@@ -1,8 +1,7 @@
 package org.trimly.backend.model.entity.usuario;
 
 /**
- * Cargo de um usuário, que define seu nível de acesso. {@code CLIENTE} agenda os próprios serviços;
- * {@code ADMIN} e {@code DONO} administram a barbearia.
+ * Cargo do usuário, que define seu nível de acesso.
  */
 public enum UsuarioCargo {
     CLIENTE, ADMIN, DONO

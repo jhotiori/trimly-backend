@@ -37,7 +37,7 @@ import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 import org.trimly.backend.view.mapper.AgendamentoMapper;
 
 /**
- * Controller para agendamentos, com base em {@code /api/agendamentos}.
+ * Controller de agendamentos, em `/api/agendamentos`.
  */
 @Slf4j
 @RestController
@@ -64,11 +64,10 @@ public class AgendamentoController {
      * @return ResponseEntity - resposta com o agendamento criado
      */
     @PostMapping
-    @Operation(summary = "Cria um agendamento", description = """
-            Cria um agendamento em AGENDADO para o usuário e serviço informados; fim = início + duração do \
-            serviço. Regras: início no futuro, início e fim no mesmo dia, início em até 14 dias, \
-            disponibilidade que cubra todo o horário, sem sobreposição com outro AGENDADO. Data passada é \
-            barrada no corpo (400); hoje com horário já passado retorna 422.""")
+    @Operation(
+            summary = "Cria um agendamento",
+            description = "Cria em AGENDADO; valida horário, antecedência de 14 dias, disponibilidade e conflito."
+    )
     @ApiResponse(
             responseCode = "201",
             description = "Agendamento criado",
@@ -76,7 +75,7 @@ public class AgendamentoController {
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo ausente, mal formatado ou com campos inválidos; message reúne as mensagens de validação",
+            description = "Corpo ausente, mal formatado ou inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -99,7 +98,7 @@ public class AgendamentoController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "Horário sobreposto a outro agendamento em AGENDADO",
+            description = "Conflito com outro AGENDADO",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.AGENDAMENTO_CONFLITO)
@@ -107,9 +106,7 @@ public class AgendamentoController {
     )
     @ApiResponse(
             responseCode = "422",
-            description = """
-                    Início no passado, agendamento atravessando a meia-noite, mais de 14 dias de antecedência ou \
-                    sem disponibilidade no horário""",
+            description = "Passado, virada de dia, antecedência acima de 14 dias ou sem disponibilidade",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -161,19 +158,18 @@ public class AgendamentoController {
      * @return ResponseEntity - resposta com o agendamento atualizado
      */
     @PatchMapping("/{id}")
-    @Operation(summary = "Atualiza um agendamento", description = """
-            Atualiza data, status e/ou serviço; nulos são ignorados, todos nulos é no-op. Só AGENDADO pode \
-            ser alterado, e o novo status não pode repetir o atual. Valem as regras de horário, \
-            antecedência, disponibilidade e conflito da criação, ignorando o próprio agendamento no \
-            conflito.""")
+    @Operation(
+            summary = "Atualiza um agendamento",
+            description = "Nulos ignorados. Só AGENDADO é alterável; valem as regras de horário da criação."
+    )
     @ApiResponse(
             responseCode = "200",
-            description = "Agendamento atualizado, ou inalterado se todos os campos forem nulos",
+            description = "Agendamento atualizado (inalterado se tudo nulo)",
             content = @Content(schema = @Schema(implementation = AgendamentoResponseDTO.class))
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo mal formatado, campos inválidos ou identificador não numérico",
+            description = "Corpo, campos ou identificador inválidos",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -197,7 +193,7 @@ public class AgendamentoController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "Novo horário sobreposto a outro agendamento em AGENDADO",
+            description = "Conflito com outro AGENDADO",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.AGENDAMENTO_CONFLITO)
@@ -205,9 +201,7 @@ public class AgendamentoController {
     )
     @ApiResponse(
             responseCode = "422",
-            description = """
-                    Status inalterável, status repetido, ou regra de horário, antecedência ou \
-                    disponibilidade violada""",
+            description = "Status inalterável ou repetido, ou regra de horário violada",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -269,7 +263,7 @@ public class AgendamentoController {
      * @return ResponseEntity - resposta sem conteúdo
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Remove um agendamento", description = "Remove o agendamento com o identificador informado.")
+    @Operation(summary = "Remove um agendamento")
     @ApiResponse(responseCode = "204", description = "Agendamento removido", content = @Content)
     @ApiResponse(
             responseCode = "400",
@@ -314,17 +308,18 @@ public class AgendamentoController {
      * @return ResponseEntity - resposta com a lista de agendamentos
      */
     @GetMapping
-    @Operation(summary = "Lista agendamentos", description = """
-            Lista os agendamentos, combinando os filtros opcionais informados. Sem filtros, devolve todos; \
-            sem correspondência, devolve uma lista vazia.""")
+    @Operation(
+            summary = "Lista agendamentos",
+            description = "Filtros opcionais combinados; sem correspondência, lista vazia."
+    )
     @ApiResponse(
             responseCode = "200",
-            description = "Lista de agendamentos, possivelmente vazia",
+            description = "Lista de agendamentos",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = AgendamentoResponseDTO.class)))
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Filtro inválido: status fora do enum ou data fora do formato yyyy-MM-dd",
+            description = "Status ou data (yyyy-MM-dd) inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)
@@ -365,7 +360,7 @@ public class AgendamentoController {
      * @return ResponseEntity - resposta com o agendamento encontrado
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Busca um agendamento", description = "Busca um agendamento pelo identificador.")
+    @Operation(summary = "Busca um agendamento")
     @ApiResponse(
             responseCode = "200",
             description = "Agendamento encontrado",

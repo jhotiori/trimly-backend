@@ -21,7 +21,7 @@ import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
 
 /**
- * Agendamento de um serviço por um usuário em uma data e hora, com duração fixada e status de ciclo de vida.
+ * Agendamento de um serviço por um usuário.
  */
 @Getter
 @Setter

@@ -1,16 +1,12 @@
 package org.trimly.backend.config.openapi;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-
 /**
- * Metadados do documento OpenAPI exibido pelo Swagger UI em {@code /swagger-ui.html}.
- *
- * Não declara esquema de segurança de propósito: nenhuma rota exige autenticação hoje, então o
- * Swagger UI não oferece autorização por token.
+ * Metadados do OpenAPI exibido em `/swagger-ui.html`, sem esquema de segurança.
  */
 @Configuration
 public class OpenApiConfig {
@@ -21,8 +17,7 @@ public class OpenApiConfig {
      */
     @Bean
     public OpenAPI openApi() {
-        return new OpenAPI().info(new Info().title("API Trimly").description("""
-                API de agendamentos da barbearia Trimly: usuários, serviços, disponibilidades e \
-                agendamentos.""").version("0.0.1"));
+        return new OpenAPI()
+                .info(new Info().title("API Trimly").description("Agendamentos da barbearia Trimly").version("0.0.1"));
     }
 }

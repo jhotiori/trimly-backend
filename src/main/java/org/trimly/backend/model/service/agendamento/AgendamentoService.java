@@ -1,21 +1,21 @@
 package org.trimly.backend.model.service.agendamento;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
+import java.util.Objects;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
-import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
 import org.trimly.backend.model.exception.EntityNotFoundException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoAntecedenciaExcedidaException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
-import org.trimly.backend.model.exception.agendamento.AgendamentoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoForaDoHorarioException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoSemDisponibilidadeException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoStatusException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.AgendamentoSpecification;
 import org.trimly.backend.model.service.servico.ServicoService;
@@ -25,13 +25,8 @@ import org.trimly.backend.view.dto.agendamento.AgendamentoFilter;
 import org.trimly.backend.view.dto.agendamento.AgendamentoUpdateDTO;
 import org.trimly.backend.view.mapper.AgendamentoMapper;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 /**
- * Serviço de agendamentos. Carrega usuário e serviço, delega a {@link AgendamentoValidator} a
- * validação de horário, disponibilidade e conflito, e orquestra a criação, atualização, consulta e
- * remoção.
+ * Orquestra o CRUD de agendamentos, validado por {@link AgendamentoValidator}.
  */
 @Slf4j
 @Service
@@ -84,26 +79,9 @@ public class AgendamentoService {
         ServicoEntity servico = servicoService.findById(request.servicoId());
         AgendamentoEntity entity = mapper.toEntity(request, usuario, servico);
 
-        LocalDateTime inicioAgendamento = entity.getData();
-        LocalDateTime fimAgendamento = calculateFimAgendamento(inicioAgendamento, servico.getDuracao());
+        validateHorario(null, entity.getData(), servico.getDuracao());
 
-        log.debug("validate agendamento data: date={} ", inicioAgendamento);
-        agendamentoValidator.validateIsFeriado(LocalDate.from(inicioAgendamento));
-
-        log.debug("validate agendamento horario futuro: inicio={}, fim={}", inicioAgendamento, fimAgendamento);
-        agendamentoValidator.validateHorarioFuturo(inicioAgendamento, fimAgendamento);
-
-        log.debug("validate agendamento limite antecedencia: inicio={}", inicioAgendamento);
-        agendamentoValidator.validateLimiteAntecedencia(inicioAgendamento);
-
-        log.debug("validate agendamento disponibilidade: inicio={}, fim={}", inicioAgendamento, fimAgendamento);
-        agendamentoValidator.validateDisponibilidade(inicioAgendamento, fimAgendamento);
-
-        log.debug("validate agendamento conflito: inicio={}, fim={}", inicioAgendamento, fimAgendamento);
-        agendamentoValidator.validateConflitoDeHorario(null, inicioAgendamento, fimAgendamento);
-
-        entity = repository.save(entity);
-        return entity;
+        return repository.save(entity);
     }
 
     /**
@@ -115,7 +93,7 @@ public class AgendamentoService {
      * @param id - identificador do agendamento a ser atualizado
      * @param request - campos a atualizar (data, serviço e/ou status)
      * @throws EntityNotFoundException - quando o agendamento ou o serviço informado não existe
-     * @throws AgendamentoException - quando o agendamento não está agendado ou a transição de status não é permitida
+     * @throws AgendamentoStatusException - quando o agendamento não está agendado ou a transição de status não é permitida
      * @throws AgendamentoForaDoHorarioException - quando o agendamento ultrapassa o limite de um dia
      * @throws AgendamentoAntecedenciaExcedidaException - quando o início ultrapassa o limite de 14 dias de antecedência
      * @throws AgendamentoSemDisponibilidadeException - quando não há disponibilidade que comporte o horário
@@ -133,10 +111,8 @@ public class AgendamentoService {
         log.debug("validate agendamento status update: id={}, status={}", id, request.status());
         agendamentoValidator.validateStatusUpdate(entity, request.status());
 
-        // 1. Determina o novo horário
-        LocalDateTime novaData = request.data() != null ? request.data() : entity.getData();
+        LocalDateTime novaData = Objects.requireNonNullElse(request.data(), entity.getData());
 
-        // 2. Determina o novo serviço e a nova duração
         ServicoEntity novoServico = entity.getServico();
         Integer novaDuracao = entity.getDuracao();
         if (request.servicoId() != null) {
@@ -144,25 +120,8 @@ public class AgendamentoService {
             novaDuracao = novoServico.getDuracao();
         }
 
-        // 3. Calcula o novo fim
-        LocalDateTime novoFimData = calculateFimAgendamento(novaData, novaDuracao);
+        validateHorario(id, novaData, novaDuracao);
 
-        log.debug("validate agendamento data: date={} ", novaData);
-        agendamentoValidator.validateIsFeriado(LocalDate.from(novaData));
-
-        log.debug("validate agendamento horario futuro: inicio={}, fim={}", novaData, novoFimData);
-        agendamentoValidator.validateHorarioFuturo(novaData, novoFimData);
-
-        log.debug("validate agendamento limite antecedencia: inicio={}", novaData);
-        agendamentoValidator.validateLimiteAntecedencia(novaData);
-
-        log.debug("validate agendamento disponibilidade: inicio={}, fim={}", novaData, novoFimData);
-        agendamentoValidator.validateDisponibilidade(novaData, novoFimData);
-
-        log.debug("validate agendamento conflito: id={}, inicio={}, fim={}", id, novaData, novoFimData);
-        agendamentoValidator.validateConflitoDeHorario(entity.getId(), novaData, novoFimData);
-
-        // 4. Aplica as alterações
         entity.setData(novaData);
         entity.setServico(novoServico);
         entity.setDuracao(novaDuracao);
@@ -170,9 +129,7 @@ public class AgendamentoService {
             entity.setStatus(request.status());
         }
 
-        // 5. Salva
-        entity = repository.save(entity);
-        return entity;
+        return repository.save(entity);
     }
 
     /**
@@ -185,15 +142,6 @@ public class AgendamentoService {
     public void deleteById(Long id) {
         AgendamentoEntity entity = this.findById(id);
         repository.delete(entity);
-    }
-
-    /**
-     * Retorna todos os agendamentos cadastrados.
-     *
-     * @return List - lista de todos os agendamentos
-     */
-    public List<AgendamentoEntity> findAll() {
-        return repository.findAll();
     }
 
     /**
@@ -218,39 +166,20 @@ public class AgendamentoService {
     }
 
     /**
-     * Retorna os agendamentos com o status informado.
+     * Executa, na ordem documentada, as validações de data e horário do agendamento.
      *
-     * @param status - status usado no filtro
-     * @return List - lista de agendamentos com o status informado
-     */
-    public List<AgendamentoEntity> findByStatus(AgendamentoStatus status) {
-        return repository.findByStatus(status);
-    }
-
-    /**
-     * Retorna os agendamentos com o status informado dentro do período indicado.
-     *
-     * @param status - status usado no filtro
-     * @param inicio - início do período, inclusivo
-     * @param fim - fim do período, exclusivo
-     * @return List - lista de agendamentos no período
-     */
-    public List<AgendamentoEntity> findByStatusAndPeriodo(
-            AgendamentoStatus status,
-            LocalDateTime inicio,
-            LocalDateTime fim
-    ) {
-        return repository.findByStatusAndDataGreaterThanEqualAndDataLessThan(status, inicio, fim);
-    }
-
-    /**
-     * Calcula o horário de fim de um agendamento.
-     *
-     * @param inicioAgendamento - data e hora de início do agendamento
+     * @param id - identificador do agendamento a ignorar no conflito, ou nulo na criação
+     * @param inicio - data e hora de início do agendamento
      * @param duracao - duração do serviço em minutos
-     * @return LocalDateTime - data e hora de fim calculada
      */
-    private LocalDateTime calculateFimAgendamento(LocalDateTime inicioAgendamento, Integer duracao) {
-        return inicioAgendamento.plusMinutes(duracao);
+    private void validateHorario(Long id, LocalDateTime inicio, Integer duracao) {
+        LocalDateTime fim = inicio.plusMinutes(duracao);
+
+        log.debug("validate agendamento horario: id={}, inicio={}, fim={}", id, inicio, fim);
+        agendamentoValidator.validateIsFeriado(inicio.toLocalDate());
+        agendamentoValidator.validateHorarioFuturo(inicio, fim);
+        agendamentoValidator.validateLimiteAntecedencia(inicio);
+        agendamentoValidator.validateDisponibilidade(inicio, fim);
+        agendamentoValidator.validateConflitoDeHorario(id, inicio, fim);
     }
 }

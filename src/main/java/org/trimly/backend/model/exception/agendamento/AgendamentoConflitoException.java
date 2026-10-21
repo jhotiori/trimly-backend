@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.agendamento;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza que o horário escolhido se sobrepõe a outro agendamento em {@code AGENDADO} no mesmo dia.
+ * Horário sobreposto a outro agendamento `AGENDADO`.
  */
-public class AgendamentoConflitoException extends AgendamentoException {
+public class AgendamentoConflitoException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

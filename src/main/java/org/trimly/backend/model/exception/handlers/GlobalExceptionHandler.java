@@ -13,22 +13,17 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 
 /**
- * Trata as falhas que não pertencem ao domínio da aplicação (a família
- * {@code TrimlyException}, coberta por {@code DomainExceptionHandler}).
- *
- * Requisições mal formadas (corpo ilegível, parâmetro com valor inválido ou falha de
- * {@code @Valid}) viram {@code 400}; qualquer outra falha vira um {@code 500} genérico sem
- * revelar detalhes da exceção ao cliente.
+ * Trata falhas fora do domínio: requisição mal formada vira `400` e o restante `500` genérico.
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     /**
-     * Mapeia a falha de {@code @Valid} no corpo da requisição para {@code 400}, reunindo em ordem
+     * Mapeia a falha de `@Valid` no corpo da requisição para `400`, reunindo em ordem
      * alfabética as mensagens de validação dos campos rejeitados.
      *
      * @param exception - falha de validação do corpo da requisição
-     * @return ResponseEntity - resposta {@code 400} com o corpo de erro
+     * @return ResponseEntity - resposta `400` com o corpo de erro
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDTO> handleValidacao(MethodArgumentNotValidException exception) {
@@ -44,10 +39,10 @@ public class GlobalExceptionHandler {
 
     /**
      * Mapeia o corpo de requisição ausente ou ilegível (JSON mal formado ou valor incompatível com o
-     * tipo do campo) para {@code 400}.
+     * tipo do campo) para `400`.
      *
      * @param exception - falha de leitura do corpo da requisição
-     * @return ResponseEntity - resposta {@code 400} com o corpo de erro
+     * @return ResponseEntity - resposta `400` com o corpo de erro
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponseDTO> handleCorpoInvalido(HttpMessageNotReadableException exception) {
@@ -56,10 +51,10 @@ public class GlobalExceptionHandler {
 
     /**
      * Mapeia o parâmetro de caminho ou de consulta que não converte para o tipo esperado para
-     * {@code 400}.
+     * `400`.
      *
      * @param exception - falha de conversão do parâmetro
-     * @return ResponseEntity - resposta {@code 400} com o corpo de erro
+     * @return ResponseEntity - resposta `400` com o corpo de erro
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponseDTO> handleParametroInvalido(MethodArgumentTypeMismatchException exception) {
@@ -67,37 +62,31 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Registra a falha inesperada no log e devolve {@code 500} com mensagem genérica.
+     * Registra a falha inesperada no log e devolve `500` com mensagem genérica.
      *
      * @param exception - falha não pertencente ao domínio
-     * @return ResponseEntity - resposta {@code 500} com o corpo de erro
+     * @return ResponseEntity - resposta `500` com o corpo de erro
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleUnexpected(Exception exception) {
         log.error("unexpected error: {}", exception.getMessage(), exception);
 
-        ErrorResponseDTO response = new ErrorResponseDTO(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                "Ocorreu um erro inesperado ao processar a requisição"
-        );
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(status)
+                .body(ErrorResponseDTO.of(status, "Ocorreu um erro inesperado ao processar a requisição"));
     }
 
     /**
-     * Registra a requisição mal formada no log e monta a resposta {@code 400}.
+     * Registra a requisição mal formada no log e monta a resposta `400`.
      *
      * @param exception - falha da requisição a reportar
      * @param message - mensagem devolvida ao cliente
-     * @return ResponseEntity - resposta {@code 400} com o corpo de erro
+     * @return ResponseEntity - resposta `400` com o corpo de erro
      */
     private ResponseEntity<ErrorResponseDTO> badRequest(Exception exception, String message) {
         log.warn("bad request: {}", exception.toString());
 
         HttpStatus status = HttpStatus.BAD_REQUEST;
-        ErrorResponseDTO response = new ErrorResponseDTO(status.value(), status.getReasonPhrase(), message);
-
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(status).body(ErrorResponseDTO.of(status, message));
     }
 }

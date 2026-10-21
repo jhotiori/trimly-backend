@@ -8,7 +8,7 @@ import org.trimly.backend.view.dto.servico.ServicoCreateDTO;
 import org.trimly.backend.view.dto.servico.ServicoResponseDTO;
 
 /**
- * Mapper de serviços. Converte à mão entre {@code ServicoEntity} e seus DTOs, sem MapStruct.
+ * Converte entre `ServicoEntity` e seus DTOs, sem MapStruct.
  */
 @Component
 public class ServicoMapper {
@@ -35,7 +35,7 @@ public class ServicoMapper {
      * @param original - lista de dados de criação a serem convertidos
      * @return List - lista de entidades correspondentes
      */
-    public List<ServicoEntity> toEntityList(List<? extends ServicoCreateDTO> original) {
+    public List<ServicoEntity> toEntityList(List<ServicoCreateDTO> original) {
         return original.stream().map(this::toEntity).toList();
     }
 

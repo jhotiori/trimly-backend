@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.disponibilidade;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza que a hora de início da disponibilidade não é anterior à hora de fim.
+ * Hora de início não anterior à de fim.
  */
-public class DisponibilidadeHorarioInvalidoException extends DisponibilidadeException {
+public class DisponibilidadeHorarioInvalidoException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

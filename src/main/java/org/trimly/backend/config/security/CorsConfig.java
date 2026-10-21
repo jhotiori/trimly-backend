@@ -10,8 +10,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.trimly.backend.config.EndpointConfig;
 
 /**
- * Fornece o {@link CorsConfigurationSource} que libera a origem do frontend
- * ({@code EndpointConfig.FRONTEND_ENDPOINT}) para os métodos usados pela API.
+ * Libera a origem do frontend (`EndpointConfig.FRONTEND_ENDPOINT`) via CORS.
  */
 @Configuration
 public class CorsConfig {
@@ -27,7 +26,6 @@ public class CorsConfig {
         config.setAllowedOrigins(List.of(EndpointConfig.FRONTEND_ENDPOINT));
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        // config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

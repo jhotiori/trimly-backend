@@ -6,7 +6,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Fornece o bean {@link PasswordEncoder} baseado em BCrypt, usado para cifrar e conferir senhas.
+ * Bean {@link PasswordEncoder} baseado em BCrypt.
  */
 @Configuration
 public class PasswordConfig {

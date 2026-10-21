@@ -1,10 +1,11 @@
 package org.trimly.backend.model.exception.agendamento;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza uma alteração de status inválida: o agendamento não está em {@code AGENDADO} ou o novo
- * status é igual ao atual.
+ * Alteração de status inválida: agendamento fora de `AGENDADO` ou status repetido.
  */
-public class AgendamentoStatusException extends AgendamentoException {
+public class AgendamentoStatusException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

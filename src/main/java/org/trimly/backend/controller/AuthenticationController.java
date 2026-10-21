@@ -24,8 +24,7 @@ import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 import org.trimly.backend.view.dto.usuario.UsuarioCreateDTO;
 
 /**
- * Controller para autenticação, com base em {@code /api/auth}, expondo o cadastro e o login que
- * devolvem um token JWT.
+ * Controller de autenticação, em `/api/auth`.
  */
 @Slf4j
 @RestController
@@ -46,10 +45,10 @@ public class AuthenticationController {
      * @return ResponseEntity - resposta com o token do usuário recém-criado
      */
     @PostMapping("/register")
-    @Operation(summary = "Cadastra um usuário e emite um token", description = """
-            Cria um usuário CLIENTE (mesmas regras de POST /api/usuarios) e devolve token JWT. Independente \
-            do login de /api/usuarios/login (não usado pelo frontend). Nenhuma rota exige token; por isso o \
-            Swagger UI não oferece autorização.""")
+    @Operation(
+            summary = "Cadastra um usuário e emite um token",
+            description = "Cria um CLIENTE (regras de POST /api/usuarios) e devolve token JWT. Sem uso pelo frontend."
+    )
     @ApiResponse(
             responseCode = "201",
             description = "Usuário criado e token emitido",
@@ -57,7 +56,7 @@ public class AuthenticationController {
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo ausente, mal formatado ou com campos inválidos; message reúne as mensagens de validação",
+            description = "Corpo ausente, mal formatado ou inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -67,7 +66,7 @@ public class AuthenticationController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "E-mail já cadastrado para outro usuário",
+            description = "E-mail já cadastrado",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.USUARIO_EMAIL_EXISTENTE)
@@ -95,18 +94,18 @@ public class AuthenticationController {
      * @return ResponseEntity - resposta com o token do usuário autenticado
      */
     @PostMapping("/login")
-    @Operation(summary = "Autentica e emite um token", description = """
-            Confere e-mail e senha e devolve token JWT. Credenciais inválidas retornam 401 com mensagem \
-            fixa (sem indicar o campo). Fluxo independente do login de /api/usuarios/login, não usado pelo \
-            frontend.""")
+    @Operation(
+            summary = "Autentica e emite um token",
+            description = "Devolve token JWT; credenciais inválidas retornam 401. Sem uso pelo frontend."
+    )
     @ApiResponse(
             responseCode = "200",
-            description = "Credenciais conferem e o token foi emitido",
+            description = "Token emitido",
             content = @Content(schema = @Schema(implementation = AuthResponseDTO.class))
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo ausente, mal formatado ou com campos inválidos; message reúne as mensagens de validação",
+            description = "Corpo ausente, mal formatado ou inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -116,7 +115,7 @@ public class AuthenticationController {
     )
     @ApiResponse(
             responseCode = "401",
-            description = "E-mail inexistente ou senha incorreta, com mensagem fixa",
+            description = "Credenciais inválidas",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.CREDENCIAIS_INVALIDAS)
