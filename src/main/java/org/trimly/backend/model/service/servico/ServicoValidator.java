@@ -13,8 +13,7 @@ import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.ServicoRepository;
 
 /**
- * Validador de serviços. Garante a unicidade do nome, a legalidade da transição de status, a proibição
- * de desativar um serviço com agendamentos futuros e a ausência de agendamento pendente na remoção.
+ * Valida nome único, transição de status e remoção ou desativação sem agendamento pendente.
  */
 @Component
 @RequiredArgsConstructor
@@ -47,8 +46,8 @@ public class ServicoValidator {
      * Verifica se a transição de status solicitada para o serviço é permitida.
      *
      * @param servico - serviço a ter o status alterado
-     * @param novo - status desejado, ou {@code null} quando o status não está sendo alterado
-     * @throws ServicoException - quando o novo status é igual ao atual, ou quando a desativação é solicitada e o serviço ainda tem agendamentos futuros em {@code AGENDADO}
+     * @param novo - status desejado, ou `null` quando o status não está sendo alterado
+     * @throws ServicoException - quando o novo status é igual ao atual, ou quando a desativação é solicitada e o serviço ainda tem agendamentos futuros em `AGENDADO`
      */
     public void validateStatusUpdate(ServicoEntity servico, ServicoStatus novo) {
         if (novo == null) {
@@ -72,7 +71,7 @@ public class ServicoValidator {
      * Verifica se o serviço não possui agendamento pendente.
      *
      * @param servicoId - identificador do serviço a ser removido
-     * @throws ServicoComAgendamentoPendenteException - quando o serviço possui agendamento em {@code AGENDADO}
+     * @throws ServicoComAgendamentoPendenteException - quando o serviço possui agendamento em `AGENDADO`
      */
     public void validateSemAgendamentoPendente(Long servicoId) {
         if (agendamentoRepository.existsByServicoIdAndStatus(servicoId, AgendamentoStatus.AGENDADO)) {

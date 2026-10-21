@@ -7,8 +7,7 @@ import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeCreateDTO;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeResponseDTO;
 
 /**
- * Mapper de disponibilidades. Converte à mão entre {@code DisponibilidadeEntity} e seus DTOs, sem
- * MapStruct.
+ * Converte entre `DisponibilidadeEntity` e seus DTOs, sem MapStruct.
  */
 @Component
 public class DisponibilidadeMapper {
@@ -35,7 +34,7 @@ public class DisponibilidadeMapper {
      * @param original - lista de dados de criação a serem convertidos
      * @return List - lista de entidades correspondentes
      */
-    public List<DisponibilidadeEntity> toEntityList(List<? extends DisponibilidadeCreateDTO> original) {
+    public List<DisponibilidadeEntity> toEntityList(List<DisponibilidadeCreateDTO> original) {
         return original.stream().map(this::toEntity).toList();
     }
 

@@ -2,9 +2,11 @@ package org.trimly.backend.model.service.servico;
 
 import java.math.BigDecimal;
 import java.util.List;
-
+import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.servico.ServicoStatus;
 import org.trimly.backend.model.exception.EntityNotFoundException;
@@ -16,11 +18,8 @@ import org.trimly.backend.view.dto.servico.ServicoCreateDTO;
 import org.trimly.backend.view.dto.servico.ServicoUpdateDTO;
 import org.trimly.backend.view.mapper.ServicoMapper;
 
-import lombok.RequiredArgsConstructor;
-
 /**
- * Serviço de serviços. Valida a unicidade do nome e as transições de status via
- * {@link ServicoValidator} e orquestra a criação, atualização, consulta e remoção do catálogo.
+ * Orquestra o CRUD do catálogo de serviços, validado por {@link ServicoValidator}.
  */
 @Service
 @RequiredArgsConstructor
@@ -52,13 +51,9 @@ public class ServicoService {
      */
     @Transactional
     public ServicoEntity create(ServicoCreateDTO request) {
-        ServicoEntity entity = mapper.toEntity(request);
-        entity.setStatus(ServicoStatus.ATIVO);
-
         servicoValidator.validateNomeUnico(request.nome());
 
-        entity = repository.save(entity);
-        return entity;
+        return repository.save(mapper.toEntity(request));
     }
 
     /**
@@ -84,9 +79,8 @@ public class ServicoService {
 
         servicoValidator.validateStatusUpdate(entity, request.status());
 
-        String nome = request.nome();
-        if (nome != null && !nome.isBlank()) {
-            entity.setNome(nome);
+        if (StringUtils.hasText(request.nome())) {
+            entity.setNome(request.nome());
         }
 
         BigDecimal valor = request.valor();
@@ -99,13 +93,9 @@ public class ServicoService {
             entity.setDuracao(duracao);
         }
 
-        ServicoStatus status = request.status();
-        if (status != null) {
-            entity.setStatus(status);
-        }
+        entity.setStatus(Objects.requireNonNullElse(request.status(), entity.getStatus()));
 
-        entity = repository.save(entity);
-        return entity;
+        return repository.save(entity);
     }
 
     /**
@@ -113,7 +103,7 @@ public class ServicoService {
      *
      * @param id - identificador do serviço a ser removido
      * @throws EntityNotFoundException - quando não existe serviço com o id informado
-     * @throws ServicoComAgendamentoPendenteException - quando o serviço possui agendamento em {@code AGENDADO}
+     * @throws ServicoComAgendamentoPendenteException - quando o serviço possui agendamento em `AGENDADO`
      */
     @Transactional
     public void deleteById(Long id) {
@@ -140,16 +130,6 @@ public class ServicoService {
      */
     public ServicoEntity findById(Long id) {
         return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado"));
-    }
-
-    /**
-     * Retorna os serviços cujo nome corresponde ao termo informado.
-     *
-     * @param nome - termo de busca aplicado ao nome
-     * @return List - lista de serviços correspondentes
-     */
-    public List<ServicoEntity> findByNome(String nome) {
-        return repository.findByNomeLikeIgnoreCase(nome);
     }
 
     /**

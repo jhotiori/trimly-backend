@@ -11,7 +11,7 @@ import org.trimly.backend.view.dto.agendamento.AgendamentoCreateDTO;
 import org.trimly.backend.view.dto.agendamento.AgendamentoResponseDTO;
 
 /**
- * Mapper de agendamentos. Converte à mão entre {@code AgendamentoEntity} e seus DTOs, sem MapStruct.
+ * Converte entre `AgendamentoEntity` e seus DTOs, sem MapStruct.
  */
 @Component
 public class AgendamentoMapper {

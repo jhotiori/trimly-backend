@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.servico;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza a tentativa de remover um serviço que ainda tem agendamento em {@code AGENDADO}.
+ * Remoção de serviço com agendamento `AGENDADO`.
  */
-public class ServicoComAgendamentoPendenteException extends ServicoException {
+public class ServicoComAgendamentoPendenteException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

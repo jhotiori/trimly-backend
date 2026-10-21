@@ -1,24 +1,14 @@
 package org.trimly.backend.model.repository;
 
-import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
 
 /**
- * Repositório de usuários, com busca por nome e e-mail, verificação de e-mail duplicado e contagem
- * por cargo.
+ * Repositório de usuários.
  */
 public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
-    /**
-     * Retorna os usuários cujo nome corresponde ao padrão informado, ignorando maiúsculas e minúsculas.
-     *
-     * @param nome - padrão de busca aplicado ao nome, com os curingas já incluídos pelo chamador
-     * @return List - usuários correspondentes, vazia quando não houver nenhum
-     */
-    List<UsuarioEntity> findByNomeLikeIgnoreCase(String nome);
-
     /**
      * Busca o usuário com o e-mail informado.
      *
@@ -31,7 +21,7 @@ public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
      * Indica se já existe um usuário com o e-mail informado.
      *
      * @param email - e-mail a ser verificado
-     * @return boolean - {@code true} quando já há um usuário com esse e-mail
+     * @return boolean - `true` quando já há um usuário com esse e-mail
      */
     boolean existsByEmail(String email);
 
@@ -40,7 +30,7 @@ public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
      *
      * @param email - e-mail a ser verificado
      * @param id - identificador do usuário a desconsiderar na verificação
-     * @return boolean - {@code true} quando outro usuário já usa esse e-mail
+     * @return boolean - `true` quando outro usuário já usa esse e-mail
      */
     boolean existsByEmailAndIdNot(String email, Long id);
 

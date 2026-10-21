@@ -36,8 +36,7 @@ import org.trimly.backend.view.dto.usuario.UsuarioUpdateDTO;
 import org.trimly.backend.view.mapper.UsuarioMapper;
 
 /**
- * Controller para usuários, com base em {@code /api/usuarios}. Expõe o cadastro público e um login
- * por credenciais que não emite token.
+ * Controller de usuários, em `/api/usuarios`, com cadastro público e login sem token.
  */
 @Slf4j
 @RestController
@@ -64,9 +63,10 @@ public class UsuarioController {
      * @return ResponseEntity - resposta com o usuário criado
      */
     @PostMapping
-    @Operation(summary = "Cria um usuário", description = """
-            Cadastra um usuário com cargo CLIENTE. E-mail deve ser único; senha (mínimo 6 caracteres) é \
-            armazenada criptografada e nunca aparece na resposta.""")
+    @Operation(
+            summary = "Cria um usuário",
+            description = "Cria como CLIENTE; e-mail único, senha de 6+ caracteres (criptografada, nunca exibida)."
+    )
     @ApiResponse(
             responseCode = "201",
             description = "Usuário criado",
@@ -74,7 +74,7 @@ public class UsuarioController {
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo ausente, mal formatado ou com campos inválidos; message reúne as mensagens de validação",
+            description = "Corpo ausente, mal formatado ou inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -84,7 +84,7 @@ public class UsuarioController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "E-mail já cadastrado para outro usuário",
+            description = "E-mail já cadastrado",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.USUARIO_EMAIL_EXISTENTE)
@@ -106,32 +106,35 @@ public class UsuarioController {
     }
 
     /**
-     * Autentica um usuário pelas credenciais informadas. Responde sempre {@code 200}: o campo
-     * {@code sucesso} indica o resultado e {@code usuario} é nulo quando as credenciais não conferem.
+     * Autentica um usuário pelas credenciais informadas. Responde sempre `200`: o campo
+     * `sucesso` indica o resultado e `usuario` é nulo quando as credenciais não conferem.
      *
      * @param request - credenciais informadas no login
      * @return ResponseEntity - resposta com o resultado da autenticação
      */
     @PostMapping("/login")
-    @Operation(summary = "Autentica um usuário por credenciais", description = """
-            Confere e-mail e senha sem emitir token. Sempre 200: sucesso indica o resultado, usuario vem \
-            nulo se as credenciais não conferem (sem indicar qual campo falhou). Nunca 401.""")
+    @Operation(
+            summary = "Autentica um usuário por credenciais",
+            description = "Sem token. Sempre 200; usuario vem nulo se as credenciais falham."
+    )
     @ApiResponse(
             responseCode = "200",
-            description = "Resultado da autenticação; sucesso indica se as credenciais conferem",
+            description = "Resultado do login",
             content = @Content(
                     schema = @Schema(implementation = UsuarioLoginResponseDTO.class),
                     examples = {
                             @ExampleObject(name = "Credenciais válidas", value = """
                                     {"sucesso": true, "usuario": {"id": 1, "nome": "Administrador", \
                                     "email": "admin@trimly.com", "cargo": "ADMIN"}}"""),
-                            @ExampleObject(name = "Credenciais inválidas", value = """
-                                    {"sucesso": false, "usuario": null}""")}
+                            @ExampleObject(
+                                    name = "Credenciais inválidas",
+                                    value = "{\"sucesso\": false, \"usuario\": null}"
+                            )}
             )
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo ausente, mal formatado ou com campos inválidos; message reúne as mensagens de validação",
+            description = "Corpo ausente, mal formatado ou inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -166,18 +169,18 @@ public class UsuarioController {
      * @return ResponseEntity - resposta com o usuário atualizado
      */
     @PatchMapping("/{id}")
-    @Operation(summary = "Atualiza um usuário", description = """
-            Atualiza os campos informados; nulos são ignorados, todos nulos é no-op. Novo e-mail deve ser \
-            único, nova senha (mín. 6 caracteres) é recriptografada, novo cargo não pode repetir o atual, e \
-            o único DONO não pode perder o cargo.""")
+    @Operation(
+            summary = "Atualiza um usuário",
+            description = "Nulos ignorados. E-mail único, senha mín. 6, cargo sem repetir nem tirar o DONO único."
+    )
     @ApiResponse(
             responseCode = "200",
-            description = "Usuário atualizado, ou inalterado se todos os campos forem nulos",
+            description = "Usuário atualizado (inalterado se tudo nulo)",
             content = @Content(schema = @Schema(implementation = UsuarioResponseDTO.class))
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo mal formatado, campos inválidos ou identificador não numérico",
+            description = "Corpo, campos ou identificador inválidos",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -199,7 +202,7 @@ public class UsuarioController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "Novo e-mail já cadastrado para outro usuário",
+            description = "E-mail já cadastrado",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.USUARIO_EMAIL_EXISTENTE)
@@ -246,9 +249,7 @@ public class UsuarioController {
      * @return ResponseEntity - resposta sem conteúdo
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Remove um usuário", description = """
-            Remove o usuário com o identificador informado, desde que não tenha agendamento em AGENDADO \
-            vinculado.""")
+    @Operation(summary = "Remove um usuário", description = "Falha se houver agendamento em AGENDADO.")
     @ApiResponse(responseCode = "204", description = "Usuário removido", content = @Content)
     @ApiResponse(
             responseCode = "400",
@@ -268,7 +269,7 @@ public class UsuarioController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "Usuário com agendamento em AGENDADO vinculado",
+            description = "Possui agendamento em AGENDADO",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.USUARIO_COM_AGENDAMENTO_PENDENTE)
@@ -297,10 +298,10 @@ public class UsuarioController {
      * @return ResponseEntity - resposta com a lista de usuários
      */
     @GetMapping
-    @Operation(summary = "Lista usuários", description = "Lista todos os usuários cadastrados, sem expor senhas.")
+    @Operation(summary = "Lista usuários", description = "Não expõe senhas.")
     @ApiResponse(
             responseCode = "200",
-            description = "Lista de usuários, possivelmente vazia",
+            description = "Lista de usuários",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = UsuarioResponseDTO.class)))
     )
     @ApiResponse(
@@ -323,7 +324,7 @@ public class UsuarioController {
      * @return ResponseEntity - resposta com o usuário encontrado
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Busca um usuário", description = "Busca um usuário pelo identificador.")
+    @Operation(summary = "Busca um usuário")
     @ApiResponse(
             responseCode = "200",
             description = "Usuário encontrado",

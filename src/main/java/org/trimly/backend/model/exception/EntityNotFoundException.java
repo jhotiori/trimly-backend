@@ -1,7 +1,7 @@
 package org.trimly.backend.model.exception;
 
 /**
- * Sinaliza que a entidade buscada por identificador ou e-mail não existe.
+ * Entidade não encontrada.
  */
 public class EntityNotFoundException extends TrimlyException {
     /**

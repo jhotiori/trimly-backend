@@ -34,7 +34,7 @@ import org.trimly.backend.view.dto.servico.ServicoUpdateDTO;
 import org.trimly.backend.view.mapper.ServicoMapper;
 
 /**
- * Controller para serviços, com base em {@code /api/servicos}.
+ * Controller de serviços, em `/api/servicos`.
  */
 @Slf4j
 @RestController
@@ -61,10 +61,7 @@ public class ServicoController {
      * @return ResponseEntity - resposta com o serviço criado
      */
     @PostMapping
-    @Operation(
-            summary = "Cria um serviço",
-            description = "Cria um serviço no catálogo com status ATIVO. O nome deve ser único entre os serviços."
-    )
+    @Operation(summary = "Cria um serviço", description = "Cria como ATIVO; nome único.")
     @ApiResponse(
             responseCode = "201",
             description = "Serviço criado",
@@ -72,7 +69,7 @@ public class ServicoController {
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo ausente, mal formatado ou com campos inválidos; message reúne as mensagens de validação",
+            description = "Corpo ausente, mal formatado ou inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -82,7 +79,7 @@ public class ServicoController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "Nome já usado por outro serviço",
+            description = "Nome duplicado",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.SERVICO_NOME_DUPLICADO)
@@ -111,18 +108,18 @@ public class ServicoController {
      * @return ResponseEntity - resposta com o serviço atualizado
      */
     @PatchMapping("/{id}")
-    @Operation(summary = "Atualiza um serviço", description = """
-            Atualiza os campos informados; nulos são ignorados, todos nulos é no-op. Novo nome deve ser \
-            único, novo status não pode repetir o atual, e não é possível desativar serviço com \
-            agendamentos futuros.""")
+    @Operation(
+            summary = "Atualiza um serviço",
+            description = "Nulos ignorados. Nome único; sem repetir status nem desativar com agendamentos futuros."
+    )
     @ApiResponse(
             responseCode = "200",
-            description = "Serviço atualizado, ou inalterado se todos os campos forem nulos",
+            description = "Serviço atualizado (inalterado se tudo nulo)",
             content = @Content(schema = @Schema(implementation = ServicoResponseDTO.class))
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo mal formatado, campos inválidos ou identificador não numérico",
+            description = "Corpo, campos ou identificador inválidos",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -144,7 +141,7 @@ public class ServicoController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "Novo nome já usado por outro serviço",
+            description = "Nome duplicado",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.SERVICO_NOME_DUPLICADO)
@@ -152,7 +149,7 @@ public class ServicoController {
     )
     @ApiResponse(
             responseCode = "422",
-            description = "Status repetido ou desativação de serviço com agendamentos futuros",
+            description = "Status repetido ou desativação com agendamentos futuros",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -195,9 +192,7 @@ public class ServicoController {
      * @return ResponseEntity - resposta sem conteúdo
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Remove um serviço", description = """
-            Remove o serviço com o identificador informado, desde que não tenha agendamento em AGENDADO \
-            vinculado.""")
+    @Operation(summary = "Remove um serviço", description = "Falha se houver agendamento em AGENDADO.")
     @ApiResponse(responseCode = "204", description = "Serviço removido", content = @Content)
     @ApiResponse(
             responseCode = "400",
@@ -217,7 +212,7 @@ public class ServicoController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "Serviço com agendamento em AGENDADO vinculado",
+            description = "Possui agendamento em AGENDADO",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.SERVICO_COM_AGENDAMENTO_PENDENTE)
@@ -246,10 +241,10 @@ public class ServicoController {
      * @return ResponseEntity - resposta com a lista de serviços
      */
     @GetMapping
-    @Operation(summary = "Lista serviços", description = "Lista todos os serviços do catálogo, ativos e inativos.")
+    @Operation(summary = "Lista serviços", description = "Ativos e inativos.")
     @ApiResponse(
             responseCode = "200",
-            description = "Lista de serviços, possivelmente vazia",
+            description = "Lista de serviços",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = ServicoResponseDTO.class)))
     )
     @ApiResponse(
@@ -272,7 +267,7 @@ public class ServicoController {
      * @return ResponseEntity - resposta com o serviço encontrado
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Busca um serviço", description = "Busca um serviço pelo identificador.")
+    @Operation(summary = "Busca um serviço")
     @ApiResponse(
             responseCode = "200",
             description = "Serviço encontrado",
@@ -316,18 +311,15 @@ public class ServicoController {
      * @return ResponseEntity - resposta com a lista de serviços
      */
     @GetMapping("/status/{status}")
-    @Operation(
-            summary = "Lista serviços por status",
-            description = "Lista os serviços do catálogo com o status informado."
-    )
+    @Operation(summary = "Lista serviços por status")
     @ApiResponse(
             responseCode = "200",
-            description = "Lista de serviços com o status, possivelmente vazia",
+            description = "Lista de serviços",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = ServicoResponseDTO.class)))
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Status que não corresponde a nenhum valor do enum",
+            description = "Status inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.PARAMETRO_INVALIDO)

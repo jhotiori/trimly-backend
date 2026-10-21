@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.servico;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza a tentativa de criar um serviço com um nome já usado por outro.
+ * Nome de serviço já usado por outro.
  */
-public class ServicoNomeDuplicadoException extends ServicoException {
+public class ServicoNomeDuplicadoException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

@@ -1,12 +1,7 @@
 package org.trimly.backend.config;
 
 /**
- * Ponto único de definição dos caminhos base de cada controller REST.
- *
- * Cada constante guarda o literal exato usado no {@code @RequestMapping} do
- * controller
- * correspondente. Sub-caminhos de método continuam declarados nos próprios
- * controllers.
+ * Caminhos base dos controllers REST e origem do frontend.
  */
 public final class EndpointConfig {
     /**

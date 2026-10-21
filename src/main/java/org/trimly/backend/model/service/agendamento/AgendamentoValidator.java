@@ -23,10 +23,7 @@ import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.service.disponibilidade.DisponibilidadeService;
 
 /**
- * Validador de agendamentos. Aplica, nesta ordem, a legalidade da transição de status, o início não
- * estar no passado, o limite de um dia entre início e fim, o limite de 14 dias de antecedência, o
- * encaixe em uma janela de disponibilidade e a ausência de conflito com outros agendamentos em
- * {@code AGENDADO}.
+ * Valida status, horário, antecedência, feriado, disponibilidade e conflito de agendamentos.
  */
 @Component
 @RequiredArgsConstructor
@@ -59,19 +56,19 @@ public class AgendamentoValidator {
      * solicitada é permitida pelo ciclo de vida.
      *
      * Um agendamento só pode ser alterado - em qualquer campo, inclusive o status - enquanto estiver em
-     * {@code AGENDADO}. Como {@code AGENDADO} é o único status não terminal, exigir que a origem seja
-     * {@code AGENDADO} e o destino seja diferente já cobre toda a legalidade da transição.
+     * `AGENDADO`. Como `AGENDADO` é o único status não terminal, exigir que a origem seja
+     * `AGENDADO` e o destino seja diferente já cobre toda a legalidade da transição.
      *
      * @param agendamento - agendamento a ser alterado
-     * @param novo - status desejado, ou {@code null} quando o status não está sendo alterado
-     * @throws AgendamentoStatusException - quando o agendamento não está em {@code AGENDADO}, ou quando o novo status é igual ao atual
+     * @param novo - status desejado, ou `null` quando o status não está sendo alterado
+     * @throws AgendamentoStatusException - quando o agendamento não está em `AGENDADO`, ou quando o novo status é igual ao atual
      */
     public void validateStatusUpdate(AgendamentoEntity agendamento, AgendamentoStatus novo) {
         if (agendamento.getStatus() != AgendamentoStatus.AGENDADO) {
             throw new AgendamentoStatusException("O agendamento não pode ser alterado neste status");
         }
 
-        if (novo != null && novo == agendamento.getStatus()) {
+        if (novo == agendamento.getStatus()) {
             throw new AgendamentoStatusException("O agendamento já está nesse status");
         }
     }
@@ -130,19 +127,11 @@ public class AgendamentoValidator {
         LocalTime horaInicioAgendamento = inicioAgendamento.toLocalTime();
         LocalTime horaFimAgendamento = fimAgendamento.toLocalTime();
 
-        boolean estaDentroDeUmaDisponibilidade = false;
-        for (DisponibilidadeEntity disponibilidade : disponibilidades) {
-            LocalTime horaInicioDisponibilidade = disponibilidade.getHoraInicio();
-            LocalTime horaFimDisponibilidade = disponibilidade.getHoraFim();
-
-            boolean inicioEstaDentro = !horaInicioAgendamento.isBefore(horaInicioDisponibilidade);
-            boolean fimEstaDentro = !horaFimAgendamento.isAfter(horaFimDisponibilidade);
-
-            if (inicioEstaDentro && fimEstaDentro) {
-                estaDentroDeUmaDisponibilidade = true;
-                break;
-            }
-        }
+        boolean estaDentroDeUmaDisponibilidade = disponibilidades.stream()
+                .anyMatch(
+                        disponibilidade -> !horaInicioAgendamento.isBefore(disponibilidade.getHoraInicio())
+                                && !horaFimAgendamento.isAfter(disponibilidade.getHoraFim())
+                );
 
         if (!estaDentroDeUmaDisponibilidade) {
             throw new AgendamentoSemDisponibilidadeException(
@@ -173,23 +162,16 @@ public class AgendamentoValidator {
                 inicioDoProximoDia
         );
 
-        for (AgendamentoEntity agendamentoExistente : agendamentosExistentes) {
-            // Durante um update, ignora o próprio agendamento.
-            if (id != null && agendamentoExistente.getId().equals(id)) {
-                continue;
-            }
+        boolean existeConflito = agendamentosExistentes.stream()
+                .filter(agendamentoExistente -> !agendamentoExistente.getId().equals(id))
+                .anyMatch(agendamentoExistente -> {
+                    LocalDateTime inicioExistente = agendamentoExistente.getData();
+                    LocalDateTime fimExistente = inicioExistente.plusMinutes(agendamentoExistente.getDuracao());
+                    return inicioExistente.isBefore(fimNovoAgendamento) && fimExistente.isAfter(inicioNovoAgendamento);
+                });
 
-            LocalDateTime inicioAgendamentoExistente = agendamentoExistente.getData();
-            LocalDateTime fimAgendamentoExistente = inicioAgendamentoExistente
-                    .plusMinutes(agendamentoExistente.getDuracao());
-
-            boolean inicioExistenteAntesDoFimNovo = inicioAgendamentoExistente.isBefore(fimNovoAgendamento);
-            boolean fimExistenteDepoisDoInicioNovo = fimAgendamentoExistente.isAfter(inicioNovoAgendamento);
-            boolean existeConflito = inicioExistenteAntesDoFimNovo && fimExistenteDepoisDoInicioNovo;
-
-            if (existeConflito) {
-                throw new AgendamentoConflitoException("O horário escolhido já está ocupado por outro agendamento");
-            }
+        if (existeConflito) {
+            throw new AgendamentoConflitoException("O horário escolhido já está ocupado por outro agendamento");
         }
     }
 

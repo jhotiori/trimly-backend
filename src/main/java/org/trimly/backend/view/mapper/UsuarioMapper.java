@@ -7,7 +7,7 @@ import org.trimly.backend.view.dto.usuario.UsuarioCreateDTO;
 import org.trimly.backend.view.dto.usuario.UsuarioResponseDTO;
 
 /**
- * Mapper de usuários. Converte à mão entre {@code UsuarioEntity} e seus DTOs, sem MapStruct.
+ * Converte entre `UsuarioEntity` e seus DTOs, sem MapStruct.
  */
 @Component
 public class UsuarioMapper {
@@ -32,7 +32,7 @@ public class UsuarioMapper {
      * @param original - lista de dados de criação a serem convertidos
      * @return List - lista de entidades correspondentes
      */
-    public List<UsuarioEntity> toEntityList(List<? extends UsuarioCreateDTO> original) {
+    public List<UsuarioEntity> toEntityList(List<UsuarioCreateDTO> original) {
         return original.stream().map(this::toEntity).toList();
     }
 

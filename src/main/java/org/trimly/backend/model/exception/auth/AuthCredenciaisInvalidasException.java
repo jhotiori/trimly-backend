@@ -1,7 +1,7 @@
 package org.trimly.backend.model.exception.auth;
 
 /**
- * Lançada quando o e-mail não existe ou a senha não confere no login.
+ * E-mail inexistente ou senha incorreta no login.
  */
 public class AuthCredenciaisInvalidasException extends AuthException {
     /**

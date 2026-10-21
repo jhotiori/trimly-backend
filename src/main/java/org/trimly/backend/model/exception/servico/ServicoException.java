@@ -3,7 +3,7 @@ package org.trimly.backend.model.exception.servico;
 import org.trimly.backend.model.exception.TrimlyException;
 
 /**
- * Raiz das falhas de regra de serviço, inclusive as transições de status não permitidas.
+ * Falha genérica de regra de serviço.
  */
 public class ServicoException extends TrimlyException {
     /**

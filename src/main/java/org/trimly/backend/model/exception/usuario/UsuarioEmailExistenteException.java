@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.usuario;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza a tentativa de usar um e-mail já cadastrado para outro usuário.
+ * E-mail já cadastrado para outro usuário.
  */
-public class UsuarioEmailExistenteException extends UsuarioException {
+public class UsuarioEmailExistenteException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

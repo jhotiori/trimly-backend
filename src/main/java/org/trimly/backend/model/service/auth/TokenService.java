@@ -9,19 +9,28 @@ import org.springframework.stereotype.Service;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
 
 /**
- * Gera e valida os tokens JWT stateless usados na autenticação.
- *
- * O token carrega o e-mail do usuário no {@code subject} e o cargo em uma claim
- * {@code cargo}. A assinatura usa HMAC256 com o segredo configurado em
- * {@code trimly.security.jwt.secret} e expira após {@code trimly.security.jwt.expiration}
- * segundos.
+ * Gera e valida tokens JWT stateless (HMAC256), com e-mail no `subject` e cargo na claim `cargo`.
  */
 @Service
 public class TokenService {
+    /**
+     * Emissor gravado e exigido no token.
+     */
     private static final String ISSUER = "trimly-auth-api";
+
+    /**
+     * Nome da claim que carrega o cargo do usuário.
+     */
     private static final String CLAIM_CARGO = "cargo";
 
+    /**
+     * Segredo HMAC usado para assinar e verificar os tokens.
+     */
     private final String secret;
+
+    /**
+     * Tempo de validade do token, em segundos.
+     */
     private final Integer expiration;
 
     /**
@@ -55,7 +64,7 @@ public class TokenService {
     }
 
     /**
-     * Valida a assinatura e a expiração do token e retorna o e-mail contido no {@code subject}.
+     * Valida a assinatura e a expiração do token e retorna o e-mail contido no `subject`.
      *
      * @param token - token JWT recebido na requisição
      * @throws JWTVerificationException - quando o token é inválido, expirado ou não confere com a assinatura

@@ -5,12 +5,7 @@ import java.time.LocalDate;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 
 /**
- * Filtros opcionais para a listagem de agendamentos. Campos nulos são ignorados.
- *
- * @param status - filtro por status
- * @param data - filtro por dia
- * @param usuarioId - filtro por usuário
- * @param servicoId - filtro por serviço
+ * Filtros opcionais da listagem de agendamentos; nulos são ignorados.
  */
 public record AgendamentoFilter(
         @Schema(description = "Filtra pelo status do agendamento", example = "AGENDADO") AgendamentoStatus status,

@@ -12,9 +12,7 @@ import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.UsuarioRepository;
 
 /**
- * Validador de usuários. Garante a unicidade do e-mail, o comprimento mínimo da senha, a legalidade da
- * reatribuição de cargo, a preservação do único {@code DONO} cadastrado e a ausência de agendamento
- * pendente na remoção.
+ * Valida e-mail único, senha mínima, troca de cargo, único `DONO` e remoção sem agendamento pendente.
  */
 @Component
 @RequiredArgsConstructor
@@ -68,8 +66,8 @@ public class UsuarioValidator {
      * Verifica se a reatribuição de cargo solicitada é permitida.
      *
      * @param usuario - usuário a ter o cargo alterado
-     * @param novo - cargo desejado, ou {@code null} quando o cargo não está sendo alterado
-     * @throws UsuarioException - quando o cargo é igual ao atual, ou quando a mudança remove o único usuário com cargo {@code DONO}
+     * @param novo - cargo desejado, ou `null` quando o cargo não está sendo alterado
+     * @throws UsuarioException - quando o cargo é igual ao atual, ou quando a mudança remove o único usuário com cargo `DONO`
      */
     public void validateCargoUpdate(UsuarioEntity usuario, UsuarioCargo novo) {
         if (novo == null) {
@@ -88,7 +86,7 @@ public class UsuarioValidator {
      * Verifica se o usuário não possui agendamento pendente.
      *
      * @param usuarioId - identificador do usuário a ser removido
-     * @throws UsuarioComAgendamentoPendenteException - quando o usuário possui agendamento em {@code AGENDADO}
+     * @throws UsuarioComAgendamentoPendenteException - quando o usuário possui agendamento em `AGENDADO`
      */
     public void validateSemAgendamentoPendente(Long usuarioId) {
         if (agendamentoRepository.existsByUsuarioIdAndStatus(usuarioId, AgendamentoStatus.AGENDADO)) {

@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.agendamento;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza que o início do agendamento já passou.
+ * Início do agendamento no passado.
  */
-public class AgendamentoNoPassadoException extends AgendamentoException {
+public class AgendamentoNoPassadoException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

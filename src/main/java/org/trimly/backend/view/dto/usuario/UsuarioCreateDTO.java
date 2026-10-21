@@ -21,10 +21,7 @@ public record UsuarioCreateDTO(
                 message = "Email não pode ser vazio"
         ) @Email(message = "Não foi recebido um formato de e-mail válido") String email,
 
-        @Schema(
-                description = "Senha em texto puro; é armazenada criptografada com BCrypt",
-                example = "123456"
-        ) @NotBlank(
+        @Schema(description = "Senha em texto puro (armazenada com BCrypt)", example = "123456") @NotBlank(
                 message = "Senha não pode ser vazia"
         ) @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres") String senha
 ) {}
