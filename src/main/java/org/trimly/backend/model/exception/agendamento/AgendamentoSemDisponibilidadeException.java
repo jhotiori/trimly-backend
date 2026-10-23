@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.agendamento;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza que nenhuma janela de disponibilidade do dia comporta o horário do agendamento.
+ * Nenhuma disponibilidade comporta o horário do agendamento.
  */
-public class AgendamentoSemDisponibilidadeException extends AgendamentoException {
+public class AgendamentoSemDisponibilidadeException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

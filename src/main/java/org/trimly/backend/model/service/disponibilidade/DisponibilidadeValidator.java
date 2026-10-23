@@ -11,8 +11,7 @@ import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeHorario
 import org.trimly.backend.model.repository.DisponibilidadeRepository;
 
 /**
- * Validador de disponibilidades. Aplica, nesta ordem, a hora de início anterior à hora de fim e a
- * ausência de sobreposição com outra disponibilidade no mesmo dia da semana.
+ * Valida início anterior ao fim e ausência de sobreposição no mesmo dia da semana.
  */
 @Component
 @RequiredArgsConstructor
@@ -50,21 +49,17 @@ public class DisponibilidadeValidator {
     public void validateConflitoDeHorario(Long id, DiaSemana diaSemana, LocalTime horaInicio, LocalTime horaFim) {
         List<DisponibilidadeEntity> disponibilidadesExistentes = repository.findByDiaSemana(diaSemana);
 
-        for (DisponibilidadeEntity disponibilidadeExistente : disponibilidadesExistentes) {
-            // Durante um update, ignora a própria disponibilidade.
-            if (id != null && disponibilidadeExistente.getId().equals(id)) {
-                continue;
-            }
-
-            boolean inicioExistenteAntesDoFimNovo = disponibilidadeExistente.getHoraInicio().isBefore(horaFim);
-            boolean fimExistenteDepoisDoInicioNovo = disponibilidadeExistente.getHoraFim().isAfter(horaInicio);
-            boolean existeConflito = inicioExistenteAntesDoFimNovo && fimExistenteDepoisDoInicioNovo;
-
-            if (existeConflito) {
-                throw new DisponibilidadeConflitoException(
-                        "O horário informado já está ocupado por outra disponibilidade nesse dia"
+        boolean existeConflito = disponibilidadesExistentes.stream()
+                .filter(disponibilidadeExistente -> !disponibilidadeExistente.getId().equals(id))
+                .anyMatch(
+                        disponibilidadeExistente -> disponibilidadeExistente.getHoraInicio().isBefore(horaFim)
+                                && disponibilidadeExistente.getHoraFim().isAfter(horaInicio)
                 );
-            }
+
+        if (existeConflito) {
+            throw new DisponibilidadeConflitoException(
+                    "O horário informado já está ocupado por outra disponibilidade nesse dia"
+            );
         }
     }
 }

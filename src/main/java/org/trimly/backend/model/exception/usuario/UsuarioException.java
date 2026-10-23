@@ -3,7 +3,7 @@ package org.trimly.backend.model.exception.usuario;
 import org.trimly.backend.model.exception.TrimlyException;
 
 /**
- * Raiz das falhas de regra de usuário, inclusive as reatribuições de cargo não permitidas.
+ * Falha genérica de regra de usuário.
  */
 public class UsuarioException extends TrimlyException {
     /**

@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.agendamento;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza que o início do agendamento ultrapassa o limite de antecedência de 14 dias.
+ * Início do agendamento além do limite de 14 dias.
  */
-public class AgendamentoAntecedenciaExcedidaException extends AgendamentoException {
+public class AgendamentoAntecedenciaExcedidaException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

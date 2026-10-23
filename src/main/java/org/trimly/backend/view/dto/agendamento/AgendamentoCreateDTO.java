@@ -20,10 +20,9 @@ public record AgendamentoCreateDTO(
                 message = "Data não pode ser nula"
         ) @FutureOrPresent(message = "Data deve estar no presente ou futuro") LocalDate data,
 
-        @Schema(
-                description = "Hora de início, no formato HH:mm; o fim é calculado pela duração do serviço",
-                example = "09:00"
-        ) @NotNull(message = "Horário não pode ser nulo") LocalTime horario,
+        @Schema(description = "Hora de início (HH:mm); o fim usa a duração do serviço", example = "09:00") @NotNull(
+                message = "Horário não pode ser nulo"
+        ) LocalTime horario,
 
         @Schema(description = "Identificador do usuário atendido", example = "2") @NotNull(
                 message = "Usuário não pode ser nulo"

@@ -1,11 +1,13 @@
 package org.trimly.backend.model.service.usuario;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
 import org.trimly.backend.model.exception.EntityNotFoundException;
@@ -18,8 +20,7 @@ import org.trimly.backend.view.dto.usuario.UsuarioUpdateDTO;
 import org.trimly.backend.view.mapper.UsuarioMapper;
 
 /**
- * Serviço de usuários. Aplica BCrypt à senha, valida a unicidade do e-mail e as reatribuições de
- * cargo via {@link UsuarioValidator} e orquestra a criação, atualização, consulta e remoção.
+ * Orquestra o CRUD de usuários, com BCrypt na senha e regras de {@link UsuarioValidator}.
  */
 @Service
 @RequiredArgsConstructor
@@ -66,8 +67,7 @@ public class UsuarioService {
 
         usuarioValidator.validateEmailUnico(request.email(), null);
 
-        entity = repository.save(entity);
-        return entity;
+        return repository.save(entity);
     }
 
     /**
@@ -93,9 +93,8 @@ public class UsuarioService {
 
         usuarioValidator.validateCargoUpdate(entity, request.cargo());
 
-        String nome = request.nome();
-        if (nome != null && !nome.isBlank()) {
-            entity.setNome(nome);
+        if (StringUtils.hasText(request.nome())) {
+            entity.setNome(request.nome());
         }
 
         String email = request.email();
@@ -106,19 +105,14 @@ public class UsuarioService {
             }
         }
 
-        String senha = request.senha();
-        if (senha != null && !senha.isBlank()) {
-            usuarioValidator.validateSenha(senha);
-            entity.setSenha(passwordEncoder.encode(senha));
+        if (StringUtils.hasText(request.senha())) {
+            usuarioValidator.validateSenha(request.senha());
+            entity.setSenha(passwordEncoder.encode(request.senha()));
         }
 
-        UsuarioCargo cargo = request.cargo();
-        if (cargo != null) {
-            entity.setCargo(cargo);
-        }
+        entity.setCargo(Objects.requireNonNullElse(request.cargo(), entity.getCargo()));
 
-        entity = repository.save(entity);
-        return entity;
+        return repository.save(entity);
     }
 
     /**
@@ -126,7 +120,7 @@ public class UsuarioService {
      *
      * @param id - identificador do usuário a ser removido
      * @throws EntityNotFoundException - quando não existe usuário com o id informado
-     * @throws UsuarioComAgendamentoPendenteException - quando o usuário possui agendamento em {@code AGENDADO}
+     * @throws UsuarioComAgendamentoPendenteException - quando o usuário possui agendamento em `AGENDADO`
      */
     @Transactional
     public void deleteById(Long id) {
@@ -156,16 +150,6 @@ public class UsuarioService {
     }
 
     /**
-     * Retorna os usuários cujo nome corresponde ao termo informado.
-     *
-     * @param nome - termo de busca aplicado ao nome
-     * @return List - lista de usuários correspondentes
-     */
-    public List<UsuarioEntity> findByNome(String nome) {
-        return repository.findByNomeLikeIgnoreCase(nome);
-    }
-
-    /**
      * Retorna o usuário com o email informado.
      *
      * @param email - e-mail do usuário
@@ -181,8 +165,8 @@ public class UsuarioService {
      * Retorna o usuário cujo e-mail e senha conferem com as credenciais informadas.
      *
      * Diferente dos demais métodos de busca, nunca lança exceção: um e-mail desconhecido ou uma
-     * senha incorreta devolvem {@code Optional.empty()}, para que o chamador possa responder
-     * {@code 200} com uma falha de login em vez de um erro de domínio.
+     * senha incorreta devolvem `Optional.empty()`, para que o chamador possa responder
+     * `200` com uma falha de login em vez de um erro de domínio.
      *
      * @param email - e-mail do usuário
      * @param senha - senha em texto puro

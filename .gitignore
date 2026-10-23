@@ -19,9 +19,9 @@ build/
 # AI (Artifacts, Settings)
 # =========================
 
-.claude/*
-!.claude/specs
-.agents
+.claude/
+.agents/
+.serena/
 openspec/
 graphify-out/
 

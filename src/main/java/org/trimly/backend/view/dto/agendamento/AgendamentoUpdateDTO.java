@@ -7,22 +7,16 @@ import java.time.LocalDateTime;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 
 /**
- * Campos atualizáveis de um agendamento. Todos são opcionais (semântica de PATCH); uma requisição
- * com todos nulos é um no-op.
- *
- * @param data - nova data e hora de início
- * @param status - novo status
- * @param servicoId - identificador do novo serviço
+ * Campos atualizáveis de um agendamento (PATCH); todos nulos é no-op.
  */
 public record AgendamentoUpdateDTO(
         @Schema(
-                description = "Opcional. Nova data e hora de início, no formato yyyy-MM-ddTHH:mm:ss",
+                description = "Opcional. Nova data e hora de início (yyyy-MM-ddTHH:mm:ss)",
                 example = "2027-03-16T14:00:00"
         ) @FutureOrPresent(message = "Horario deve estar no presente ou futuro") LocalDateTime data,
 
         @Schema(
-                description = """
-                        Opcional. Novo status; de AGENDADO pode ir para CANCELADO, CONCLUIDO ou AUSENTE""",
+                description = "Opcional. Novo status (CANCELADO, CONCLUIDO ou AUSENTE)",
                 example = "CANCELADO"
         ) AgendamentoStatus status,
 

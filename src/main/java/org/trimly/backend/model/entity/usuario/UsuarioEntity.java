@@ -20,9 +20,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
- * Usuário do sistema, identificado por e-mail único e senha criptografada, com um cargo que define seu papel.
- *
- * Implementa {@link UserDetails} para integrar com o Spring Security: as autoridades derivam do cargo.
+ * Usuário do sistema; implementa {@link UserDetails} com a autoridade derivada do cargo.
  */
 @Getter
 @Setter
@@ -65,7 +63,7 @@ public class UsuarioEntity implements UserDetails {
     private UsuarioCargo cargo;
 
     /**
-     * Deriva a única autoridade do usuário do seu cargo, com o prefixo {@code ROLE_}.
+     * Deriva a única autoridade do usuário do seu cargo, com o prefixo `ROLE_`.
      *
      * @return Collection - a autoridade correspondente ao cargo
      */
@@ -97,7 +95,7 @@ public class UsuarioEntity implements UserDetails {
     /**
      * Informa que a conta nunca expira.
      *
-     * @return boolean - sempre {@code true}
+     * @return boolean - sempre `true`
      */
     @Override
     public boolean isAccountNonExpired() {
@@ -107,7 +105,7 @@ public class UsuarioEntity implements UserDetails {
     /**
      * Informa que a conta nunca é bloqueada.
      *
-     * @return boolean - sempre {@code true}
+     * @return boolean - sempre `true`
      */
     @Override
     public boolean isAccountNonLocked() {
@@ -117,7 +115,7 @@ public class UsuarioEntity implements UserDetails {
     /**
      * Informa que as credenciais nunca expiram.
      *
-     * @return boolean - sempre {@code true}
+     * @return boolean - sempre `true`
      */
     @Override
     public boolean isCredentialsNonExpired() {
@@ -127,7 +125,7 @@ public class UsuarioEntity implements UserDetails {
     /**
      * Informa que a conta está sempre habilitada.
      *
-     * @return boolean - sempre {@code true}
+     * @return boolean - sempre `true`
      */
     @Override
     public boolean isEnabled() {

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Janela de atendimento da barbearia em um dia da semana, delimitada por hora de início e de fim.
+ * Janela de atendimento em um dia da semana.
  */
 @Getter
 @Setter

@@ -6,7 +6,7 @@ import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 
 /**
- * Repositório de disponibilidades, com busca das janelas de atendimento por dia da semana.
+ * Repositório de disponibilidades.
  */
 public interface DisponibilidadeRepository extends JpaRepository<DisponibilidadeEntity, Long> {
     /**

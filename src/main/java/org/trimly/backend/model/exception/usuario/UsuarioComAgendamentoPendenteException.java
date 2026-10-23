@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.usuario;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza a tentativa de remover um usuário que ainda tem agendamento em {@code AGENDADO}.
+ * Remoção de usuário com agendamento `AGENDADO`.
  */
-public class UsuarioComAgendamentoPendenteException extends UsuarioException {
+public class UsuarioComAgendamentoPendenteException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

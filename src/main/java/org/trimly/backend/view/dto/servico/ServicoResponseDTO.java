@@ -22,8 +22,5 @@ public record ServicoResponseDTO(
 
         @Schema(description = "Duração do atendimento em minutos", example = "30") Integer duracao,
 
-        @Schema(
-                description = "Status no catálogo; só ATIVO aceita novos agendamentos",
-                example = "ATIVO"
-        ) ServicoStatus status
+        @Schema(description = "Status no catálogo", example = "ATIVO") ServicoStatus status
 ) {}

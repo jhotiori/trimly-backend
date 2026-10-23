@@ -6,13 +6,7 @@ import java.math.BigDecimal;
 import org.trimly.backend.model.entity.servico.ServicoStatus;
 
 /**
- * Campos atualizáveis de um serviço. Todos são opcionais (semântica de PATCH); uma requisição com
- * todos nulos é um no-op.
- *
- * @param nome - novo nome
- * @param valor - novo valor
- * @param duracao - nova duração em minutos
- * @param status - novo status
+ * Campos atualizáveis de um serviço (PATCH); todos nulos é no-op.
  */
 public record ServicoUpdateDTO(
         @Schema(description = "Opcional. Novo nome, único no catálogo", example = "Corte Degradê") String nome,

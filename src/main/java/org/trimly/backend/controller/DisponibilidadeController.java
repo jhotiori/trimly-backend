@@ -34,7 +34,7 @@ import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 import org.trimly.backend.view.mapper.DisponibilidadeMapper;
 
 /**
- * Controller para disponibilidades, com base em {@code /api/disponibilidades}.
+ * Controller de disponibilidades, em `/api/disponibilidades`.
  */
 @Slf4j
 @RestController
@@ -61,10 +61,10 @@ public class DisponibilidadeController {
      * @return ResponseEntity - resposta com a disponibilidade criada
      */
     @PostMapping
-    @Operation(summary = "Cria uma disponibilidade", description = """
-            Cria uma janela de atendimento semanal. Início deve anteceder o fim; sem sobreposição com \
-            outra janela do mesmo dia (janelas que só se tocam, ex. 08:00-12:00 e 12:00-13:00, não \
-            conflitam).""")
+    @Operation(
+            summary = "Cria uma disponibilidade",
+            description = "Início antes do fim, sem sobreposição no dia; janelas que só se tocam não conflitam."
+    )
     @ApiResponse(
             responseCode = "201",
             description = "Disponibilidade criada",
@@ -72,7 +72,7 @@ public class DisponibilidadeController {
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo ausente, mal formatado ou com campos inválidos; message reúne as mensagens de validação",
+            description = "Corpo ausente, mal formatado ou inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -85,7 +85,7 @@ public class DisponibilidadeController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "Janela sobreposta a outra disponibilidade no mesmo dia da semana",
+            description = "Sobreposição no mesmo dia",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_CONFLITO)
@@ -93,7 +93,7 @@ public class DisponibilidadeController {
     )
     @ApiResponse(
             responseCode = "422",
-            description = "Hora de início igual ou posterior à hora de fim",
+            description = "Início não anterior ao fim",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_HORARIO_INVALIDO)
@@ -127,17 +127,18 @@ public class DisponibilidadeController {
      * @return ResponseEntity - resposta com a disponibilidade atualizada
      */
     @PatchMapping("/{id}")
-    @Operation(summary = "Atualiza uma disponibilidade", description = """
-            Atualiza os campos informados; nulos são ignorados, todos nulos é no-op. Valem as regras da \
-            criação sobre os valores resultantes, ignorando a própria disponibilidade no conflito.""")
+    @Operation(
+            summary = "Atualiza uma disponibilidade",
+            description = "Nulos ignorados; valem as regras da criação, sem conflito com a própria janela."
+    )
     @ApiResponse(
             responseCode = "200",
-            description = "Disponibilidade atualizada, ou inalterada se todos os campos forem nulos",
+            description = "Disponibilidade atualizada (inalterada se tudo nula)",
             content = @Content(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Corpo mal formatado ou identificador não numérico",
+            description = "Corpo ou identificador inválido",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = {
@@ -155,7 +156,7 @@ public class DisponibilidadeController {
     )
     @ApiResponse(
             responseCode = "409",
-            description = "Janela resultante sobreposta a outra disponibilidade no mesmo dia da semana",
+            description = "Sobreposição no mesmo dia",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_CONFLITO)
@@ -163,7 +164,7 @@ public class DisponibilidadeController {
     )
     @ApiResponse(
             responseCode = "422",
-            description = "Hora de início resultante igual ou posterior à hora de fim",
+            description = "Início não anterior ao fim",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.DISPONIBILIDADE_HORARIO_INVALIDO)
@@ -200,10 +201,7 @@ public class DisponibilidadeController {
      * @return ResponseEntity - resposta sem conteúdo
      */
     @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Remove uma disponibilidade",
-            description = "Remove a disponibilidade com o identificador informado."
-    )
+    @Operation(summary = "Remove uma disponibilidade")
     @ApiResponse(responseCode = "204", description = "Disponibilidade removida", content = @Content)
     @ApiResponse(
             responseCode = "400",
@@ -244,10 +242,10 @@ public class DisponibilidadeController {
      * @return ResponseEntity - resposta com a lista de disponibilidades
      */
     @GetMapping
-    @Operation(summary = "Lista disponibilidades", description = "Lista todas as janelas de atendimento cadastradas.")
+    @Operation(summary = "Lista disponibilidades")
     @ApiResponse(
             responseCode = "200",
-            description = "Lista de disponibilidades, possivelmente vazia",
+            description = "Lista de disponibilidades",
             content = @Content(
                     array = @ArraySchema(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))
             )
@@ -272,7 +270,7 @@ public class DisponibilidadeController {
      * @return ResponseEntity - resposta com a disponibilidade encontrada
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Busca uma disponibilidade", description = "Busca uma disponibilidade pelo identificador.")
+    @Operation(summary = "Busca uma disponibilidade")
     @ApiResponse(
             responseCode = "200",
             description = "Disponibilidade encontrada",
@@ -316,19 +314,20 @@ public class DisponibilidadeController {
      * @return ResponseEntity - resposta com a lista de disponibilidades do dia
      */
     @GetMapping("/dia/{diaSemana}")
-    @Operation(summary = "Lista disponibilidades de um dia da semana", description = """
-            Lista as janelas do dia informado (SEGUNDA-DOMINGO, sem diferenciar maiúsculas/minúsculas). \
-            Dia inválido retorna 500, não 400 (sem tratamento dedicado ainda).""")
+    @Operation(
+            summary = "Lista disponibilidades de um dia da semana",
+            description = "Aceita SEGUNDA a DOMINGO em qualquer caixa; dia inválido retorna 500."
+    )
     @ApiResponse(
             responseCode = "200",
-            description = "Lista de disponibilidades do dia, possivelmente vazia",
+            description = "Lista de disponibilidades do dia",
             content = @Content(
                     array = @ArraySchema(schema = @Schema(implementation = DisponibilidadeResponseDTO.class))
             )
     )
     @ApiResponse(
             responseCode = "500",
-            description = "Dia da semana inválido (comportamento atual) ou erro inesperado",
+            description = "Dia inválido ou erro inesperado",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)

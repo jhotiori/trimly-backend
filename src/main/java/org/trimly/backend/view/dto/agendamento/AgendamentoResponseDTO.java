@@ -24,10 +24,7 @@ public record AgendamentoResponseDTO(
 
         @Schema(description = "Duração do atendimento em minutos, herdada do serviço", example = "30") Integer duracao,
 
-        @Schema(
-                description = "Status atual; AGENDADO é o único status não terminal",
-                example = "AGENDADO"
-        ) AgendamentoStatus status,
+        @Schema(description = "Status atual do agendamento", example = "AGENDADO") AgendamentoStatus status,
 
         @Schema(description = "Identificador do usuário atendido", example = "2") Long usuarioId,
 

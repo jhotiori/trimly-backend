@@ -1,11 +1,7 @@
 package org.trimly.backend.model.exception.auth;
 
 /**
- * Raiz das falhas de autenticação.
- *
- * Diferente da família {@code TrimlyException}, que cobre regras de domínio, esta
- * hierarquia é tratada por {@code AuthenticationExceptionHandler} e sempre resulta
- * em {@code 401}.
+ * Raiz das falhas de autenticação, sempre `401`.
  */
 public class AuthException extends RuntimeException {
     /**

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Serviço oferecido pela barbearia, com nome único, valor, duração em minutos e status de disponibilidade.
+ * Serviço do catálogo da barbearia.
  */
 @Getter
 @Setter

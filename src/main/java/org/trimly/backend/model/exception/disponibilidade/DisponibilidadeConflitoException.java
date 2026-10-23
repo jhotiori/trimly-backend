@@ -1,9 +1,11 @@
 package org.trimly.backend.model.exception.disponibilidade;
 
+import org.trimly.backend.model.exception.TrimlyException;
+
 /**
- * Sinaliza que a janela informada se sobrepõe a outra disponibilidade no mesmo dia da semana.
+ * Janela sobreposta a outra do mesmo dia.
  */
-public class DisponibilidadeConflitoException extends DisponibilidadeException {
+public class DisponibilidadeConflitoException extends TrimlyException {
     /**
      * Cria a exceção com a mensagem informada.
      *

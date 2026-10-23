@@ -16,21 +16,21 @@ import org.trimly.backend.model.service.auth.TokenService;
 import org.trimly.backend.model.service.usuario.UsuarioService;
 
 /**
- * Lê o token {@code Bearer} da requisição, resolve o usuário e popula o
- * {@code SecurityContext} antes da cadeia de filtros do Spring Security.
+ * Popula o `SecurityContext` a partir do token `Bearer`; token ausente ou inválido segue anônimo.
  *
- * Instanciado diretamente por {@code SecurityConfig}, sem {@code @Component}, para
- * não ser registrado também no chain de filtros do servlet.
- *
- * Enquanto a autorização não é aplicada, um token ausente ou inválido não
- * interrompe a requisição: o contexto fica anônimo e o request segue. O
- * tratamento de {@code 401} para token inválido entra junto com a implementação da
- * autorização.
+ * Instanciado por `SecurityConfig`, sem `@Component`.
  */
 @Slf4j
 @RequiredArgsConstructor
 public class SecurityFilter extends OncePerRequestFilter {
+    /**
+     * Cabeçalho HTTP que carrega o token.
+     */
     private static final String HEADER = "Authorization";
+
+    /**
+     * Prefixo do valor do cabeçalho, removido para obter o token.
+     */
     private static final String PREFIX = "Bearer ";
 
     /**
@@ -46,7 +46,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final UsuarioService usuarioService;
 
     /**
-     * Resolve o usuário a partir do token {@code Bearer} e o coloca no {@code SecurityContext}. Um
+     * Resolve o usuário a partir do token `Bearer` e o coloca no `SecurityContext`. Um
      * token ausente ou inválido não interrompe a requisição: o contexto é limpo e a cadeia segue
      * anônima.
      *
@@ -79,7 +79,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Extrai o token do cabeçalho {@code Authorization}, removendo o prefixo {@code Bearer}.
+     * Extrai o token do cabeçalho `Authorization`, removendo o prefixo `Bearer`.
      *
      * @param request - requisição HTTP recebida
      * @return String - o token sem o prefixo, ou nulo quando o cabeçalho está ausente ou malformado

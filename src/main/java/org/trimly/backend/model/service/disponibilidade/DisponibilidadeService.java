@@ -1,7 +1,7 @@
 package org.trimly.backend.model.service.disponibilidade;
 
-import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +16,7 @@ import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeUpdateDTO;
 import org.trimly.backend.view.mapper.DisponibilidadeMapper;
 
 /**
- * Serviço de disponibilidades. Valida os horários via {@link DisponibilidadeValidator} e orquestra a
- * criação, atualização, consulta por dia da semana e remoção das janelas de atendimento.
+ * Orquestra o CRUD das janelas de atendimento, validado por {@link DisponibilidadeValidator}.
  */
 @Service
 @RequiredArgsConstructor
@@ -55,8 +54,7 @@ public class DisponibilidadeService {
         disponibilidadeValidator
                 .validateConflitoDeHorario(null, entity.getDiaSemana(), entity.getHoraInicio(), entity.getHoraFim());
 
-        entity = repository.save(entity);
-        return entity;
+        return repository.save(entity);
     }
 
     /**
@@ -80,26 +78,14 @@ public class DisponibilidadeService {
             return entity;
         }
 
-        DiaSemana diaSemana = request.diaSemana();
-        if (diaSemana != null) {
-            entity.setDiaSemana(diaSemana);
-        }
-
-        LocalTime horaInicio = request.horaInicio();
-        if (horaInicio != null) {
-            entity.setHoraInicio(horaInicio);
-        }
-
-        LocalTime horaFim = request.horaFim();
-        if (horaFim != null) {
-            entity.setHoraFim(horaFim);
-        }
+        entity.setDiaSemana(Objects.requireNonNullElse(request.diaSemana(), entity.getDiaSemana()));
+        entity.setHoraInicio(Objects.requireNonNullElse(request.horaInicio(), entity.getHoraInicio()));
+        entity.setHoraFim(Objects.requireNonNullElse(request.horaFim(), entity.getHoraFim()));
 
         disponibilidadeValidator.validateHorarios(entity.getHoraInicio(), entity.getHoraFim());
         disponibilidadeValidator
                 .validateConflitoDeHorario(id, entity.getDiaSemana(), entity.getHoraInicio(), entity.getHoraFim());
-        entity = repository.save(entity);
-        return entity;
+        return repository.save(entity);
     }
 
     /**

@@ -1,4 +1,4 @@
--- Três clientes de exemplo para exercitar Agendamento localmente.
+-- Clientes de exemplo para exercitar Agendamento localmente.
 -- Senha em texto puro para os três: 123456 (hash BCrypt, strength 10).
 INSERT INTO usuarios (nome, email, senha, cargo)
 SELECT 'João Pereira',
@@ -21,10 +21,24 @@ SELECT 'Carlos Andrade',
        'CLIENTE'
 WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE email = 'carlos.andrade@trimly.com');
 
+INSERT INTO usuarios (nome, email, senha, cargo)
+SELECT 'Willian Bogler',
+       'willian.bogler@trimly.com',
+       '$2a$10$pQfld7t2N7vHgygnl3Htnec6pjYZkW.lMWz/K7wCIV4Q3PZrSsB.u',
+       'ADMIN'
+WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE email = 'willian.bogler@trimly.com');
+
+INSERT INTO usuarios (nome, email, senha, cargo)
+SELECT 'Victor Matheus',
+       'victor.matheus@trimly.com',
+       '$2a$10$pQfld7t2N7vHgygnl3Htnec6pjYZkW.lMWz/K7wCIV4Q3PZrSsB.u',
+       'ADMIN'
+WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE email = 'victor.matheus@trimly.com');
+
 -- Cinco serviços comuns de barbearia, todos ATIVO.
 INSERT INTO servicos (nome, valor, duracao, status)
-SELECT 'Corte Masculino', 40.00, 30, 'ATIVO'
-WHERE NOT EXISTS (SELECT 1 FROM servicos WHERE nome = 'Corte Masculino');
+SELECT 'Corte de Cabelo', 40.00, 30, 'ATIVO'
+WHERE NOT EXISTS (SELECT 1 FROM servicos WHERE nome = 'Corte de Cabelo');
 
 INSERT INTO servicos (nome, valor, duracao, status)
 SELECT 'Barba', 25.00, 20, 'ATIVO'

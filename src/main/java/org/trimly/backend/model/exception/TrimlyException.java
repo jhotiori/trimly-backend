@@ -1,8 +1,7 @@
 package org.trimly.backend.model.exception;
 
 /**
- * Raiz das exceções de regra de domínio do Trimly. Agrupa as falhas de validação e de estado das
- * entidades, separadas das falhas de autenticação da família {@code AuthException}.
+ * Raiz das exceções de regra de domínio.
  */
 public class TrimlyException extends RuntimeException {
     /**
