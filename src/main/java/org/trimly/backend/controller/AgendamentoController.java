@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,8 +25,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.trimly.backend.config.EndpointConfig;
-import org.trimly.backend.config.openapi.OpenApiExamples;
+import org.trimly.backend.infra.EndpointConfig;
+import org.trimly.backend.infra.openapi.OpenApiExamples;
+import org.trimly.backend.infra.security.authorization.AccessPolicy;
 import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.service.agendamento.AgendamentoService;
@@ -58,11 +60,18 @@ public class AgendamentoController {
     private final AgendamentoMapper mapper;
 
     /**
+     * Regras de posse, usadas para restringir a listagem do `CLIENTE`.
+     * @see {@link AccessPolicy}
+     */
+    private final AccessPolicy accessPolicy;
+
+    /**
      * Cria um agendamento e retorna o recurso criado com status 201.
      *
      * @param request - dados do agendamento a ser criado
      * @return ResponseEntity - resposta com o agendamento criado
      */
+    @PreAuthorize("@accessPolicy.isStaffOrSelf(#request.usuarioId())")
     @PostMapping
     @Operation(
             summary = "Cria um agendamento",
@@ -76,25 +85,18 @@ public class AgendamentoController {
     @ApiResponse(
             responseCode = "400",
             description = "Corpo ausente, mal formatado ou inválido",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(
-                                    name = "Campos inválidos",
-                                    value = OpenApiExamples.AGENDAMENTO_CRIACAO_INVALIDA
-                            ),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.AGENDAMENTO_CRIACAO_INVALIDA),
+                    @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)
+            })
     )
     @ApiResponse(
             responseCode = "404",
             description = "Usuário ou serviço não encontrado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Usuário", value = OpenApiExamples.USUARIO_NAO_ENCONTRADO),
-                            @ExampleObject(name = "Serviço", value = OpenApiExamples.SERVICO_NAO_ENCONTRADO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Usuário", value = OpenApiExamples.USUARIO_NAO_ENCONTRADO),
+                    @ExampleObject(name = "Serviço", value = OpenApiExamples.SERVICO_NAO_ENCONTRADO)
+            })
     )
     @ApiResponse(
             responseCode = "409",
@@ -107,27 +109,22 @@ public class AgendamentoController {
     @ApiResponse(
             responseCode = "422",
             description = "Passado, virada de dia, antecedência acima de 14 dias ou sem disponibilidade",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "No passado", value = OpenApiExamples.AGENDAMENTO_NO_PASSADO),
-                            @ExampleObject(
-                                    name = "Fora do horário",
-                                    value = OpenApiExamples.AGENDAMENTO_FORA_DO_HORARIO
-                            ),
-                            @ExampleObject(
-                                    name = "Antecedência excedida",
-                                    value = OpenApiExamples.AGENDAMENTO_ANTECEDENCIA_EXCEDIDA
-                            ),
-                            @ExampleObject(
-                                    name = "Dia sem disponibilidade",
-                                    value = OpenApiExamples.AGENDAMENTO_SEM_DISPONIBILIDADE
-                            ),
-                            @ExampleObject(
-                                    name = "Horário sem disponibilidade",
-                                    value = OpenApiExamples.AGENDAMENTO_DISPONIBILIDADE_INSUFICIENTE
-                            )}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "No passado", value = OpenApiExamples.AGENDAMENTO_NO_PASSADO),
+                    @ExampleObject(name = "Fora do horário", value = OpenApiExamples.AGENDAMENTO_FORA_DO_HORARIO),
+                    @ExampleObject(
+                            name = "Antecedência excedida",
+                            value = OpenApiExamples.AGENDAMENTO_ANTECEDENCIA_EXCEDIDA
+                    ),
+                    @ExampleObject(
+                            name = "Dia sem disponibilidade",
+                            value = OpenApiExamples.AGENDAMENTO_SEM_DISPONIBILIDADE
+                    ),
+                    @ExampleObject(
+                            name = "Horário sem disponibilidade",
+                            value = OpenApiExamples.AGENDAMENTO_DISPONIBILIDADE_INSUFICIENTE
+                    )
+            })
     )
     @ApiResponse(
             responseCode = "500",
@@ -157,6 +154,7 @@ public class AgendamentoController {
      * @param request - campos a atualizar
      * @return ResponseEntity - resposta com o agendamento atualizado
      */
+    @PreAuthorize("@accessPolicy.canUpdateAgendamento(#id, #request)")
     @PatchMapping("/{id}")
     @Operation(
             summary = "Atualiza um agendamento",
@@ -170,26 +168,19 @@ public class AgendamentoController {
     @ApiResponse(
             responseCode = "400",
             description = "Corpo, campos ou identificador inválidos",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(
-                                    name = "Campos inválidos",
-                                    value = OpenApiExamples.AGENDAMENTO_ATUALIZACAO_INVALIDA
-                            ),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
-                            @ExampleObject(name = "Identificador inválido", value = OpenApiExamples.PARAMETRO_INVALIDO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.AGENDAMENTO_ATUALIZACAO_INVALIDA),
+                    @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
+                    @ExampleObject(name = "Identificador inválido", value = OpenApiExamples.PARAMETRO_INVALIDO)
+            })
     )
     @ApiResponse(
             responseCode = "404",
             description = "Agendamento ou serviço não encontrado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Agendamento", value = OpenApiExamples.AGENDAMENTO_NAO_ENCONTRADO),
-                            @ExampleObject(name = "Serviço", value = OpenApiExamples.SERVICO_NAO_ENCONTRADO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Agendamento", value = OpenApiExamples.AGENDAMENTO_NAO_ENCONTRADO),
+                    @ExampleObject(name = "Serviço", value = OpenApiExamples.SERVICO_NAO_ENCONTRADO)
+            })
     )
     @ApiResponse(
             responseCode = "409",
@@ -202,35 +193,27 @@ public class AgendamentoController {
     @ApiResponse(
             responseCode = "422",
             description = "Status inalterável ou repetido, ou regra de horário violada",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(
-                                    name = "Status não alterável",
-                                    value = OpenApiExamples.AGENDAMENTO_STATUS_NAO_ALTERAVEL
-                            ),
-                            @ExampleObject(
-                                    name = "Status repetido",
-                                    value = OpenApiExamples.AGENDAMENTO_STATUS_REPETIDO
-                            ),
-                            @ExampleObject(name = "No passado", value = OpenApiExamples.AGENDAMENTO_NO_PASSADO),
-                            @ExampleObject(
-                                    name = "Fora do horário",
-                                    value = OpenApiExamples.AGENDAMENTO_FORA_DO_HORARIO
-                            ),
-                            @ExampleObject(
-                                    name = "Antecedência excedida",
-                                    value = OpenApiExamples.AGENDAMENTO_ANTECEDENCIA_EXCEDIDA
-                            ),
-                            @ExampleObject(
-                                    name = "Dia sem disponibilidade",
-                                    value = OpenApiExamples.AGENDAMENTO_SEM_DISPONIBILIDADE
-                            ),
-                            @ExampleObject(
-                                    name = "Horário sem disponibilidade",
-                                    value = OpenApiExamples.AGENDAMENTO_DISPONIBILIDADE_INSUFICIENTE
-                            )}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(
+                            name = "Status não alterável",
+                            value = OpenApiExamples.AGENDAMENTO_STATUS_NAO_ALTERAVEL
+                    ),
+                    @ExampleObject(name = "Status repetido", value = OpenApiExamples.AGENDAMENTO_STATUS_REPETIDO),
+                    @ExampleObject(name = "No passado", value = OpenApiExamples.AGENDAMENTO_NO_PASSADO),
+                    @ExampleObject(name = "Fora do horário", value = OpenApiExamples.AGENDAMENTO_FORA_DO_HORARIO),
+                    @ExampleObject(
+                            name = "Antecedência excedida",
+                            value = OpenApiExamples.AGENDAMENTO_ANTECEDENCIA_EXCEDIDA
+                    ),
+                    @ExampleObject(
+                            name = "Dia sem disponibilidade",
+                            value = OpenApiExamples.AGENDAMENTO_SEM_DISPONIBILIDADE
+                    ),
+                    @ExampleObject(
+                            name = "Horário sem disponibilidade",
+                            value = OpenApiExamples.AGENDAMENTO_DISPONIBILIDADE_INSUFICIENTE
+                    )
+            })
     )
     @ApiResponse(
             responseCode = "500",
@@ -262,6 +245,7 @@ public class AgendamentoController {
      * @param id - identificador do agendamento a ser removido
      * @return ResponseEntity - resposta sem conteúdo
      */
+    @PreAuthorize("hasAnyRole('DONO', 'ADMIN')")
     @DeleteMapping("/{id}")
     @Operation(summary = "Remove um agendamento")
     @ApiResponse(responseCode = "204", description = "Agendamento removido", content = @Content)
@@ -334,21 +318,17 @@ public class AgendamentoController {
             )
     )
     public ResponseEntity<List<AgendamentoResponseDTO>> findAll(
-            @Parameter(description = "Filtra pelo status do agendamento", example = "AGENDADO") @RequestParam(
-                    required = false
-            ) AgendamentoStatus status,
-            @Parameter(
-                    description = "Filtra pelo dia do atendimento, no formato yyyy-MM-dd",
-                    example = "2027-03-15"
-            ) @RequestParam(required = false) LocalDate data,
-            @Parameter(description = "Filtra pelo usuário atendido", example = "2") @RequestParam(
-                    required = false
-            ) Long usuarioId,
-            @Parameter(description = "Filtra pelo serviço agendado", example = "1") @RequestParam(
-                    required = false
-            ) Long servicoId
+            @Parameter(description = "Filtra pelo status do agendamento", example = "AGENDADO")
+            @RequestParam(required = false) AgendamentoStatus status,
+            @Parameter(description = "Filtra pelo dia do atendimento, no formato yyyy-MM-dd", example = "2027-03-15")
+            @RequestParam(required = false) LocalDate data,
+            @Parameter(description = "Filtra pelo usuário atendido", example = "2")
+            @RequestParam(required = false) Long usuarioId,
+            @Parameter(description = "Filtra pelo serviço agendado", example = "1")
+            @RequestParam(required = false) Long servicoId
     ) {
-        AgendamentoFilter filtro = new AgendamentoFilter(status, data, usuarioId, servicoId);
+        AgendamentoFilter filtro = accessPolicy
+                .restrictFilter(new AgendamentoFilter(status, data, usuarioId, servicoId));
         List<AgendamentoEntity> entities = service.findAll(filtro);
         return ResponseEntity.ok(mapper.toResponseList(entities));
     }
@@ -359,6 +339,7 @@ public class AgendamentoController {
      * @param id - identificador do agendamento
      * @return ResponseEntity - resposta com o agendamento encontrado
      */
+    @PreAuthorize("@accessPolicy.canAccessAgendamento(#id)")
     @GetMapping("/{id}")
     @Operation(summary = "Busca um agendamento")
     @ApiResponse(

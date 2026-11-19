@@ -23,9 +23,9 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeNaoEncontradaException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeHorarioInvalidoException;
 import org.trimly.backend.model.repository.DisponibilidadeRepository;
@@ -79,8 +79,8 @@ class DisponibilidadeServiceTests {
     @Test
     @DisplayName("Valida horários e conflito, nessa ordem, antes de salvar")
     void testeDadoHorarioValidoQuandoCriarEntaoValidaNaOrdemESalva() {
-        DisponibilidadeCreateDTO request = new DisponibilidadeCreateDTO(DiaSemana.SEXTA, INICIO, FIM);
-        DisponibilidadeEntity entity = disponibilidade(null, DiaSemana.SEXTA);
+        DisponibilidadeCreateDTO request = new DisponibilidadeCreateDTO(DisponibilidadeDiaSemana.SEXTA, INICIO, FIM);
+        DisponibilidadeEntity entity = disponibilidade(null, DisponibilidadeDiaSemana.SEXTA);
         when(mapper.toEntity(request)).thenReturn(entity);
         when(repository.save(entity)).thenReturn(entity);
 
@@ -89,14 +89,14 @@ class DisponibilidadeServiceTests {
         assertSame(entity, resultado);
         InOrder ordem = inOrder(disponibilidadeValidator);
         ordem.verify(disponibilidadeValidator).validateHorarios(INICIO, FIM);
-        ordem.verify(disponibilidadeValidator).validateConflitoDeHorario(null, DiaSemana.SEXTA, INICIO, FIM);
+        ordem.verify(disponibilidadeValidator).validateConflitoDeHorario(null, DisponibilidadeDiaSemana.SEXTA, INICIO, FIM);
     }
 
     @Test
     @DisplayName("Não salva nem checa conflito quando o horário é inválido")
     void testeDadoHorarioInvalidoQuandoCriarEntaoLancaExcecaoSemSalvar() {
-        DisponibilidadeCreateDTO request = new DisponibilidadeCreateDTO(DiaSemana.SEXTA, INICIO, FIM);
-        when(mapper.toEntity(request)).thenReturn(disponibilidade(null, DiaSemana.SEXTA));
+        DisponibilidadeCreateDTO request = new DisponibilidadeCreateDTO(DisponibilidadeDiaSemana.SEXTA, INICIO, FIM);
+        when(mapper.toEntity(request)).thenReturn(disponibilidade(null, DisponibilidadeDiaSemana.SEXTA));
         doThrow(new DisponibilidadeHorarioInvalidoException("Horário inválido")).when(disponibilidadeValidator)
                 .validateHorarios(INICIO, FIM);
 
@@ -109,10 +109,10 @@ class DisponibilidadeServiceTests {
     @Test
     @DisplayName("Não salva quando há conflito de horário")
     void testeDadoConflitoDeHorarioQuandoCriarEntaoLancaExcecaoSemSalvar() {
-        DisponibilidadeCreateDTO request = new DisponibilidadeCreateDTO(DiaSemana.SEXTA, INICIO, FIM);
-        when(mapper.toEntity(request)).thenReturn(disponibilidade(null, DiaSemana.SEXTA));
+        DisponibilidadeCreateDTO request = new DisponibilidadeCreateDTO(DisponibilidadeDiaSemana.SEXTA, INICIO, FIM);
+        when(mapper.toEntity(request)).thenReturn(disponibilidade(null, DisponibilidadeDiaSemana.SEXTA));
         doThrow(new DisponibilidadeConflitoException("Horário ocupado")).when(disponibilidadeValidator)
-                .validateConflitoDeHorario(null, DiaSemana.SEXTA, INICIO, FIM);
+                .validateConflitoDeHorario(null, DisponibilidadeDiaSemana.SEXTA, INICIO, FIM);
 
         assertThrows(DisponibilidadeConflitoException.class, () -> service.create(request));
 
@@ -122,29 +122,29 @@ class DisponibilidadeServiceTests {
     @Test
     @DisplayName("Atualiza dia e horários informados e revalida")
     void testeDadoTodosOsCamposQuandoAtualizarEntaoAplicaAlteracoesERevalida() {
-        DisponibilidadeEntity entity = disponibilidade(1L, DiaSemana.SEXTA);
+        DisponibilidadeEntity entity = disponibilidade(1L, DisponibilidadeDiaSemana.SEXTA);
         LocalTime novoInicio = LocalTime.of(8, 0);
         LocalTime novoFim = LocalTime.of(12, 0);
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
         when(repository.save(entity)).thenReturn(entity);
 
         DisponibilidadeEntity resultado = service
-                .update(1L, new DisponibilidadeUpdateDTO(DiaSemana.SABADO, novoInicio, novoFim));
+                .update(1L, new DisponibilidadeUpdateDTO(DisponibilidadeDiaSemana.SABADO, novoInicio, novoFim));
 
         assertAll(
-                () -> assertEquals(DiaSemana.SABADO, resultado.getDiaSemana()),
+                () -> assertEquals(DisponibilidadeDiaSemana.SABADO, resultado.getDiaSemana()),
                 () -> assertEquals(novoInicio, resultado.getHoraInicio()),
                 () -> assertEquals(novoFim, resultado.getHoraFim())
         );
         InOrder ordem = inOrder(disponibilidadeValidator);
         ordem.verify(disponibilidadeValidator).validateHorarios(novoInicio, novoFim);
-        ordem.verify(disponibilidadeValidator).validateConflitoDeHorario(1L, DiaSemana.SABADO, novoInicio, novoFim);
+        ordem.verify(disponibilidadeValidator).validateConflitoDeHorario(1L, DisponibilidadeDiaSemana.SABADO, novoInicio, novoFim);
     }
 
     @Test
     @DisplayName("Mantém os campos não informados ao atualizar")
     void testeDadoApenasHoraFimQuandoAtualizarEntaoMantemDemaisCampos() {
-        DisponibilidadeEntity entity = disponibilidade(1L, DiaSemana.SEXTA);
+        DisponibilidadeEntity entity = disponibilidade(1L, DisponibilidadeDiaSemana.SEXTA);
         LocalTime novoFim = LocalTime.of(19, 0);
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
         when(repository.save(entity)).thenReturn(entity);
@@ -152,7 +152,7 @@ class DisponibilidadeServiceTests {
         DisponibilidadeEntity resultado = service.update(1L, new DisponibilidadeUpdateDTO(null, null, novoFim));
 
         assertAll(
-                () -> assertEquals(DiaSemana.SEXTA, resultado.getDiaSemana()),
+                () -> assertEquals(DisponibilidadeDiaSemana.SEXTA, resultado.getDiaSemana()),
                 () -> assertEquals(INICIO, resultado.getHoraInicio()),
                 () -> assertEquals(novoFim, resultado.getHoraFim())
         );
@@ -162,7 +162,7 @@ class DisponibilidadeServiceTests {
     @Test
     @DisplayName("Não escreve nem valida quando todos os campos são nulos")
     void testeDadoTodosOsCamposNulosQuandoAtualizarEntaoRetornaSemAlterar() {
-        DisponibilidadeEntity entity = disponibilidade(1L, DiaSemana.SEXTA);
+        DisponibilidadeEntity entity = disponibilidade(1L, DisponibilidadeDiaSemana.SEXTA);
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
 
         DisponibilidadeEntity resultado = service.update(1L, new DisponibilidadeUpdateDTO(null, null, null));
@@ -175,7 +175,7 @@ class DisponibilidadeServiceTests {
     @Test
     @DisplayName("Não salva quando o novo horário é inválido")
     void testeDadoHorarioInvalidoQuandoAtualizarEntaoLancaExcecaoSemSalvar() {
-        DisponibilidadeEntity entity = disponibilidade(1L, DiaSemana.SEXTA);
+        DisponibilidadeEntity entity = disponibilidade(1L, DisponibilidadeDiaSemana.SEXTA);
         LocalTime novoInicio = LocalTime.of(19, 0);
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
         doThrow(new DisponibilidadeHorarioInvalidoException("Horário inválido")).when(disponibilidadeValidator)
@@ -193,15 +193,15 @@ class DisponibilidadeServiceTests {
     void testeDadoDisponibilidadeInexistenteQuandoAtualizarEntaoLancaNaoEncontrado() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        DisponibilidadeUpdateDTO request = new DisponibilidadeUpdateDTO(DiaSemana.SABADO, null, null);
+        DisponibilidadeUpdateDTO request = new DisponibilidadeUpdateDTO(DisponibilidadeDiaSemana.SABADO, null, null);
 
-        assertThrows(EntityNotFoundException.class, () -> service.update(99L, request));
+        assertThrows(DisponibilidadeNaoEncontradaException.class, () -> service.update(99L, request));
     }
 
     @Test
     @DisplayName("Remove disponibilidade existente")
     void testeDadoDisponibilidadeExistenteQuandoDeletarEntaoRemove() {
-        DisponibilidadeEntity entity = disponibilidade(1L, DiaSemana.SEXTA);
+        DisponibilidadeEntity entity = disponibilidade(1L, DisponibilidadeDiaSemana.SEXTA);
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
 
         service.deleteById(1L);
@@ -214,7 +214,7 @@ class DisponibilidadeServiceTests {
     void testeDadoDisponibilidadeInexistenteQuandoDeletarEntaoLancaNaoEncontradoSemRemover() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> service.deleteById(99L));
+        assertThrows(DisponibilidadeNaoEncontradaException.class, () -> service.deleteById(99L));
 
         verify(repository, never()).delete(any(DisponibilidadeEntity.class));
     }
@@ -222,7 +222,7 @@ class DisponibilidadeServiceTests {
     @Test
     @DisplayName("Lista todas as disponibilidades do repositório")
     void testeDadoDisponibilidadesCadastradasQuandoListarEntaoRetornaTodas() {
-        List<DisponibilidadeEntity> disponibilidades = List.of(disponibilidade(1L, DiaSemana.SEXTA));
+        List<DisponibilidadeEntity> disponibilidades = List.of(disponibilidade(1L, DisponibilidadeDiaSemana.SEXTA));
         when(repository.findAll()).thenReturn(disponibilidades);
 
         assertSame(disponibilidades, service.findAll());
@@ -231,7 +231,7 @@ class DisponibilidadeServiceTests {
     @Test
     @DisplayName("Busca disponibilidade existente por id")
     void testeDadoDisponibilidadeExistenteQuandoBuscarPorIdEntaoRetornaDisponibilidade() {
-        DisponibilidadeEntity entity = disponibilidade(1L, DiaSemana.SEXTA);
+        DisponibilidadeEntity entity = disponibilidade(1L, DisponibilidadeDiaSemana.SEXTA);
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
 
         assertSame(entity, service.findById(1L));
@@ -242,21 +242,21 @@ class DisponibilidadeServiceTests {
     void testeDadoDisponibilidadeInexistenteQuandoBuscarPorIdEntaoLancaNaoEncontrado() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException excecao = assertThrows(EntityNotFoundException.class, () -> service.findById(99L));
+        DisponibilidadeNaoEncontradaException excecao = assertThrows(DisponibilidadeNaoEncontradaException.class, () -> service.findById(99L));
 
-        assertEquals("Disponibilidade não foi encontrada", excecao.getMessage());
+        assertEquals("Disponibilidade não encontrada", excecao.getMessage());
     }
 
     @Test
     @DisplayName("Lista disponibilidades do dia da semana informado")
     void testeDadoDiaDaSemanaQuandoBuscarPorDiaEntaoRetornaDisponibilidadesDoDia() {
-        List<DisponibilidadeEntity> sextas = List.of(disponibilidade(1L, DiaSemana.SEXTA));
-        when(repository.findByDiaSemana(DiaSemana.SEXTA)).thenReturn(sextas);
+        List<DisponibilidadeEntity> sextas = List.of(disponibilidade(1L, DisponibilidadeDiaSemana.SEXTA));
+        when(repository.findByDiaSemana(DisponibilidadeDiaSemana.SEXTA)).thenReturn(sextas);
 
-        assertSame(sextas, service.findByDiaSemana(DiaSemana.SEXTA));
+        assertSame(sextas, service.findByDiaSemana(DisponibilidadeDiaSemana.SEXTA));
     }
 
-    private static DisponibilidadeEntity disponibilidade(Long id, DiaSemana diaSemana) {
+    private static DisponibilidadeEntity disponibilidade(Long id, DisponibilidadeDiaSemana diaSemana) {
         return DisponibilidadeEntity.builder().id(id).diaSemana(diaSemana).horaInicio(INICIO).horaFim(FIM).build();
     }
 }

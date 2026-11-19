@@ -7,7 +7,14 @@ import org.trimly.backend.model.exception.TrimlyException;
  */
 public class AgendamentoSemDisponibilidadeException extends TrimlyException {
     /**
-     * Cria a exceção com a mensagem informada.
+     * Cria a exceção com a mensagem padrão.
+     */
+    public AgendamentoSemDisponibilidadeException() {
+        super("Não há disponibilidade nesse dia");
+    }
+
+    /**
+     * Cria a exceção com uma mensagem própria.
      *
      * @param message - detalhe da falha
      */

@@ -4,7 +4,7 @@ import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeHorarioInvalidoException;
@@ -31,9 +31,7 @@ public class DisponibilidadeValidator {
      */
     public void validateHorarios(LocalTime horaInicio, LocalTime horaFim) {
         if (!horaInicio.isBefore(horaFim)) {
-            throw new DisponibilidadeHorarioInvalidoException(
-                    "Horário de inicio deve ser menor do que o horário de fim"
-            );
+            throw new DisponibilidadeHorarioInvalidoException();
         }
     }
 
@@ -46,7 +44,12 @@ public class DisponibilidadeValidator {
      * @param horaFim - hora de fim da nova janela
      * @throws DisponibilidadeConflitoException - quando a janela se sobrepõe a outra do mesmo dia
      */
-    public void validateConflitoDeHorario(Long id, DiaSemana diaSemana, LocalTime horaInicio, LocalTime horaFim) {
+    public void validateConflitoDeHorario(
+            Long id,
+            DisponibilidadeDiaSemana diaSemana,
+            LocalTime horaInicio,
+            LocalTime horaFim
+    ) {
         List<DisponibilidadeEntity> disponibilidadesExistentes = repository.findByDiaSemana(diaSemana);
 
         boolean existeConflito = disponibilidadesExistentes.stream()
@@ -57,9 +60,7 @@ public class DisponibilidadeValidator {
                 );
 
         if (existeConflito) {
-            throw new DisponibilidadeConflitoException(
-                    "O horário informado já está ocupado por outra disponibilidade nesse dia"
-            );
+            throw new DisponibilidadeConflitoException();
         }
     }
 }

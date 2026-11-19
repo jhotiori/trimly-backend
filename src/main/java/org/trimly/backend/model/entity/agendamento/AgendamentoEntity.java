@@ -52,6 +52,7 @@ public class AgendamentoEntity {
 
     /**
      * Status atual do agendamento no ciclo de vida.
+     * @see {@link AgendamentoStatus}
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -59,6 +60,7 @@ public class AgendamentoEntity {
 
     /**
      * Usuário dono do agendamento.
+     * @see {@link UsuarioEntity}
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
@@ -66,6 +68,7 @@ public class AgendamentoEntity {
 
     /**
      * Serviço agendado.
+     * @see {@link ServicoEntity}
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "servico_id", nullable = false)

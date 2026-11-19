@@ -35,10 +35,11 @@ public class DisponibilidadeEntity {
 
     /**
      * Dia da semana da janela de atendimento.
+     * @see {@link DisponibilidadeDiaSemana}
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "dia_semana", nullable = false)
-    private DiaSemana diaSemana;
+    private DisponibilidadeDiaSemana diaSemana;
 
     /**
      * Hora de início da janela de atendimento.

@@ -3,7 +3,7 @@ package org.trimly.backend.view.dto.disponibilidade;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalTime;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 
 /**
  * Dados de entrada para a criação de uma disponibilidade.
@@ -13,15 +13,12 @@ import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
  * @param horaFim - hora de fim da janela
  */
 public record DisponibilidadeCreateDTO(
-        @Schema(description = "Dia da semana da janela", example = "SEXTA") @NotNull(
-                message = "Dia da semana não pode ser nulo"
-        ) DiaSemana diaSemana,
+        @Schema(description = "Dia da semana da janela", example = "SEXTA")
+        @NotNull(message = "Dia da semana não pode ser nulo") DisponibilidadeDiaSemana diaSemana,
 
-        @Schema(description = "Início da janela (HH:mm), anterior ao fim", example = "16:00") @NotNull(
-                message = "Hora de início não pode ser nula"
-        ) LocalTime horaInicio,
+        @Schema(description = "Início da janela (HH:mm), anterior ao fim", example = "16:00")
+        @NotNull(message = "Hora de início não pode ser nula") LocalTime horaInicio,
 
-        @Schema(description = "Fim da janela, no formato HH:mm", example = "18:00") @NotNull(
-                message = "Hora de fim não pode ser nula"
-        ) LocalTime horaFim
+        @Schema(description = "Fim da janela, no formato HH:mm", example = "18:00")
+        @NotNull(message = "Hora de fim não pode ser nula") LocalTime horaFim
 ) {}

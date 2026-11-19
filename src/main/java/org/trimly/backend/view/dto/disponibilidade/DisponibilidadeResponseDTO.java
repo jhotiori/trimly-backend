@@ -2,7 +2,7 @@ package org.trimly.backend.view.dto.disponibilidade;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalTime;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 
 /**
  * Representação de resposta de uma disponibilidade.
@@ -15,7 +15,7 @@ import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
 public record DisponibilidadeResponseDTO(
         @Schema(description = "Identificador da disponibilidade", example = "1") Long id,
 
-        @Schema(description = "Dia da semana da janela", example = "SEGUNDA") DiaSemana diaSemana,
+        @Schema(description = "Dia da semana da janela", example = "SEGUNDA") DisponibilidadeDiaSemana diaSemana,
 
         @Schema(description = "Início da janela", example = "07:00:00") LocalTime horaInicio,
 

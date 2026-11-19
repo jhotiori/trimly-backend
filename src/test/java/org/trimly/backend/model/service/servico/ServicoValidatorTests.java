@@ -20,8 +20,9 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.servico.ServicoStatus;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
-import org.trimly.backend.model.exception.servico.ServicoException;
+import org.trimly.backend.model.exception.servico.ServicoDesativacaoBloqueadaException;
 import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
+import org.trimly.backend.model.exception.servico.ServicoStatusRepetidoException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.ServicoRepository;
 
@@ -80,12 +81,12 @@ class ServicoValidatorTests {
     void testeDadoMesmoStatusQuandoValidarStatusEntaoLancaStatusRepetido() {
         ServicoEntity ativo = servico(ServicoStatus.ATIVO);
 
-        ServicoException excecao = assertThrows(
-                ServicoException.class,
+        ServicoStatusRepetidoException excecao = assertThrows(
+                ServicoStatusRepetidoException.class,
                 () -> validator.validateStatusUpdate(ativo, ServicoStatus.ATIVO)
         );
 
-        assertEquals("O serviço já está nesse status", excecao.getMessage());
+        assertEquals("Serviço já está nesse status", excecao.getMessage());
     }
 
     @Test
@@ -101,12 +102,12 @@ class ServicoValidatorTests {
 
         ServicoEntity ativo = servico(ServicoStatus.ATIVO);
 
-        ServicoException excecao = assertThrows(
-                ServicoException.class,
+        ServicoDesativacaoBloqueadaException excecao = assertThrows(
+                ServicoDesativacaoBloqueadaException.class,
                 () -> validator.validateStatusUpdate(ativo, ServicoStatus.INATIVO)
         );
 
-        assertEquals("O serviço não pode ser desativado enquanto tiver agendamentos futuros", excecao.getMessage());
+        assertEquals("Não é possível desativar serviço com agendamento pendente", excecao.getMessage());
     }
 
     @Test

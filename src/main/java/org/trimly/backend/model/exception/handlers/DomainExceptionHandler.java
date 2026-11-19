@@ -5,15 +5,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.trimly.backend.model.exception.EntityNotFoundException;
 import org.trimly.backend.model.exception.TrimlyException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoNaoEncontradoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
+import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeNaoEncontradaException;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
+import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
 import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
 import org.trimly.backend.model.exception.usuario.UsuarioComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException;
+import org.trimly.backend.model.exception.usuario.UsuarioNaoEncontradoException;
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 
 /**
@@ -28,8 +31,13 @@ public class DomainExceptionHandler {
      * @param exception - falha de entidade inexistente
      * @return ResponseEntity - resposta `404` com o corpo de erro
      */
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> handleNotFound(EntityNotFoundException exception) {
+    @ExceptionHandler({
+            AgendamentoNaoEncontradoException.class,
+            DisponibilidadeNaoEncontradaException.class,
+            ServicoNaoEncontradoException.class,
+            UsuarioNaoEncontradoException.class
+    })
+    public ResponseEntity<ErrorResponseDTO> handleNotFound(TrimlyException exception) {
         return build(HttpStatus.NOT_FOUND, exception);
     }
 
@@ -39,16 +47,15 @@ public class DomainExceptionHandler {
      * @param exception - falha de conflito da família `TrimlyException`
      * @return ResponseEntity - resposta `409` com o corpo de erro
      */
-    @ExceptionHandler(
-        {
-                AgendamentoConflitoException.class,
-                AgendamentoFeriadoException.class,
-                DisponibilidadeConflitoException.class,
-                ServicoNomeDuplicadoException.class,
-                UsuarioEmailExistenteException.class,
-                ServicoComAgendamentoPendenteException.class,
-                UsuarioComAgendamentoPendenteException.class}
-    )
+    @ExceptionHandler({
+            AgendamentoConflitoException.class,
+            AgendamentoFeriadoException.class,
+            DisponibilidadeConflitoException.class,
+            ServicoNomeDuplicadoException.class,
+            UsuarioEmailExistenteException.class,
+            ServicoComAgendamentoPendenteException.class,
+            UsuarioComAgendamentoPendenteException.class
+    })
     public ResponseEntity<ErrorResponseDTO> handleConflito(TrimlyException exception) {
         return build(HttpStatus.CONFLICT, exception);
     }

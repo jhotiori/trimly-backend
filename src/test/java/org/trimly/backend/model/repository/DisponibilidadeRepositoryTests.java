@@ -9,7 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 
 /**
@@ -27,11 +27,11 @@ class DisponibilidadeRepositoryTests {
     @Test
     @DisplayName("Lista apenas as janelas do dia da semana informado")
     void testeDadoJanelasDeDiasDiferentesQuandoBuscarPorDiaEntaoRetornaSoAsDoDia() {
-        salvar(DiaSemana.SEGUNDA, 8, 12);
-        salvar(DiaSemana.SEGUNDA, 13, 18);
-        salvar(DiaSemana.TERCA, 8, 12);
+        salvar(DisponibilidadeDiaSemana.SEGUNDA, 8, 12);
+        salvar(DisponibilidadeDiaSemana.SEGUNDA, 13, 18);
+        salvar(DisponibilidadeDiaSemana.TERCA, 8, 12);
 
-        List<DisponibilidadeEntity> segundas = repository.findByDiaSemana(DiaSemana.SEGUNDA);
+        List<DisponibilidadeEntity> segundas = repository.findByDiaSemana(DisponibilidadeDiaSemana.SEGUNDA);
 
         assertThat(segundas).extracting(DisponibilidadeEntity::getHoraInicio)
                 .containsExactlyInAnyOrder(LocalTime.of(8, 0), LocalTime.of(13, 0));
@@ -40,12 +40,12 @@ class DisponibilidadeRepositoryTests {
     @Test
     @DisplayName("Retorna lista vazia para dia sem janelas")
     void testeDadoDiaSemJanelasQuandoBuscarPorDiaEntaoRetornaListaVazia() {
-        salvar(DiaSemana.SEGUNDA, 8, 12);
+        salvar(DisponibilidadeDiaSemana.SEGUNDA, 8, 12);
 
-        assertThat(repository.findByDiaSemana(DiaSemana.DOMINGO)).isEmpty();
+        assertThat(repository.findByDiaSemana(DisponibilidadeDiaSemana.DOMINGO)).isEmpty();
     }
 
-    private void salvar(DiaSemana diaSemana, int horaInicio, int horaFim) {
+    private void salvar(DisponibilidadeDiaSemana diaSemana, int horaInicio, int horaFim) {
         repository.save(
                 DisponibilidadeEntity.builder()
                         .diaSemana(diaSemana)

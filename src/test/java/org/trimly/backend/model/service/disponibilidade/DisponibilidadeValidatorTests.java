@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeHorarioInvalidoException;
@@ -66,40 +66,40 @@ class DisponibilidadeValidatorTests {
     @Test
     @DisplayName("Aceita janela quando o dia não tem outras")
     void testeDadoDiaSemOutrasJanelasQuandoValidarConflitoEntaoNaoLanca() {
-        when(repository.findByDiaSemana(DiaSemana.SEXTA)).thenReturn(List.of());
+        when(repository.findByDiaSemana(DisponibilidadeDiaSemana.SEXTA)).thenReturn(List.of());
 
         assertDoesNotThrow(
-                () -> validator.validateConflitoDeHorario(null, DiaSemana.SEXTA, LocalTime.of(8, 0), LocalTime.of(12, 0))
+                () -> validator.validateConflitoDeHorario(null, DisponibilidadeDiaSemana.SEXTA, LocalTime.of(8, 0), LocalTime.of(12, 0))
         );
     }
 
     @Test
     @DisplayName("Rejeita janela que sobrepõe outra do mesmo dia")
     void testeDadoSobreposicaoQuandoValidarConflitoEntaoLancaConflito() {
-        when(repository.findByDiaSemana(DiaSemana.SEXTA)).thenReturn(List.of(janela(10L, 9, 12)));
+        when(repository.findByDiaSemana(DisponibilidadeDiaSemana.SEXTA)).thenReturn(List.of(janela(10L, 9, 12)));
 
         LocalTime inicio = LocalTime.of(11, 0);
         LocalTime fim = LocalTime.of(14, 0);
 
         assertThrows(
                 DisponibilidadeConflitoException.class,
-                () -> validator.validateConflitoDeHorario(null, DiaSemana.SEXTA, inicio, fim)
+                () -> validator.validateConflitoDeHorario(null, DisponibilidadeDiaSemana.SEXTA, inicio, fim)
         );
     }
 
     @Test
     @DisplayName("Aceita janelas que apenas encostam")
     void testeDadoJanelasAdjacentesQuandoValidarConflitoEntaoNaoLanca() {
-        when(repository.findByDiaSemana(DiaSemana.SEXTA)).thenReturn(List.of(janela(10L, 9, 12)));
+        when(repository.findByDiaSemana(DisponibilidadeDiaSemana.SEXTA)).thenReturn(List.of(janela(10L, 9, 12)));
 
         assertAll(
                 () -> assertDoesNotThrow(
                         () -> validator
-                                .validateConflitoDeHorario(null, DiaSemana.SEXTA, LocalTime.of(12, 0), LocalTime.of(14, 0))
+                                .validateConflitoDeHorario(null, DisponibilidadeDiaSemana.SEXTA, LocalTime.of(12, 0), LocalTime.of(14, 0))
                 ),
                 () -> assertDoesNotThrow(
                         () -> validator
-                                .validateConflitoDeHorario(null, DiaSemana.SEXTA, LocalTime.of(7, 0), LocalTime.of(9, 0))
+                                .validateConflitoDeHorario(null, DisponibilidadeDiaSemana.SEXTA, LocalTime.of(7, 0), LocalTime.of(9, 0))
                 )
         );
     }
@@ -107,17 +107,17 @@ class DisponibilidadeValidatorTests {
     @Test
     @DisplayName("Ignora a própria janela ao atualizar")
     void testeDadoMesmoIdQuandoValidarConflitoEntaoIgnoraAPropriaJanela() {
-        when(repository.findByDiaSemana(DiaSemana.SEXTA)).thenReturn(List.of(janela(10L, 9, 12)));
+        when(repository.findByDiaSemana(DisponibilidadeDiaSemana.SEXTA)).thenReturn(List.of(janela(10L, 9, 12)));
 
         assertDoesNotThrow(
-                () -> validator.validateConflitoDeHorario(10L, DiaSemana.SEXTA, LocalTime.of(9, 0), LocalTime.of(13, 0))
+                () -> validator.validateConflitoDeHorario(10L, DisponibilidadeDiaSemana.SEXTA, LocalTime.of(9, 0), LocalTime.of(13, 0))
         );
     }
 
     private static DisponibilidadeEntity janela(Long id, int horaInicio, int horaFim) {
         return DisponibilidadeEntity.builder()
                 .id(id)
-                .diaSemana(DiaSemana.SEXTA)
+                .diaSemana(DisponibilidadeDiaSemana.SEXTA)
                 .horaInicio(LocalTime.of(horaInicio, 0))
                 .horaFim(LocalTime.of(horaFim, 0))
                 .build();

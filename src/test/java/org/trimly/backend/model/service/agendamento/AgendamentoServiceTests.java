@@ -30,10 +30,12 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoNaoEncontradoException;
+import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
+import org.trimly.backend.model.exception.usuario.UsuarioNaoEncontradoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoException;
-import org.trimly.backend.model.exception.agendamento.AgendamentoStatusException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoStatusRepetidoException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.service.servico.ServicoService;
 import org.trimly.backend.model.service.usuario.UsuarioService;
@@ -149,9 +151,9 @@ class AgendamentoServiceTests {
     @DisplayName("Não consulta o serviço nem valida quando o usuário não existe")
     void testeDadoUsuarioInexistenteQuandoCriarEntaoLancaNaoEncontradoSemConsultarServico() {
         AgendamentoCreateDTO request = requisicaoDeCriacao();
-        when(usuarioService.findById(2L)).thenThrow(new EntityNotFoundException("Usuario não foi encontrado"));
+        when(usuarioService.findById(2L)).thenThrow(new UsuarioNaoEncontradoException());
 
-        assertThrows(EntityNotFoundException.class, () -> service.create(request));
+        assertThrows(UsuarioNaoEncontradoException.class, () -> service.create(request));
 
         verifyNoInteractions(servicoService, mapper, agendamentoValidator, repository);
     }
@@ -161,9 +163,9 @@ class AgendamentoServiceTests {
     void testeDadoServicoInexistenteQuandoCriarEntaoLancaNaoEncontradoSemValidar() {
         AgendamentoCreateDTO request = requisicaoDeCriacao();
         when(usuarioService.findById(2L)).thenReturn(usuario());
-        when(servicoService.findById(1L)).thenThrow(new EntityNotFoundException("Serviço não encontrado"));
+        when(servicoService.findById(1L)).thenThrow(new ServicoNaoEncontradoException());
 
-        assertThrows(EntityNotFoundException.class, () -> service.create(request));
+        assertThrows(ServicoNaoEncontradoException.class, () -> service.create(request));
 
         verifyNoInteractions(mapper, agendamentoValidator, repository);
     }
@@ -233,12 +235,12 @@ class AgendamentoServiceTests {
     void testeDadoStatusInvalidoQuandoAtualizarEntaoLancaExcecaoSemValidarHorarioNemSalvar() {
         AgendamentoEntity entity = agendamento(1L, servico(1L, 30), AgendamentoStatus.AGENDADO);
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        doThrow(new AgendamentoStatusException("O agendamento já está nesse status")).when(agendamentoValidator)
+        doThrow(new AgendamentoStatusRepetidoException("Agendamento já está nesse status")).when(agendamentoValidator)
                 .validateStatusUpdate(entity, AgendamentoStatus.AGENDADO);
 
         AgendamentoUpdateDTO request = new AgendamentoUpdateDTO(null, AgendamentoStatus.AGENDADO, null);
 
-        assertThrows(AgendamentoStatusException.class, () -> service.update(1L, request));
+        assertThrows(AgendamentoStatusRepetidoException.class, () -> service.update(1L, request));
 
         verify(agendamentoValidator).validateStatusUpdate(entity, AgendamentoStatus.AGENDADO);
         verifyNoMoreInteractions(agendamentoValidator);
@@ -252,7 +254,7 @@ class AgendamentoServiceTests {
 
         AgendamentoUpdateDTO request = new AgendamentoUpdateDTO(null, AgendamentoStatus.CANCELADO, null);
 
-        assertThrows(EntityNotFoundException.class, () -> service.update(99L, request));
+        assertThrows(AgendamentoNaoEncontradoException.class, () -> service.update(99L, request));
     }
 
     @Test
@@ -271,7 +273,7 @@ class AgendamentoServiceTests {
     void testeDadoAgendamentoInexistenteQuandoDeletarEntaoLancaNaoEncontradoSemRemover() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> service.deleteById(99L));
+        assertThrows(AgendamentoNaoEncontradoException.class, () -> service.deleteById(99L));
 
         verify(repository, never()).delete(any(AgendamentoEntity.class));
     }
@@ -303,9 +305,9 @@ class AgendamentoServiceTests {
     void testeDadoAgendamentoInexistenteQuandoBuscarPorIdEntaoLancaNaoEncontrado() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException excecao = assertThrows(EntityNotFoundException.class, () -> service.findById(99L));
+        AgendamentoNaoEncontradoException excecao = assertThrows(AgendamentoNaoEncontradoException.class, () -> service.findById(99L));
 
-        assertEquals("Agendamento não foi encontrado", excecao.getMessage());
+        assertEquals("Agendamento não encontrado", excecao.getMessage());
     }
 
     private AgendamentoEntity prepararCriacao(AgendamentoCreateDTO request) {

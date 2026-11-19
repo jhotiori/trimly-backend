@@ -7,7 +7,14 @@ import org.trimly.backend.model.exception.TrimlyException;
  */
 public class UsuarioComAgendamentoPendenteException extends TrimlyException {
     /**
-     * Cria a exceção com a mensagem informada.
+     * Cria a exceção com a mensagem padrão.
+     */
+    public UsuarioComAgendamentoPendenteException() {
+        super("Não é possível remover usuário com agendamento pendente");
+    }
+
+    /**
+     * Cria a exceção com uma mensagem própria.
      *
      * @param message - detalhe da falha
      */

@@ -53,6 +53,7 @@ public class ServicoEntity {
 
     /**
      * Status do serviço no catálogo (ativo ou inativo).
+     * @see {@link ServicoStatus}
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

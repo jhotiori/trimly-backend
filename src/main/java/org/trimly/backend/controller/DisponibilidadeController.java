@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,9 +23,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.trimly.backend.config.EndpointConfig;
-import org.trimly.backend.config.openapi.OpenApiExamples;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.infra.EndpointConfig;
+import org.trimly.backend.infra.openapi.OpenApiExamples;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 import org.trimly.backend.model.service.disponibilidade.DisponibilidadeService;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeCreateDTO;
@@ -60,6 +61,7 @@ public class DisponibilidadeController {
      * @param request - dados da disponibilidade a ser criada
      * @return ResponseEntity - resposta com a disponibilidade criada
      */
+    @PreAuthorize("hasAnyRole('DONO', 'ADMIN')")
     @PostMapping
     @Operation(
             summary = "Cria uma disponibilidade",
@@ -73,15 +75,10 @@ public class DisponibilidadeController {
     @ApiResponse(
             responseCode = "400",
             description = "Corpo ausente, mal formatado ou inválido",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(
-                                    name = "Campos inválidos",
-                                    value = OpenApiExamples.DISPONIBILIDADE_CRIACAO_INVALIDA
-                            ),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.DISPONIBILIDADE_CRIACAO_INVALIDA),
+                    @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)
+            })
     )
     @ApiResponse(
             responseCode = "409",
@@ -126,6 +123,7 @@ public class DisponibilidadeController {
      * @param request - campos a atualizar
      * @return ResponseEntity - resposta com a disponibilidade atualizada
      */
+    @PreAuthorize("hasAnyRole('DONO', 'ADMIN')")
     @PatchMapping("/{id}")
     @Operation(
             summary = "Atualiza uma disponibilidade",
@@ -139,12 +137,10 @@ public class DisponibilidadeController {
     @ApiResponse(
             responseCode = "400",
             description = "Corpo ou identificador inválido",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
-                            @ExampleObject(name = "Identificador inválido", value = OpenApiExamples.PARAMETRO_INVALIDO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
+                    @ExampleObject(name = "Identificador inválido", value = OpenApiExamples.PARAMETRO_INVALIDO)
+            })
     )
     @ApiResponse(
             responseCode = "404",
@@ -200,6 +196,7 @@ public class DisponibilidadeController {
      * @param id - identificador da disponibilidade a ser removida
      * @return ResponseEntity - resposta sem conteúdo
      */
+    @PreAuthorize("hasAnyRole('DONO', 'ADMIN')")
     @DeleteMapping("/{id}")
     @Operation(summary = "Remove uma disponibilidade")
     @ApiResponse(responseCode = "204", description = "Disponibilidade removida", content = @Content)
@@ -334,12 +331,10 @@ public class DisponibilidadeController {
             )
     )
     public ResponseEntity<List<DisponibilidadeResponseDTO>> findByDiaSemana(
-            @Parameter(
-                    description = "Dia da semana, de SEGUNDA a DOMINGO",
-                    example = "SEGUNDA"
-            ) @PathVariable String diaSemana
+            @Parameter(description = "Dia da semana, de SEGUNDA a DOMINGO", example = "SEGUNDA")
+            @PathVariable String diaSemana
     ) {
-        List<DisponibilidadeEntity> entities = service.findByDiaSemana(DiaSemana.fromString(diaSemana));
+        List<DisponibilidadeEntity> entities = service.findByDiaSemana(DisponibilidadeDiaSemana.fromString(diaSemana));
         return ResponseEntity.ok(mapper.toResponseList(entities));
     }
 }

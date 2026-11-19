@@ -7,7 +7,14 @@ import org.trimly.backend.model.exception.TrimlyException;
  */
 public class DisponibilidadeConflitoException extends TrimlyException {
     /**
-     * Cria a exceção com a mensagem informada.
+     * Cria a exceção com a mensagem padrão.
+     */
+    public DisponibilidadeConflitoException() {
+        super("Horário já ocupado por outra disponibilidade nesse dia");
+    }
+
+    /**
+     * Cria a exceção com uma mensagem própria.
      *
      * @param message - detalhe da falha
      */

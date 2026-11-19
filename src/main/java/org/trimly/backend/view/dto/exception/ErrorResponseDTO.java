@@ -15,7 +15,7 @@ public record ErrorResponseDTO(
 
         @Schema(description = "Frase padrão do código HTTP", example = "Not Found") String error,
 
-        @Schema(description = "Mensagem fixa do erro", example = "Agendamento não foi encontrado") String message
+        @Schema(description = "Mensagem fixa do erro", example = "Agendamento não encontrado") String message
 ) {
     /**
      * Monta o corpo de erro a partir do status HTTP informado.

@@ -2,7 +2,7 @@ package org.trimly.backend.model.repository;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 
 /**
@@ -15,5 +15,5 @@ public interface DisponibilidadeRepository extends JpaRepository<Disponibilidade
      * @param diaSemana - dia da semana usado no filtro
      * @return List - disponibilidades desse dia, vazia quando não houver nenhuma
      */
-    List<DisponibilidadeEntity> findByDiaSemana(DiaSemana diaSemana);
+    List<DisponibilidadeEntity> findByDiaSemana(DisponibilidadeDiaSemana diaSemana);
 }

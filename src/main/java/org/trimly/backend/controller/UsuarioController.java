@@ -10,39 +10,34 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.trimly.backend.config.EndpointConfig;
-import org.trimly.backend.config.openapi.OpenApiExamples;
+import org.trimly.backend.infra.EndpointConfig;
+import org.trimly.backend.infra.openapi.OpenApiExamples;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
 import org.trimly.backend.model.service.usuario.UsuarioService;
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
-import org.trimly.backend.view.dto.usuario.UsuarioCreateDTO;
-import org.trimly.backend.view.dto.usuario.UsuarioLoginRequestDTO;
-import org.trimly.backend.view.dto.usuario.UsuarioLoginResponseDTO;
 import org.trimly.backend.view.dto.usuario.UsuarioResponseDTO;
 import org.trimly.backend.view.dto.usuario.UsuarioUpdateDTO;
 import org.trimly.backend.view.mapper.UsuarioMapper;
 
 /**
- * Controller de usuários, em `/api/usuarios`, com cadastro público e login sem token.
+ * Controller de usuários, em `/api/usuarios`; o cadastro e o login ficam em `/api/auth`.
  */
 @Slf4j
 @RestController
 @RequestMapping(EndpointConfig.USUARIOS_ENDPOINT)
 @RequiredArgsConstructor
-@Tag(name = "Usuários", description = "Cadastro e consulta de usuários")
+@Tag(name = "Usuários", description = "Consulta, atualização e remoção de usuários")
 public class UsuarioController {
     /**
      * Regras de negócio de usuários.
@@ -57,117 +52,13 @@ public class UsuarioController {
     private final UsuarioMapper mapper;
 
     /**
-     * Cria um novo usuário com cargo cliente.
-     *
-     * @param request - dados do usuário a ser criado
-     * @return ResponseEntity - resposta com o usuário criado
-     */
-    @PostMapping
-    @Operation(
-            summary = "Cria um usuário",
-            description = "Cria como CLIENTE; e-mail único, senha de 6+ caracteres (criptografada, nunca exibida)."
-    )
-    @ApiResponse(
-            responseCode = "201",
-            description = "Usuário criado",
-            content = @Content(schema = @Schema(implementation = UsuarioResponseDTO.class))
-    )
-    @ApiResponse(
-            responseCode = "400",
-            description = "Corpo ausente, mal formatado ou inválido",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.USUARIO_CRIACAO_INVALIDA),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)}
-            )
-    )
-    @ApiResponse(
-            responseCode = "409",
-            description = "E-mail já cadastrado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.USUARIO_EMAIL_EXISTENTE)
-            )
-    )
-    @ApiResponse(
-            responseCode = "500",
-            description = "Erro inesperado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
-            )
-    )
-    public ResponseEntity<UsuarioResponseDTO> create(@Valid @RequestBody UsuarioCreateDTO request) {
-        log.debug("create usuario: nome={}, email={}", request.nome(), request.email());
-
-        UsuarioEntity entity = service.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(entity));
-    }
-
-    /**
-     * Autentica um usuário pelas credenciais informadas. Responde sempre `200`: o campo
-     * `sucesso` indica o resultado e `usuario` é nulo quando as credenciais não conferem.
-     *
-     * @param request - credenciais informadas no login
-     * @return ResponseEntity - resposta com o resultado da autenticação
-     */
-    @PostMapping("/login")
-    @Operation(
-            summary = "Autentica um usuário por credenciais",
-            description = "Sem token. Sempre 200; usuario vem nulo se as credenciais falham."
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Resultado do login",
-            content = @Content(
-                    schema = @Schema(implementation = UsuarioLoginResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Credenciais válidas", value = """
-                                    {"sucesso": true, "usuario": {"id": 1, "nome": "Administrador", \
-                                    "email": "admin@trimly.com", "cargo": "ADMIN"}}"""),
-                            @ExampleObject(
-                                    name = "Credenciais inválidas",
-                                    value = "{\"sucesso\": false, \"usuario\": null}"
-                            )}
-            )
-    )
-    @ApiResponse(
-            responseCode = "400",
-            description = "Corpo ausente, mal formatado ou inválido",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.LOGIN_INVALIDO),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)}
-            )
-    )
-    @ApiResponse(
-            responseCode = "500",
-            description = "Erro inesperado",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = @ExampleObject(value = OpenApiExamples.ERRO_INESPERADO)
-            )
-    )
-    public ResponseEntity<UsuarioLoginResponseDTO> login(@Valid @RequestBody UsuarioLoginRequestDTO request) {
-        log.debug("login usuario: email={}", request.email());
-
-        Optional<UsuarioEntity> usuario = service.findByCredenciais(request.email(), request.senha());
-        if (usuario.isEmpty()) {
-            return ResponseEntity.ok(new UsuarioLoginResponseDTO(false, null));
-        }
-
-        return ResponseEntity.ok(new UsuarioLoginResponseDTO(true, mapper.toResponse(usuario.get())));
-    }
-
-    /**
      * Atualiza os campos informados de um usuário existente.
      *
      * @param id - identificador do usuário a ser atualizado
      * @param request - campos a atualizar
      * @return ResponseEntity - resposta com o usuário atualizado
      */
+    @PreAuthorize("@accessPolicy.canUpdateUsuario(#id, #request)")
     @PatchMapping("/{id}")
     @Operation(
             summary = "Atualiza um usuário",
@@ -181,16 +72,11 @@ public class UsuarioController {
     @ApiResponse(
             responseCode = "400",
             description = "Corpo, campos ou identificador inválidos",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(
-                                    name = "Campos inválidos",
-                                    value = OpenApiExamples.USUARIO_ATUALIZACAO_INVALIDA
-                            ),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
-                            @ExampleObject(name = "Identificador inválido", value = OpenApiExamples.PARAMETRO_INVALIDO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.USUARIO_ATUALIZACAO_INVALIDA),
+                    @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
+                    @ExampleObject(name = "Identificador inválido", value = OpenApiExamples.PARAMETRO_INVALIDO)
+            })
     )
     @ApiResponse(
             responseCode = "404",
@@ -211,12 +97,10 @@ public class UsuarioController {
     @ApiResponse(
             responseCode = "422",
             description = "Cargo repetido ou remoção do cargo do único DONO",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Cargo repetido", value = OpenApiExamples.USUARIO_CARGO_REPETIDO),
-                            @ExampleObject(name = "Único dono", value = OpenApiExamples.USUARIO_UNICO_DONO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Cargo repetido", value = OpenApiExamples.USUARIO_CARGO_REPETIDO),
+                    @ExampleObject(name = "Único dono", value = OpenApiExamples.USUARIO_UNICO_DONO)
+            })
     )
     @ApiResponse(
             responseCode = "500",
@@ -248,6 +132,7 @@ public class UsuarioController {
      * @param id - identificador do usuário a ser removido
      * @return ResponseEntity - resposta sem conteúdo
      */
+    @PreAuthorize("hasAnyRole('DONO', 'ADMIN')")
     @DeleteMapping("/{id}")
     @Operation(summary = "Remove um usuário", description = "Falha se houver agendamento em AGENDADO.")
     @ApiResponse(responseCode = "204", description = "Usuário removido", content = @Content)
@@ -297,6 +182,8 @@ public class UsuarioController {
      *
      * @return ResponseEntity - resposta com a lista de usuários
      */
+    @PreAuthorize("hasAnyRole('DONO', 'ADMIN')")
+
     @GetMapping
     @Operation(summary = "Lista usuários", description = "Não expõe senhas.")
     @ApiResponse(
@@ -323,6 +210,7 @@ public class UsuarioController {
      * @param id - identificador do usuário
      * @return ResponseEntity - resposta com o usuário encontrado
      */
+    @PreAuthorize("@accessPolicy.isStaffOrSelf(#id)")
     @GetMapping("/{id}")
     @Operation(summary = "Busca um usuário")
     @ApiResponse(

@@ -22,9 +22,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeNaoEncontradaException;
 import org.trimly.backend.model.service.disponibilidade.DisponibilidadeService;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeCreateDTO;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeUpdateDTO;
@@ -60,11 +60,11 @@ class DisponibilidadeControllerTests {
     @DisplayName("Cria disponibilidade válida e retorna 201")
     void testeDadoDisponibilidadeValidaQuandoCriarEntaoRetornaCriado() throws Exception {
         DisponibilidadeCreateDTO request = new DisponibilidadeCreateDTO(
-                DiaSemana.SEXTA,
+                DisponibilidadeDiaSemana.SEXTA,
                 LocalTime.of(16, 0),
                 LocalTime.of(18, 0)
         );
-        when(service.create(request)).thenReturn(disponibilidade(1L, DiaSemana.SEXTA));
+        when(service.create(request)).thenReturn(disponibilidade(1L, DisponibilidadeDiaSemana.SEXTA));
 
         mockMvc.perform(
                 post(ENDPOINT).contentType(MediaType.APPLICATION_JSON)
@@ -91,8 +91,8 @@ class DisponibilidadeControllerTests {
     @Test
     @DisplayName("Atualiza disponibilidade existente e retorna 200")
     void testeDadoDisponibilidadeExistenteQuandoAtualizarEntaoRetornaOk() throws Exception {
-        DisponibilidadeUpdateDTO request = new DisponibilidadeUpdateDTO(DiaSemana.SABADO, null, null);
-        when(service.update(1L, request)).thenReturn(disponibilidade(1L, DiaSemana.SABADO));
+        DisponibilidadeUpdateDTO request = new DisponibilidadeUpdateDTO(DisponibilidadeDiaSemana.SABADO, null, null);
+        when(service.update(1L, request)).thenReturn(disponibilidade(1L, DisponibilidadeDiaSemana.SABADO));
 
         mockMvc.perform(
                 patch(ENDPOINT + "/1").contentType(MediaType.APPLICATION_JSON).content("{\"diaSemana\":\"SABADO\"}")
@@ -102,8 +102,8 @@ class DisponibilidadeControllerTests {
     @Test
     @DisplayName("Atualiza disponibilidade inexistente e retorna 404")
     void testeDadoDisponibilidadeInexistenteQuandoAtualizarEntaoRetornaNaoEncontrado() throws Exception {
-        when(service.update(99L, new DisponibilidadeUpdateDTO(DiaSemana.SABADO, null, null)))
-                .thenThrow(new EntityNotFoundException("Disponibilidade não foi encontrada"));
+        when(service.update(99L, new DisponibilidadeUpdateDTO(DisponibilidadeDiaSemana.SABADO, null, null)))
+                .thenThrow(new DisponibilidadeNaoEncontradaException());
 
         mockMvc.perform(
                 patch(ENDPOINT + "/99").contentType(MediaType.APPLICATION_JSON).content("{\"diaSemana\":\"SABADO\"}")
@@ -121,7 +121,7 @@ class DisponibilidadeControllerTests {
     @Test
     @DisplayName("Remove disponibilidade inexistente e retorna 404")
     void testeDadoDisponibilidadeInexistenteQuandoDeletarEntaoRetornaNaoEncontrado() throws Exception {
-        doThrow(new EntityNotFoundException("Disponibilidade não foi encontrada")).when(service).deleteById(99L);
+        doThrow(new DisponibilidadeNaoEncontradaException()).when(service).deleteById(99L);
 
         mockMvc.perform(delete(ENDPOINT + "/99")).andExpect(status().isNotFound());
     }
@@ -130,7 +130,7 @@ class DisponibilidadeControllerTests {
     @DisplayName("Lista todas as disponibilidades e retorna 200")
     void testeDadoDisponibilidadesCadastradasQuandoListarEntaoRetornaLista() throws Exception {
         when(service.findAll())
-                .thenReturn(List.of(disponibilidade(1L, DiaSemana.SEGUNDA), disponibilidade(2L, DiaSemana.TERCA)));
+                .thenReturn(List.of(disponibilidade(1L, DisponibilidadeDiaSemana.SEGUNDA), disponibilidade(2L, DisponibilidadeDiaSemana.TERCA)));
 
         mockMvc.perform(get(ENDPOINT))
                 .andExpect(status().isOk())
@@ -141,7 +141,7 @@ class DisponibilidadeControllerTests {
     @Test
     @DisplayName("Busca disponibilidade por id e retorna 200")
     void testeDadoDisponibilidadeExistenteQuandoBuscarPorIdEntaoRetornaOk() throws Exception {
-        when(service.findById(1L)).thenReturn(disponibilidade(1L, DiaSemana.SEGUNDA));
+        when(service.findById(1L)).thenReturn(disponibilidade(1L, DisponibilidadeDiaSemana.SEGUNDA));
 
         mockMvc.perform(get(ENDPOINT + "/1"))
                 .andExpect(status().isOk())
@@ -151,17 +151,17 @@ class DisponibilidadeControllerTests {
     @Test
     @DisplayName("Busca disponibilidade inexistente por id e retorna 404")
     void testeDadoDisponibilidadeInexistenteQuandoBuscarPorIdEntaoRetornaNaoEncontrado() throws Exception {
-        when(service.findById(99L)).thenThrow(new EntityNotFoundException("Disponibilidade não foi encontrada"));
+        when(service.findById(99L)).thenThrow(new DisponibilidadeNaoEncontradaException());
 
         mockMvc.perform(get(ENDPOINT + "/99"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Disponibilidade não foi encontrada"));
+                .andExpect(jsonPath("$.message").value("Disponibilidade não encontrada"));
     }
 
     @Test
     @DisplayName("Lista disponibilidades por dia, aceitando minúsculas, e retorna 200")
     void testeDadoDiaSemanaEmMinusculasQuandoBuscarPorDiaEntaoRetornaLista() throws Exception {
-        when(service.findByDiaSemana(DiaSemana.SEGUNDA)).thenReturn(List.of(disponibilidade(1L, DiaSemana.SEGUNDA)));
+        when(service.findByDiaSemana(DisponibilidadeDiaSemana.SEGUNDA)).thenReturn(List.of(disponibilidade(1L, DisponibilidadeDiaSemana.SEGUNDA)));
 
         mockMvc.perform(get(ENDPOINT + "/dia/segunda"))
                 .andExpect(status().isOk())
@@ -169,7 +169,7 @@ class DisponibilidadeControllerTests {
                 .andExpect(jsonPath("$[0].diaSemana").value("SEGUNDA"));
     }
 
-    private static DisponibilidadeEntity disponibilidade(Long id, DiaSemana diaSemana) {
+    private static DisponibilidadeEntity disponibilidade(Long id, DisponibilidadeDiaSemana diaSemana) {
         return DisponibilidadeEntity.builder()
                 .id(id)
                 .diaSemana(diaSemana)

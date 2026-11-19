@@ -6,14 +6,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 
 /**
- * Trata falhas fora do domínio: requisição mal formada vira `400` e o restante `500` genérico.
+ * Trata falhas fora do domínio: requisição mal formada vira `400`, rota inexistente `404` ou `405` e o restante
+ * `500` genérico.
  */
 @Slf4j
 @RestControllerAdvice
@@ -62,6 +65,28 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Mapeia a rota inexistente para `404`.
+     *
+     * @param exception - falha de rota não encontrada
+     * @return ResponseEntity - resposta `404` com o corpo de erro
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleRotaInexistente(NoResourceFoundException exception) {
+        return clientError(exception, HttpStatus.NOT_FOUND, "Rota não encontrada");
+    }
+
+    /**
+     * Mapeia o método HTTP não suportado pela rota para `405`.
+     *
+     * @param exception - falha de método não suportado
+     * @return ResponseEntity - resposta `405` com o corpo de erro
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMetodoNaoSuportado(HttpRequestMethodNotSupportedException exception) {
+        return clientError(exception, HttpStatus.METHOD_NOT_ALLOWED, "Método não suportado nesta rota");
+    }
+
+    /**
      * Registra a falha inesperada no log e devolve `500` com mensagem genérica.
      *
      * @param exception - falha não pertencente ao domínio
@@ -73,20 +98,30 @@ public class GlobalExceptionHandler {
 
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(status)
-                .body(ErrorResponseDTO.of(status, "Ocorreu um erro inesperado ao processar a requisição"));
+                .body(ErrorResponseDTO.of(status, "Erro inesperado ao processar a requisição"));
     }
 
     /**
-     * Registra a requisição mal formada no log e monta a resposta `400`.
+     * Monta a resposta `400` da requisição mal formada.
      *
      * @param exception - falha da requisição a reportar
      * @param message - mensagem devolvida ao cliente
      * @return ResponseEntity - resposta `400` com o corpo de erro
      */
     private ResponseEntity<ErrorResponseDTO> badRequest(Exception exception, String message) {
-        log.warn("bad request: {}", exception.toString());
+        return clientError(exception, HttpStatus.BAD_REQUEST, message);
+    }
 
-        HttpStatus status = HttpStatus.BAD_REQUEST;
+    /**
+     * Registra o erro do cliente no log e monta a resposta com o status informado.
+     *
+     * @param exception - falha da requisição a reportar
+     * @param status - status HTTP da resposta
+     * @param message - mensagem devolvida ao cliente
+     * @return ResponseEntity - resposta com o corpo de erro
+     */
+    private ResponseEntity<ErrorResponseDTO> clientError(Exception exception, HttpStatus status, String message) {
+        log.warn("client error: {}", exception.toString());
         return ResponseEntity.status(status).body(ErrorResponseDTO.of(status, message));
     }
 }

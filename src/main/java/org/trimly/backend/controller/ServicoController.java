@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,8 +23,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.trimly.backend.config.EndpointConfig;
-import org.trimly.backend.config.openapi.OpenApiExamples;
+import org.trimly.backend.infra.EndpointConfig;
+import org.trimly.backend.infra.openapi.OpenApiExamples;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.servico.ServicoStatus;
 import org.trimly.backend.model.service.servico.ServicoService;
@@ -60,6 +61,7 @@ public class ServicoController {
      * @param request - dados do serviço a ser criado
      * @return ResponseEntity - resposta com o serviço criado
      */
+    @PreAuthorize("hasAnyRole('DONO', 'ADMIN')")
     @PostMapping
     @Operation(summary = "Cria um serviço", description = "Cria como ATIVO; nome único.")
     @ApiResponse(
@@ -70,12 +72,10 @@ public class ServicoController {
     @ApiResponse(
             responseCode = "400",
             description = "Corpo ausente, mal formatado ou inválido",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.SERVICO_CRIACAO_INVALIDA),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.SERVICO_CRIACAO_INVALIDA),
+                    @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)
+            })
     )
     @ApiResponse(
             responseCode = "409",
@@ -107,6 +107,7 @@ public class ServicoController {
      * @param request - campos a atualizar
      * @return ResponseEntity - resposta com o serviço atualizado
      */
+    @PreAuthorize("hasAnyRole('DONO', 'ADMIN')")
     @PatchMapping("/{id}")
     @Operation(
             summary = "Atualiza um serviço",
@@ -120,16 +121,11 @@ public class ServicoController {
     @ApiResponse(
             responseCode = "400",
             description = "Corpo, campos ou identificador inválidos",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(
-                                    name = "Campos inválidos",
-                                    value = OpenApiExamples.SERVICO_ATUALIZACAO_INVALIDA
-                            ),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
-                            @ExampleObject(name = "Identificador inválido", value = OpenApiExamples.PARAMETRO_INVALIDO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.SERVICO_ATUALIZACAO_INVALIDA),
+                    @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO),
+                    @ExampleObject(name = "Identificador inválido", value = OpenApiExamples.PARAMETRO_INVALIDO)
+            })
     )
     @ApiResponse(
             responseCode = "404",
@@ -150,15 +146,13 @@ public class ServicoController {
     @ApiResponse(
             responseCode = "422",
             description = "Status repetido ou desativação com agendamentos futuros",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Status repetido", value = OpenApiExamples.SERVICO_STATUS_REPETIDO),
-                            @ExampleObject(
-                                    name = "Desativação com agendamentos",
-                                    value = OpenApiExamples.SERVICO_DESATIVACAO_COM_AGENDAMENTO
-                            )}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Status repetido", value = OpenApiExamples.SERVICO_STATUS_REPETIDO),
+                    @ExampleObject(
+                            name = "Desativação com agendamentos",
+                            value = OpenApiExamples.SERVICO_DESATIVACAO_COM_AGENDAMENTO
+                    )
+            })
     )
     @ApiResponse(
             responseCode = "500",
@@ -191,6 +185,7 @@ public class ServicoController {
      * @param id - identificador do serviço a ser removido
      * @return ResponseEntity - resposta sem conteúdo
      */
+    @PreAuthorize("hasAnyRole('DONO', 'ADMIN')")
     @DeleteMapping("/{id}")
     @Operation(summary = "Remove um serviço", description = "Falha se houver agendamento em AGENDADO.")
     @ApiResponse(responseCode = "204", description = "Serviço removido", content = @Content)
@@ -334,10 +329,8 @@ public class ServicoController {
             )
     )
     public ResponseEntity<List<ServicoResponseDTO>> findByStatus(
-            @Parameter(
-                    description = "Status do serviço no catálogo",
-                    example = "ATIVO"
-            ) @PathVariable ServicoStatus status
+            @Parameter(description = "Status do serviço no catálogo", example = "ATIVO")
+            @PathVariable ServicoStatus status
     ) {
         List<ServicoEntity> entities = service.findByStatus(status);
         return ResponseEntity.ok(mapper.toResponseList(entities));

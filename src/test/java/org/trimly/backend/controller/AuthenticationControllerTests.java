@@ -48,7 +48,7 @@ class AuthenticationControllerTests {
     @DisplayName("Registra usuário válido e retorna 201 com o token")
     void testeDadoUsuarioValidoQuandoRegistrarEntaoRetornaCriadoComToken() throws Exception {
         UsuarioCreateDTO request = new UsuarioCreateDTO("Ana", "ana@trimly.com", "123456");
-        when(service.register(request)).thenReturn(new AuthResponseDTO("token-jwt"));
+        when(service.register(request)).thenReturn(new AuthResponseDTO("token-jwt", null));
 
         mockMvc.perform(
                 post(ENDPOINT + "/register").contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +71,7 @@ class AuthenticationControllerTests {
     @DisplayName("Autentica credenciais corretas e retorna 200 com o token")
     void testeDadoCredenciaisCorretasQuandoLogarEntaoRetornaOkComToken() throws Exception {
         AuthLoginRequestDTO request = new AuthLoginRequestDTO("ana@trimly.com", "123456");
-        when(service.login(request)).thenReturn(new AuthResponseDTO("token-jwt"));
+        when(service.login(request)).thenReturn(new AuthResponseDTO("token-jwt", null));
 
         mockMvc.perform(
                 post(ENDPOINT + "/login").contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +88,7 @@ class AuthenticationControllerTests {
         mockMvc.perform(
                 post(ENDPOINT + "/login").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"ana@trimly.com\",\"senha\":\"errada\"}")
-        ).andExpect(status().isUnauthorized()).andExpect(jsonPath("$.message").value("Credenciais inválidas"));
+        ).andExpect(status().isUnauthorized()).andExpect(jsonPath("$.message").value("E-mail ou senha inválidos"));
     }
 
     @Test
@@ -97,6 +97,6 @@ class AuthenticationControllerTests {
         mockMvc.perform(
                 post(ENDPOINT + "/login").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"\",\"senha\":\"123456\"}")
-        ).andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Email não pode ser vazio"));
+        ).andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("E-mail não pode ser vazio"));
     }
 }

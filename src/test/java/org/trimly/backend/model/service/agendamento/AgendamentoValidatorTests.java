@@ -19,15 +19,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
 import org.trimly.backend.model.exception.agendamento.AgendamentoAntecedenciaExcedidaException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoEntreDiasException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoException;
-import org.trimly.backend.model.exception.agendamento.AgendamentoForaDoHorarioException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoFinalizadoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoForaDaDisponibilidadeException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoNoPassadoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoSemDisponibilidadeException;
-import org.trimly.backend.model.exception.agendamento.AgendamentoStatusException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoStatusRepetidoException;
 import org.trimly.backend.model.integration.feriados.FeriadoResponseDTO;
 import org.trimly.backend.model.integration.feriados.FeriadosClient;
 import org.trimly.backend.model.repository.AgendamentoRepository;
@@ -92,12 +94,12 @@ class AgendamentoValidatorTests {
     void testeDadoAgendamentoCanceladoQuandoValidarStatusEntaoLancaStatusTerminal() {
         AgendamentoEntity agendamento = agendamento(1L, SEGUNDA.atTime(9, 0), 30, AgendamentoStatus.CANCELADO);
 
-        AgendamentoStatusException excecao = assertThrows(
-                AgendamentoStatusException.class,
+        AgendamentoFinalizadoException excecao = assertThrows(
+                AgendamentoFinalizadoException.class,
                 () -> validator.validateStatusUpdate(agendamento, AgendamentoStatus.CONCLUIDO)
         );
 
-        assertEquals("O agendamento não pode ser alterado neste status", excecao.getMessage());
+        assertEquals("Agendamento não pode ser alterado nesse status", excecao.getMessage());
     }
 
     @Test
@@ -105,12 +107,12 @@ class AgendamentoValidatorTests {
     void testeDadoMesmoStatusQuandoValidarStatusEntaoLancaStatusRepetido() {
         AgendamentoEntity agendamento = agendamento(1L, SEGUNDA.atTime(9, 0), 30, AgendamentoStatus.AGENDADO);
 
-        AgendamentoStatusException excecao = assertThrows(
-                AgendamentoStatusException.class,
+        AgendamentoStatusRepetidoException excecao = assertThrows(
+                AgendamentoStatusRepetidoException.class,
                 () -> validator.validateStatusUpdate(agendamento, AgendamentoStatus.AGENDADO)
         );
 
-        assertEquals("O agendamento já está nesse status", excecao.getMessage());
+        assertEquals("Agendamento já está nesse status", excecao.getMessage());
     }
 
     @Test
@@ -124,11 +126,11 @@ class AgendamentoValidatorTests {
 
     @Test
     @DisplayName("Rejeita agendamento que atravessa para o dia seguinte")
-    void testeDadoFimEmOutroDiaQuandoValidarHorarioFuturoEntaoLancaForaDoHorario() {
+    void testeDadoFimEmOutroDiaQuandoValidarHorarioFuturoEntaoLancaEntreDias() {
         LocalDateTime inicio = LocalDate.now().plusDays(2).atTime(23, 30);
         LocalDateTime fim = inicio.plusMinutes(60);
 
-        assertThrows(AgendamentoForaDoHorarioException.class, () -> validator.validateHorarioFuturo(inicio, fim));
+        assertThrows(AgendamentoEntreDiasException.class, () -> validator.validateHorarioFuturo(inicio, fim));
     }
 
     @Test
@@ -158,7 +160,7 @@ class AgendamentoValidatorTests {
     @Test
     @DisplayName("Rejeita dia sem nenhuma disponibilidade")
     void testeDadoDiaSemDisponibilidadeQuandoValidarDisponibilidadeEntaoLancaSemDisponibilidade() {
-        when(disponibilidadeService.findByDiaSemana(DiaSemana.SEGUNDA)).thenReturn(List.of());
+        when(disponibilidadeService.findByDiaSemana(DisponibilidadeDiaSemana.SEGUNDA)).thenReturn(List.of());
 
         LocalDateTime inicio = SEGUNDA.atTime(9, 0);
         LocalDateTime fim = SEGUNDA.atTime(9, 30);
@@ -168,13 +170,13 @@ class AgendamentoValidatorTests {
                 () -> validator.validateDisponibilidade(inicio, fim)
         );
 
-        assertEquals("Não há nenhuma disponibilidade nesse dia para realizar este agendamento", excecao.getMessage());
+        assertEquals("Não há disponibilidade nesse dia", excecao.getMessage());
     }
 
     @Test
     @DisplayName("Aceita agendamento dentro de uma janela")
     void testeDadoAgendamentoDentroDaJanelaQuandoValidarDisponibilidadeEntaoNaoLanca() {
-        when(disponibilidadeService.findByDiaSemana(DiaSemana.SEGUNDA)).thenReturn(List.of(janela(7, 12)));
+        when(disponibilidadeService.findByDiaSemana(DisponibilidadeDiaSemana.SEGUNDA)).thenReturn(List.of(janela(7, 12)));
 
         assertDoesNotThrow(() -> validator.validateDisponibilidade(SEGUNDA.atTime(9, 0), SEGUNDA.atTime(9, 30)));
     }
@@ -182,7 +184,7 @@ class AgendamentoValidatorTests {
     @Test
     @DisplayName("Aceita agendamento que ocupa a janela inteira")
     void testeDadoAgendamentoNosLimitesDaJanelaQuandoValidarDisponibilidadeEntaoNaoLanca() {
-        when(disponibilidadeService.findByDiaSemana(DiaSemana.SEGUNDA)).thenReturn(List.of(janela(7, 12)));
+        when(disponibilidadeService.findByDiaSemana(DisponibilidadeDiaSemana.SEGUNDA)).thenReturn(List.of(janela(7, 12)));
 
         assertDoesNotThrow(() -> validator.validateDisponibilidade(SEGUNDA.atTime(7, 0), SEGUNDA.atTime(12, 0)));
     }
@@ -190,7 +192,7 @@ class AgendamentoValidatorTests {
     @Test
     @DisplayName("Aceita agendamento que cabe na segunda janela do dia")
     void testeDadoDuasJanelasQuandoValidarDisponibilidadeEntaoAceitaAgendamentoNaSegunda() {
-        when(disponibilidadeService.findByDiaSemana(DiaSemana.SEGUNDA))
+        when(disponibilidadeService.findByDiaSemana(DisponibilidadeDiaSemana.SEGUNDA))
                 .thenReturn(List.of(janela(7, 12), janela(13, 18)));
 
         assertDoesNotThrow(() -> validator.validateDisponibilidade(SEGUNDA.atTime(14, 0), SEGUNDA.atTime(14, 30)));
@@ -198,30 +200,33 @@ class AgendamentoValidatorTests {
 
     @Test
     @DisplayName("Rejeita agendamento que ultrapassa o fim da janela")
-    void testeDadoAgendamentoQueUltrapassaAJanelaQuandoValidarDisponibilidadeEntaoLancaSemDisponibilidade() {
-        when(disponibilidadeService.findByDiaSemana(DiaSemana.SEGUNDA)).thenReturn(List.of(janela(7, 12)));
+    void testeDadoAgendamentoQueUltrapassaAJanelaQuandoValidarDisponibilidadeEntaoLancaForaDaDisponibilidade() {
+        when(disponibilidadeService.findByDiaSemana(DisponibilidadeDiaSemana.SEGUNDA)).thenReturn(List.of(janela(7, 12)));
 
         LocalDateTime inicio = SEGUNDA.atTime(11, 45);
         LocalDateTime fim = SEGUNDA.atTime(12, 15);
 
-        AgendamentoSemDisponibilidadeException excecao = assertThrows(
-                AgendamentoSemDisponibilidadeException.class,
+        AgendamentoForaDaDisponibilidadeException excecao = assertThrows(
+                AgendamentoForaDaDisponibilidadeException.class,
                 () -> validator.validateDisponibilidade(inicio, fim)
         );
 
-        assertEquals("Não há disponibilidade suficiente nesse dia para realizar este agendamento", excecao.getMessage());
+        assertEquals("Horário fora da disponibilidade do dia", excecao.getMessage());
     }
 
     @Test
     @DisplayName("Rejeita agendamento que atravessa o intervalo entre janelas")
-    void testeDadoAgendamentoSobreOIntervaloQuandoValidarDisponibilidadeEntaoLancaSemDisponibilidade() {
-        when(disponibilidadeService.findByDiaSemana(DiaSemana.SEGUNDA))
+    void testeDadoAgendamentoSobreOIntervaloQuandoValidarDisponibilidadeEntaoLancaForaDaDisponibilidade() {
+        when(disponibilidadeService.findByDiaSemana(DisponibilidadeDiaSemana.SEGUNDA))
                 .thenReturn(List.of(janela(7, 12), janela(13, 18)));
 
         LocalDateTime inicio = SEGUNDA.atTime(11, 45);
         LocalDateTime fim = SEGUNDA.atTime(13, 15);
 
-        assertThrows(AgendamentoSemDisponibilidadeException.class, () -> validator.validateDisponibilidade(inicio, fim));
+        assertThrows(
+                AgendamentoForaDaDisponibilidadeException.class,
+                () -> validator.validateDisponibilidade(inicio, fim)
+        );
     }
 
     @Test
@@ -313,7 +318,7 @@ class AgendamentoValidatorTests {
 
     private static DisponibilidadeEntity janela(int horaInicio, int horaFim) {
         return DisponibilidadeEntity.builder()
-                .diaSemana(DiaSemana.SEGUNDA)
+                .diaSemana(DisponibilidadeDiaSemana.SEGUNDA)
                 .horaInicio(LocalTime.of(horaInicio, 0))
                 .horaFim(LocalTime.of(horaFim, 0))
                 .build();

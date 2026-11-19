@@ -7,7 +7,14 @@ import org.trimly.backend.model.exception.TrimlyException;
  */
 public class ServicoComAgendamentoPendenteException extends TrimlyException {
     /**
-     * Cria a exceção com a mensagem informada.
+     * Cria a exceção com a mensagem padrão.
+     */
+    public ServicoComAgendamentoPendenteException() {
+        super("Não é possível remover serviço com agendamento pendente");
+    }
+
+    /**
+     * Cria a exceção com uma mensagem própria.
      *
      * @param message - detalhe da falha
      */

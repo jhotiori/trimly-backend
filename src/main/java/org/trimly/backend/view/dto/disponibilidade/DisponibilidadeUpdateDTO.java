@@ -2,13 +2,16 @@ package org.trimly.backend.view.dto.disponibilidade;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalTime;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 
 /**
  * Campos atualizáveis de uma disponibilidade (PATCH); todos nulos é no-op.
  */
 public record DisponibilidadeUpdateDTO(
-        @Schema(description = "Opcional. Novo dia da semana da janela", example = "SEXTA") DiaSemana diaSemana,
+        @Schema(
+                description = "Opcional. Novo dia da semana da janela",
+                example = "SEXTA"
+        ) DisponibilidadeDiaSemana diaSemana,
 
         @Schema(
                 description = "Opcional. Nova hora de início, no formato HH:mm",

@@ -9,10 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.servico.ServicoStatus;
-import org.trimly.backend.model.exception.EntityNotFoundException;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
-import org.trimly.backend.model.exception.servico.ServicoException;
+import org.trimly.backend.model.exception.servico.ServicoDesativacaoBloqueadaException;
+import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
 import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
+import org.trimly.backend.model.exception.servico.ServicoStatusRepetidoException;
 import org.trimly.backend.model.repository.ServicoRepository;
 import org.trimly.backend.view.dto.servico.ServicoCreateDTO;
 import org.trimly.backend.view.dto.servico.ServicoUpdateDTO;
@@ -64,8 +65,9 @@ public class ServicoService {
      *
      * @param id - identificador do serviço a ser atualizado
      * @param request - campos a atualizar (nome, valor, duração e/ou status)
-     * @throws EntityNotFoundException - quando não existe serviço com o id informado
-     * @throws ServicoException - quando a transição de status não é permitida
+     * @throws ServicoNaoEncontradoException - quando não existe serviço com o id informado
+     * @throws ServicoStatusRepetidoException - quando o novo status é igual ao atual
+     * @throws ServicoDesativacaoBloqueadaException - quando a desativação encontra agendamento pendente
      * @return ServicoEntity - o serviço atualizado
      */
     @Transactional
@@ -102,7 +104,7 @@ public class ServicoService {
      * Remove o serviço com o identificador informado.
      *
      * @param id - identificador do serviço a ser removido
-     * @throws EntityNotFoundException - quando não existe serviço com o id informado
+     * @throws ServicoNaoEncontradoException - quando não existe serviço com o id informado
      * @throws ServicoComAgendamentoPendenteException - quando o serviço possui agendamento em `AGENDADO`
      */
     @Transactional
@@ -125,11 +127,11 @@ public class ServicoService {
      * Busca um serviço pelo seu identificador.
      *
      * @param id - identificador do serviço
-     * @throws EntityNotFoundException - quando não existe serviço com o id informado
+     * @throws ServicoNaoEncontradoException - quando não existe serviço com o id informado
      * @return ServicoEntity - o serviço encontrado
      */
     public ServicoEntity findById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado"));
+        return repository.findById(id).orElseThrow(ServicoNaoEncontradoException::new);
     }
 
     /**

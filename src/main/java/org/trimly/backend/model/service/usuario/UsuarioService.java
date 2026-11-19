@@ -4,16 +4,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.usuario.UsuarioCargoRepetidoException;
 import org.trimly.backend.model.exception.usuario.UsuarioComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException;
-import org.trimly.backend.model.exception.usuario.UsuarioException;
+import org.trimly.backend.model.exception.usuario.UsuarioNaoEncontradoException;
+import org.trimly.backend.model.exception.usuario.UsuarioSenhaInvalidaException;
+import org.trimly.backend.model.exception.usuario.UsuarioUnicoDonoException;
 import org.trimly.backend.model.repository.UsuarioRepository;
 import org.trimly.backend.view.dto.usuario.UsuarioCreateDTO;
 import org.trimly.backend.view.dto.usuario.UsuarioUpdateDTO;
@@ -22,6 +25,7 @@ import org.trimly.backend.view.mapper.UsuarioMapper;
 /**
  * Orquestra o CRUD de usuários, com BCrypt na senha e regras de {@link UsuarioValidator}.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
@@ -53,7 +57,7 @@ public class UsuarioService {
      * Cria um novo usuário com cargo cliente e senha criptografada após validar a unicidade do e-mail.
      *
      * @param request - dados do usuário a ser criado
-     * @throws UsuarioException - quando a senha tem menos de 6 caracteres
+     * @throws UsuarioSenhaInvalidaException - quando a senha tem menos de 6 caracteres
      * @throws UsuarioEmailExistenteException - quando já existe um usuário com o mesmo e-mail
      * @return UsuarioEntity - o usuário criado e persistido
      */
@@ -78,9 +82,11 @@ public class UsuarioService {
      *
      * @param id - identificador do usuário a ser atualizado
      * @param request - campos a atualizar (nome, e-mail, senha e/ou cargo)
-     * @throws EntityNotFoundException - quando não existe usuário com o id informado
+     * @throws UsuarioNaoEncontradoException - quando não existe usuário com o id informado
      * @throws UsuarioEmailExistenteException - quando o e-mail informado já pertence a outro usuário
-     * @throws UsuarioException - quando a reatribuição de cargo não é permitida ou a nova senha tem menos de 6 caracteres
+     * @throws UsuarioCargoRepetidoException - quando o cargo é igual ao atual
+     * @throws UsuarioUnicoDonoException - quando a mudança remove o único `DONO`
+     * @throws UsuarioSenhaInvalidaException - quando a nova senha tem menos de 6 caracteres
      * @return UsuarioEntity - o usuário atualizado
      */
     @Transactional
@@ -119,7 +125,7 @@ public class UsuarioService {
      * Remove o usuário com o identificador informado.
      *
      * @param id - identificador do usuário a ser removido
-     * @throws EntityNotFoundException - quando não existe usuário com o id informado
+     * @throws UsuarioNaoEncontradoException - quando não existe usuário com o id informado
      * @throws UsuarioComAgendamentoPendenteException - quando o usuário possui agendamento em `AGENDADO`
      */
     @Transactional
@@ -127,6 +133,7 @@ public class UsuarioService {
         UsuarioEntity entity = this.findById(id);
         usuarioValidator.validateSemAgendamentoPendente(id);
         repository.delete(entity);
+        log.info("usuario removido: id={}", id);
     }
 
     /**
@@ -142,23 +149,22 @@ public class UsuarioService {
      * Busca um usuário pelo seu identificador.
      *
      * @param id - identificador do usuário
-     * @throws EntityNotFoundException - quando não existe usuário com o id informado
+     * @throws UsuarioNaoEncontradoException - quando não existe usuário com o id informado
      * @return UsuarioEntity - o usuário encontrado
      */
     public UsuarioEntity findById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario não foi encontrado"));
+        return repository.findById(id).orElseThrow(UsuarioNaoEncontradoException::new);
     }
 
     /**
      * Retorna o usuário com o email informado.
      *
      * @param email - e-mail do usuário
-     * @throws EntityNotFoundException - quando não existe usuário com o e-mail informado
+     * @throws UsuarioNaoEncontradoException - quando não existe usuário com o e-mail informado
      * @return UsuarioEntity - o usuário encontrado
      */
     public UsuarioEntity findByEmail(String email) {
-        return repository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario com email não foi encontrado"));
+        return repository.findByEmail(email).orElseThrow(UsuarioNaoEncontradoException::new);
     }
 
     /**

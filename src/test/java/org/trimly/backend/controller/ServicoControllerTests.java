@@ -24,7 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.servico.ServicoStatus;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
 import org.trimly.backend.model.service.servico.ServicoService;
 import org.trimly.backend.view.dto.servico.ServicoCreateDTO;
 import org.trimly.backend.view.dto.servico.ServicoUpdateDTO;
@@ -99,7 +99,7 @@ class ServicoControllerTests {
     @DisplayName("Atualiza serviço inexistente e retorna 404")
     void testeDadoServicoInexistenteQuandoAtualizarEntaoRetornaNaoEncontrado() throws Exception {
         when(service.update(99L, new ServicoUpdateDTO("Barba", null, null, null)))
-                .thenThrow(new EntityNotFoundException("Serviço não encontrado"));
+                .thenThrow(new ServicoNaoEncontradoException());
 
         mockMvc.perform(
                 patch(ENDPOINT + "/99").contentType(MediaType.APPLICATION_JSON).content("{\"nome\":\"Barba\"}")
@@ -117,7 +117,7 @@ class ServicoControllerTests {
     @Test
     @DisplayName("Remove serviço inexistente e retorna 404")
     void testeDadoServicoInexistenteQuandoDeletarEntaoRetornaNaoEncontrado() throws Exception {
-        doThrow(new EntityNotFoundException("Serviço não encontrado")).when(service).deleteById(99L);
+        doThrow(new ServicoNaoEncontradoException()).when(service).deleteById(99L);
 
         mockMvc.perform(delete(ENDPOINT + "/99")).andExpect(status().isNotFound());
     }
@@ -146,7 +146,7 @@ class ServicoControllerTests {
     @Test
     @DisplayName("Busca serviço inexistente por id e retorna 404")
     void testeDadoServicoInexistenteQuandoBuscarPorIdEntaoRetornaNaoEncontrado() throws Exception {
-        when(service.findById(99L)).thenThrow(new EntityNotFoundException("Serviço não encontrado"));
+        when(service.findById(99L)).thenThrow(new ServicoNaoEncontradoException());
 
         mockMvc.perform(get(ENDPOINT + "/99"))
                 .andExpect(status().isNotFound())

@@ -7,8 +7,9 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.servico.ServicoStatus;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
-import org.trimly.backend.model.exception.servico.ServicoException;
+import org.trimly.backend.model.exception.servico.ServicoDesativacaoBloqueadaException;
 import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
+import org.trimly.backend.model.exception.servico.ServicoStatusRepetidoException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.ServicoRepository;
 
@@ -38,7 +39,7 @@ public class ServicoValidator {
      */
     public void validateNomeUnico(String nome) {
         if (repository.existsByNomeIgnoreCase(nome)) {
-            throw new ServicoNomeDuplicadoException("Já existe um serviço com esse nome");
+            throw new ServicoNomeDuplicadoException();
         }
     }
 
@@ -47,7 +48,9 @@ public class ServicoValidator {
      *
      * @param servico - serviço a ter o status alterado
      * @param novo - status desejado, ou `null` quando o status não está sendo alterado
-     * @throws ServicoException - quando o novo status é igual ao atual, ou quando a desativação é solicitada e o serviço ainda tem agendamentos futuros em `AGENDADO`
+     * @throws ServicoStatusRepetidoException - quando o novo status é igual ao atual
+     * @throws ServicoDesativacaoBloqueadaException - quando a desativação é solicitada e o serviço ainda tem
+     *         agendamentos futuros em `AGENDADO`
      */
     public void validateStatusUpdate(ServicoEntity servico, ServicoStatus novo) {
         if (novo == null) {
@@ -55,7 +58,7 @@ public class ServicoValidator {
         }
 
         if (servico.getStatus() == novo) {
-            throw new ServicoException("O serviço já está nesse status");
+            throw new ServicoStatusRepetidoException();
         }
 
         if (novo == ServicoStatus.INATIVO && agendamentoRepository.existsByServicoIdAndStatusAndDataAfter(
@@ -63,7 +66,7 @@ public class ServicoValidator {
                 AgendamentoStatus.AGENDADO,
                 LocalDateTime.now()
         )) {
-            throw new ServicoException("O serviço não pode ser desativado enquanto tiver agendamentos futuros");
+            throw new ServicoDesativacaoBloqueadaException();
         }
     }
 
@@ -75,9 +78,7 @@ public class ServicoValidator {
      */
     public void validateSemAgendamentoPendente(Long servicoId) {
         if (agendamentoRepository.existsByServicoIdAndStatus(servicoId, AgendamentoStatus.AGENDADO)) {
-            throw new ServicoComAgendamentoPendenteException(
-                    "Não é possível remover um serviço com agendamento pendente"
-            );
+            throw new ServicoComAgendamentoPendenteException();
         }
     }
 }

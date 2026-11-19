@@ -23,9 +23,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.servico.ServicoStatus;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
-import org.trimly.backend.model.exception.servico.ServicoException;
+import org.trimly.backend.model.exception.servico.ServicoStatusRepetidoException;
 import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
 import org.trimly.backend.model.repository.ServicoRepository;
 import org.trimly.backend.view.dto.servico.ServicoCreateDTO;
@@ -146,12 +146,12 @@ class ServicoServiceTests {
     void testeDadoStatusInvalidoQuandoAtualizarEntaoLancaExcecaoSemSalvar() {
         ServicoEntity entity = servico(1L, "Corte");
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        doThrow(new ServicoException("O serviço já está nesse status")).when(servicoValidator)
+        doThrow(new ServicoStatusRepetidoException("Serviço já está nesse status")).when(servicoValidator)
                 .validateStatusUpdate(entity, ServicoStatus.ATIVO);
 
         ServicoUpdateDTO request = new ServicoUpdateDTO(null, null, null, ServicoStatus.ATIVO);
 
-        assertThrows(ServicoException.class, () -> service.update(1L, request));
+        assertThrows(ServicoStatusRepetidoException.class, () -> service.update(1L, request));
 
         verify(repository, never()).save(any());
     }
@@ -163,7 +163,7 @@ class ServicoServiceTests {
 
         ServicoUpdateDTO request = new ServicoUpdateDTO("Barba", null, null, null);
 
-        assertThrows(EntityNotFoundException.class, () -> service.update(99L, request));
+        assertThrows(ServicoNaoEncontradoException.class, () -> service.update(99L, request));
     }
 
     @Test
@@ -195,7 +195,7 @@ class ServicoServiceTests {
     void testeDadoServicoInexistenteQuandoDeletarEntaoLancaNaoEncontrado() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> service.deleteById(99L));
+        assertThrows(ServicoNaoEncontradoException.class, () -> service.deleteById(99L));
 
         verifyNoInteractions(servicoValidator);
     }
@@ -223,7 +223,7 @@ class ServicoServiceTests {
     void testeDadoServicoInexistenteQuandoBuscarPorIdEntaoLancaNaoEncontrado() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException excecao = assertThrows(EntityNotFoundException.class, () -> service.findById(99L));
+        ServicoNaoEncontradoException excecao = assertThrows(ServicoNaoEncontradoException.class, () -> service.findById(99L));
 
         assertEquals("Serviço não encontrado", excecao.getMessage());
     }

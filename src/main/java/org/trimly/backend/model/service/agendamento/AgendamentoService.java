@@ -10,12 +10,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
-import org.trimly.backend.model.exception.EntityNotFoundException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoAntecedenciaExcedidaException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
-import org.trimly.backend.model.exception.agendamento.AgendamentoForaDoHorarioException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoEntreDiasException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoFinalizadoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoForaDaDisponibilidadeException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoNaoEncontradoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoSemDisponibilidadeException;
-import org.trimly.backend.model.exception.agendamento.AgendamentoStatusException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoStatusRepetidoException;
+import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
+import org.trimly.backend.model.exception.usuario.UsuarioNaoEncontradoException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.AgendamentoSpecification;
 import org.trimly.backend.model.service.servico.ServicoService;
@@ -66,10 +70,12 @@ public class AgendamentoService {
      * Cria um novo agendamento após validar horário, disponibilidade e conflitos.
      *
      * @param request - dados do agendamento a ser criado
-     * @throws EntityNotFoundException - quando o usuário ou o serviço informado não existe
-     * @throws AgendamentoForaDoHorarioException - quando o agendamento ultrapassa o limite de um dia
+     * @throws UsuarioNaoEncontradoException - quando o usuário informado não existe
+     * @throws ServicoNaoEncontradoException - quando o serviço informado não existe
+     * @throws AgendamentoEntreDiasException - quando o agendamento ultrapassa o limite de um dia
      * @throws AgendamentoAntecedenciaExcedidaException - quando o início ultrapassa o limite de 14 dias de antecedência
-     * @throws AgendamentoSemDisponibilidadeException - quando não há disponibilidade que comporte o horário
+     * @throws AgendamentoSemDisponibilidadeException - quando o dia não tem disponibilidade
+     * @throws AgendamentoForaDaDisponibilidadeException - quando o horário não cabe em uma janela do dia
      * @throws AgendamentoConflitoException - quando o horário conflita com outro agendamento
      * @return AgendamentoEntity - o agendamento criado e persistido
      */
@@ -92,11 +98,14 @@ public class AgendamentoService {
      *
      * @param id - identificador do agendamento a ser atualizado
      * @param request - campos a atualizar (data, serviço e/ou status)
-     * @throws EntityNotFoundException - quando o agendamento ou o serviço informado não existe
-     * @throws AgendamentoStatusException - quando o agendamento não está agendado ou a transição de status não é permitida
-     * @throws AgendamentoForaDoHorarioException - quando o agendamento ultrapassa o limite de um dia
+     * @throws AgendamentoNaoEncontradoException - quando o agendamento não existe
+     * @throws ServicoNaoEncontradoException - quando o serviço informado não existe
+     * @throws AgendamentoFinalizadoException - quando o agendamento não está em `AGENDADO`
+     * @throws AgendamentoStatusRepetidoException - quando o novo status é igual ao atual
+     * @throws AgendamentoEntreDiasException - quando o agendamento ultrapassa o limite de um dia
      * @throws AgendamentoAntecedenciaExcedidaException - quando o início ultrapassa o limite de 14 dias de antecedência
-     * @throws AgendamentoSemDisponibilidadeException - quando não há disponibilidade que comporte o horário
+     * @throws AgendamentoSemDisponibilidadeException - quando o dia não tem disponibilidade
+     * @throws AgendamentoForaDaDisponibilidadeException - quando o horário não cabe em uma janela do dia
      * @throws AgendamentoConflitoException - quando o horário conflita com outro agendamento
      * @return AgendamentoEntity - o agendamento atualizado
      */
@@ -136,7 +145,7 @@ public class AgendamentoService {
      * Remove o agendamento com o identificador informado.
      *
      * @param id - identificador do agendamento a ser removido
-     * @throws EntityNotFoundException - quando não existe agendamento com o id informado
+     * @throws AgendamentoNaoEncontradoException - quando não existe agendamento com o id informado
      */
     @Transactional
     public void deleteById(Long id) {
@@ -158,11 +167,11 @@ public class AgendamentoService {
      * Busca um agendamento pelo seu identificador.
      *
      * @param id - identificador do agendamento
-     * @throws EntityNotFoundException - quando não existe agendamento com o id informado
+     * @throws AgendamentoNaoEncontradoException - quando não existe agendamento com o id informado
      * @return AgendamentoEntity - o agendamento encontrado
      */
     public AgendamentoEntity findById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Agendamento não foi encontrado"));
+        return repository.findById(id).orElseThrow(AgendamentoNaoEncontradoException::new);
     }
 
     /**

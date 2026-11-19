@@ -16,14 +16,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+
 import org.trimly.backend.model.exception.TrimlyException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoNoPassadoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
-import org.trimly.backend.model.exception.servico.ServicoException;
+import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
+import org.trimly.backend.model.exception.servico.ServicoStatusRepetidoException;
 import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
 import org.trimly.backend.model.exception.usuario.UsuarioComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException;
@@ -115,7 +116,7 @@ class DomainExceptionHandlerTests {
     @RestController
     static class ErroController {
         private static final Map<String, TrimlyException> EXCECOES = Map.ofEntries(
-                Map.entry("nao-encontrado", new EntityNotFoundException("Não encontrado")),
+                Map.entry("nao-encontrado", new ServicoNaoEncontradoException("Não encontrado")),
                 Map.entry("agendamento-conflito", new AgendamentoConflitoException("Horário ocupado")),
                 Map.entry("agendamento-feriado", new AgendamentoFeriadoException("Feriado")),
                 Map.entry("disponibilidade-conflito", new DisponibilidadeConflitoException("Janela ocupada")),
@@ -123,7 +124,7 @@ class DomainExceptionHandlerTests {
                 Map.entry("usuario-email", new UsuarioEmailExistenteException("E-mail em uso")),
                 Map.entry("servico-pendente", new ServicoComAgendamentoPendenteException("Serviço pendente")),
                 Map.entry("usuario-pendente", new UsuarioComAgendamentoPendenteException("Usuário pendente")),
-                Map.entry("servico-regra", new ServicoException("Regra violada")),
+                Map.entry("servico-regra", new ServicoStatusRepetidoException("Regra violada")),
                 Map.entry("agendamento-passado", new AgendamentoNoPassadoException("No passado"))
         );
 

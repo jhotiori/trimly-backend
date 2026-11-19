@@ -6,12 +6,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,9 +22,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.usuario.UsuarioNaoEncontradoException;
 import org.trimly.backend.model.service.usuario.UsuarioService;
-import org.trimly.backend.view.dto.usuario.UsuarioCreateDTO;
 import org.trimly.backend.view.dto.usuario.UsuarioUpdateDTO;
 import org.trimly.backend.view.mapper.UsuarioMapper;
 
@@ -57,69 +54,6 @@ class UsuarioControllerTests {
     private UsuarioService service;
 
     @Test
-    @DisplayName("Cria usuário válido e retorna 201 sem expor a senha")
-    void testeDadoUsuarioValidoQuandoCriarEntaoRetornaCriadoSemSenha() throws Exception {
-        UsuarioCreateDTO request = new UsuarioCreateDTO("Ana", "ana@trimly.com", "123456");
-        when(service.create(request)).thenReturn(usuario(1L, "Ana", "ana@trimly.com"));
-
-        mockMvc.perform(
-                post(ENDPOINT).contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nome\":\"Ana\",\"email\":\"ana@trimly.com\",\"senha\":\"123456\"}")
-        )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.email").value("ana@trimly.com"))
-                .andExpect(jsonPath("$.cargo").value("CLIENTE"))
-                .andExpect(jsonPath("$.senha").doesNotExist());
-    }
-
-    @Test
-    @DisplayName("Rejeita criação com e-mail inválido e retorna 400")
-    void testeDadoEmailInvalidoQuandoCriarEntaoRetornaRequisicaoInvalida() throws Exception {
-        mockMvc.perform(
-                post(ENDPOINT).contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nome\":\"Ana\",\"email\":\"invalido\",\"senha\":\"123456\"}")
-        )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Não foi recebido um formato de e-mail válido"));
-    }
-
-    @Test
-    @DisplayName("Autentica credenciais corretas e retorna sucesso com o usuário")
-    void testeDadoCredenciaisCorretasQuandoLogarEntaoRetornaSucessoComUsuario() throws Exception {
-        when(service.findByCredenciais("ana@trimly.com", "123456"))
-                .thenReturn(Optional.of(usuario(1L, "Ana", "ana@trimly.com")));
-
-        mockMvc.perform(
-                post(ENDPOINT + "/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"ana@trimly.com\",\"senha\":\"123456\"}")
-        )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.sucesso").value(true))
-                .andExpect(jsonPath("$.usuario.email").value("ana@trimly.com"));
-    }
-
-    @Test
-    @DisplayName("Recusa credenciais incorretas e retorna 200 com sucesso falso")
-    void testeDadoCredenciaisIncorretasQuandoLogarEntaoRetornaSucessoFalso() throws Exception {
-        when(service.findByCredenciais("ana@trimly.com", "errada")).thenReturn(Optional.empty());
-
-        mockMvc.perform(
-                post(ENDPOINT + "/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"ana@trimly.com\",\"senha\":\"errada\"}")
-        ).andExpect(status().isOk()).andExpect(jsonPath("$.sucesso").value(false)).andExpect(jsonPath("$.usuario").isEmpty());
-    }
-
-    @Test
-    @DisplayName("Rejeita login sem senha e retorna 400")
-    void testeDadoSenhaVaziaQuandoLogarEntaoRetornaRequisicaoInvalida() throws Exception {
-        mockMvc.perform(
-                post(ENDPOINT + "/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"ana@trimly.com\",\"senha\":\"\"}")
-        ).andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Senha não pode ser vazia"));
-    }
-
-    @Test
     @DisplayName("Atualiza usuário existente e retorna 200")
     void testeDadoUsuarioExistenteQuandoAtualizarEntaoRetornaOk() throws Exception {
         UsuarioUpdateDTO request = new UsuarioUpdateDTO("Ana Lima", null, null, null);
@@ -134,7 +68,7 @@ class UsuarioControllerTests {
     @DisplayName("Atualiza usuário inexistente e retorna 404")
     void testeDadoUsuarioInexistenteQuandoAtualizarEntaoRetornaNaoEncontrado() throws Exception {
         when(service.update(99L, new UsuarioUpdateDTO("Ana Lima", null, null, null)))
-                .thenThrow(new EntityNotFoundException("Usuario não foi encontrado"));
+                .thenThrow(new UsuarioNaoEncontradoException());
 
         mockMvc.perform(
                 patch(ENDPOINT + "/99").contentType(MediaType.APPLICATION_JSON).content("{\"nome\":\"Ana Lima\"}")
@@ -152,7 +86,7 @@ class UsuarioControllerTests {
     @Test
     @DisplayName("Remove usuário inexistente e retorna 404")
     void testeDadoUsuarioInexistenteQuandoDeletarEntaoRetornaNaoEncontrado() throws Exception {
-        doThrow(new EntityNotFoundException("Usuario não foi encontrado")).when(service).deleteById(99L);
+        doThrow(new UsuarioNaoEncontradoException()).when(service).deleteById(99L);
 
         mockMvc.perform(delete(ENDPOINT + "/99")).andExpect(status().isNotFound());
     }
@@ -180,11 +114,11 @@ class UsuarioControllerTests {
     @Test
     @DisplayName("Busca usuário inexistente por id e retorna 404")
     void testeDadoUsuarioInexistenteQuandoBuscarPorIdEntaoRetornaNaoEncontrado() throws Exception {
-        when(service.findById(99L)).thenThrow(new EntityNotFoundException("Usuario não foi encontrado"));
+        when(service.findById(99L)).thenThrow(new UsuarioNaoEncontradoException());
 
         mockMvc.perform(get(ENDPOINT + "/99"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Usuario não foi encontrado"));
+                .andExpect(jsonPath("$.message").value("Usuário não encontrado"));
     }
 
     private static UsuarioEntity usuario(Long id, String nome, String email) {

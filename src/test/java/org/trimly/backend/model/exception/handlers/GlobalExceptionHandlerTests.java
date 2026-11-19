@@ -77,7 +77,7 @@ class GlobalExceptionHandlerTests {
         mockMvc.perform(get("/erro/inesperado"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.status").value(500))
-                .andExpect(jsonPath("$.message").value("Ocorreu um erro inesperado ao processar a requisição"));
+                .andExpect(jsonPath("$.message").value("Erro inesperado ao processar a requisição"));
     }
 
     record Entrada(@NotBlank(message = "Nome obrigatório") String nome, @NotNull(message = "Idade obrigatória") Integer idade) {}

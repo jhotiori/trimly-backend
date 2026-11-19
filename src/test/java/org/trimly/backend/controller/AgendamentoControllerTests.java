@@ -24,11 +24,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.trimly.backend.infra.security.authorization.AccessPolicy;
 import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.servico.ServicoEntity;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoNaoEncontradoException;
 import org.trimly.backend.model.service.agendamento.AgendamentoService;
 import org.trimly.backend.view.dto.agendamento.AgendamentoCreateDTO;
 import org.trimly.backend.view.dto.agendamento.AgendamentoFilter;
@@ -60,6 +61,13 @@ class AgendamentoControllerTests {
      */
     @MockitoBean
     private AgendamentoService service;
+
+    /**
+     * Regras de posse simuladas.
+     * @see {@link AccessPolicy}
+     */
+    @MockitoBean
+    private AccessPolicy accessPolicy;
 
     @Test
     @DisplayName("Cria agendamento válido e retorna 201")
@@ -104,7 +112,7 @@ class AgendamentoControllerTests {
     @DisplayName("Atualiza agendamento inexistente e retorna 404")
     void testeDadoAgendamentoInexistenteQuandoAtualizarEntaoRetornaNaoEncontrado() throws Exception {
         when(service.update(99L, new AgendamentoUpdateDTO(null, AgendamentoStatus.CANCELADO, null)))
-                .thenThrow(new EntityNotFoundException("Agendamento não foi encontrado"));
+                .thenThrow(new AgendamentoNaoEncontradoException());
 
         mockMvc.perform(
                 patch(ENDPOINT + "/99").contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"CANCELADO\"}")
@@ -122,7 +130,7 @@ class AgendamentoControllerTests {
     @Test
     @DisplayName("Remove agendamento inexistente e retorna 404")
     void testeDadoAgendamentoInexistenteQuandoDeletarEntaoRetornaNaoEncontrado() throws Exception {
-        doThrow(new EntityNotFoundException("Agendamento não foi encontrado")).when(service).deleteById(99L);
+        doThrow(new AgendamentoNaoEncontradoException()).when(service).deleteById(99L);
 
         mockMvc.perform(delete(ENDPOINT + "/99")).andExpect(status().isNotFound());
     }
@@ -131,6 +139,7 @@ class AgendamentoControllerTests {
     @DisplayName("Lista agendamentos aplicando os filtros informados")
     void testeDadoFiltrosQuandoListarEntaoRepassaFiltroAoService() throws Exception {
         AgendamentoFilter filtro = new AgendamentoFilter(AgendamentoStatus.AGENDADO, LocalDate.of(2999, 1, 10), 2L, 1L);
+        when(accessPolicy.restrictFilter(filtro)).thenReturn(filtro);
         when(service.findAll(filtro)).thenReturn(List.of(agendamento(1L, AgendamentoStatus.AGENDADO)));
 
         mockMvc.perform(
@@ -145,6 +154,7 @@ class AgendamentoControllerTests {
     @DisplayName("Lista agendamentos sem filtros")
     void testeDadoSemFiltrosQuandoListarEntaoRepassaFiltroVazioAoService() throws Exception {
         AgendamentoFilter semFiltros = new AgendamentoFilter(null, null, null, null);
+        when(accessPolicy.restrictFilter(semFiltros)).thenReturn(semFiltros);
         when(service.findAll(semFiltros))
                 .thenReturn(List.of(agendamento(1L, AgendamentoStatus.AGENDADO), agendamento(2L, AgendamentoStatus.AUSENTE)));
 
@@ -174,11 +184,11 @@ class AgendamentoControllerTests {
     @Test
     @DisplayName("Busca agendamento inexistente por id e retorna 404")
     void testeDadoAgendamentoInexistenteQuandoBuscarPorIdEntaoRetornaNaoEncontrado() throws Exception {
-        when(service.findById(99L)).thenThrow(new EntityNotFoundException("Agendamento não foi encontrado"));
+        when(service.findById(99L)).thenThrow(new AgendamentoNaoEncontradoException());
 
         mockMvc.perform(get(ENDPOINT + "/99"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Agendamento não foi encontrado"));
+                .andExpect(jsonPath("$.message").value("Agendamento não encontrado"));
     }
 
     private static AgendamentoEntity agendamento(Long id, AgendamentoStatus status) {

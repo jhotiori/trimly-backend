@@ -13,15 +13,14 @@ import jakarta.validation.constraints.Size;
  * @param senha - senha em texto puro, criptografada antes de persistir
  */
 public record UsuarioCreateDTO(
-        @Schema(description = "Nome completo do usuário", example = "Ana Souza") @NotBlank(
-                message = "Nome não pode ser vazio"
-        ) String nome,
+        @Schema(description = "Nome completo do usuário", example = "Ana Souza")
+        @NotBlank(message = "Nome não pode ser vazio") String nome,
 
-        @Schema(description = "E-mail de acesso, único entre os usuários", example = "ana.souza@trimly.com") @NotBlank(
-                message = "Email não pode ser vazio"
-        ) @Email(message = "Não foi recebido um formato de e-mail válido") String email,
+        @Schema(description = "E-mail de acesso, único entre os usuários", example = "ana.souza@trimly.com")
+        @NotBlank(message = "E-mail não pode ser vazio")
+        @Email(message = "E-mail inválido") String email,
 
-        @Schema(description = "Senha em texto puro (armazenada com BCrypt)", example = "123456") @NotBlank(
-                message = "Senha não pode ser vazia"
-        ) @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres") String senha
+        @Schema(description = "Senha em texto puro (armazenada com BCrypt)", example = "123456")
+        @NotBlank(message = "Senha não pode ser vazia")
+        @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres") String senha
 ) {}

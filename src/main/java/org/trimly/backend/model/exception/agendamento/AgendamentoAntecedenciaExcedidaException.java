@@ -7,7 +7,14 @@ import org.trimly.backend.model.exception.TrimlyException;
  */
 public class AgendamentoAntecedenciaExcedidaException extends TrimlyException {
     /**
-     * Cria a exceção com a mensagem informada.
+     * Cria a exceção com a mensagem padrão.
+     */
+    public AgendamentoAntecedenciaExcedidaException() {
+        super("Agendamento não pode passar de 14 dias de antecedência");
+    }
+
+    /**
+     * Cria a exceção com uma mensagem própria.
      *
      * @param message - detalhe da falha
      */

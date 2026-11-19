@@ -21,6 +21,7 @@ import org.trimly.backend.model.service.usuario.UsuarioService;
 import org.trimly.backend.view.dto.auth.AuthLoginRequestDTO;
 import org.trimly.backend.view.dto.auth.AuthResponseDTO;
 import org.trimly.backend.view.dto.usuario.UsuarioCreateDTO;
+import org.trimly.backend.view.mapper.UsuarioMapper;
 
 /**
  * Testes para {@link AuthenticationService}.
@@ -40,6 +41,13 @@ class AuthenticationServiceTests {
      */
     @Mock
     private TokenService tokenService;
+
+    /**
+     * Mapper de usuários simulado.
+     * @see {@link UsuarioMapper}
+     */
+    @Mock
+    private UsuarioMapper mapper;
 
     /**
      * Serviço sob teste, com os mocks injetados.

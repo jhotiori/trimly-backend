@@ -57,6 +57,7 @@ public class UsuarioEntity implements UserDetails {
 
     /**
      * Cargo do usuário, que define seu papel no sistema.
+     * @see {@link UsuarioCargo}
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "cargo", nullable = false)

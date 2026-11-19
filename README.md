@@ -62,6 +62,30 @@ git clone https://github.com/jhotiori/trimly-backend
 cd trimly-backend
 ```
 
+Crie o arquivo `.env` a partir do exemplo e ajuste os valores (o `.env` não é versionado):
+```bash
+cp .env.example .env
+```
+
+| Variável                 | Uso                                                    | Padrão                  |
+| ------------------------ | ------------------------------------------------------ | ----------------------- |
+| `SPRING_PROFILES_ACTIVE` | Perfil ativo                                           | `developing`            |
+| `DB_URL`                 | URL do PostgreSQL (apenas `production`)                | sem padrão              |
+| `DB_USER`                | Usuário do PostgreSQL (apenas `production`)            | sem padrão              |
+| `DB_PASSWORD`            | Senha do PostgreSQL (apenas `production`)              | sem padrão              |
+| `JWT_SECRET`             | Segredo HMAC dos tokens (obrigatório em `production`)  | segredo de desenvolvimento |
+| `JWT_ISSUER`             | Emissor dos tokens                                     | `trimly-auth-api`       |
+| `JWT_EXPIRY`             | Validade dos tokens, em segundos                       | `28800` (8 horas)       |
+| `CORS_ORIGIN`            | Origem do frontend liberada no CORS                    | `http://localhost:4200` |
+
+Perfis disponíveis:
+- `developing`: H2 em memória, console em `/h2-console` e log de SQL.
+- `debugging`: herda `developing` com logs mais detalhados.
+- `production`: PostgreSQL; não inicia sem `JWT_SECRET`.
+- `testing`: H2 em memória para os testes, sem serviços externos.
+
+Variáveis do ambiente do processo têm prioridade sobre o `.env`.
+
 Depois, rode o projeto usando o executavel do Maven `mvnw`
 
 #### Linux/macOS
@@ -72,4 +96,10 @@ Depois, rode o projeto usando o executavel do Maven `mvnw`
 #### Windows
 ```bash
 mvnw.cmd spring-boot:run
+```
+
+#### Docker (PostgreSQL + API)
+Com o `.env` preenchido, na raiz do projeto:
+```bash
+docker compose --env-file .env -f docker/compose.yaml up -d
 ```

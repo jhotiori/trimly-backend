@@ -5,11 +5,11 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.trimly.backend.model.entity.disponibilidade.DiaSemana;
+import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
-import org.trimly.backend.model.exception.EntityNotFoundException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeHorarioInvalidoException;
+import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeNaoEncontradaException;
 import org.trimly.backend.model.repository.DisponibilidadeRepository;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeCreateDTO;
 import org.trimly.backend.view.dto.disponibilidade.DisponibilidadeUpdateDTO;
@@ -65,7 +65,7 @@ public class DisponibilidadeService {
      *
      * @param id - identificador da disponibilidade a ser atualizada
      * @param request - campos a atualizar (dia da semana e/ou horários)
-     * @throws EntityNotFoundException - quando não existe disponibilidade com o id informado
+     * @throws DisponibilidadeNaoEncontradaException - quando não existe disponibilidade com o id informado
      * @throws DisponibilidadeHorarioInvalidoException - quando a hora de início não é anterior à de fim
      * @throws DisponibilidadeConflitoException - quando a janela se sobrepõe a outra do mesmo dia
      * @return DisponibilidadeEntity - a disponibilidade atualizada
@@ -92,7 +92,7 @@ public class DisponibilidadeService {
      * Remove a disponibilidade com o identificador informado.
      *
      * @param id - identificador da disponibilidade a ser removida
-     * @throws EntityNotFoundException - quando não existe disponibilidade com o id informado
+     * @throws DisponibilidadeNaoEncontradaException - quando não existe disponibilidade com o id informado
      */
     @Transactional
     public void deleteById(Long id) {
@@ -113,12 +113,11 @@ public class DisponibilidadeService {
      * Busca uma disponibilidade pelo seu identificador.
      *
      * @param id - identificador da disponibilidade
-     * @throws EntityNotFoundException - quando não existe disponibilidade com o id informado
+     * @throws DisponibilidadeNaoEncontradaException - quando não existe disponibilidade com o id informado
      * @return DisponibilidadeEntity - a disponibilidade encontrada
      */
     public DisponibilidadeEntity findById(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Disponibilidade não foi encontrada"));
+        return repository.findById(id).orElseThrow(DisponibilidadeNaoEncontradaException::new);
     }
 
     /**
@@ -127,7 +126,7 @@ public class DisponibilidadeService {
      * @param diaSemana - dia da semana usado no filtro
      * @return List - lista de disponibilidades do dia informado
      */
-    public List<DisponibilidadeEntity> findByDiaSemana(DiaSemana diaSemana) {
+    public List<DisponibilidadeEntity> findByDiaSemana(DisponibilidadeDiaSemana diaSemana) {
         return repository.findByDiaSemana(diaSemana);
     }
 }

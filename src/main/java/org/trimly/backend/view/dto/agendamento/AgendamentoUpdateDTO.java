@@ -13,14 +13,13 @@ public record AgendamentoUpdateDTO(
         @Schema(
                 description = "Opcional. Nova data e hora de início (yyyy-MM-ddTHH:mm:ss)",
                 example = "2027-03-16T14:00:00"
-        ) @FutureOrPresent(message = "Horario deve estar no presente ou futuro") LocalDateTime data,
+        ) @FutureOrPresent(message = "Data deve estar no presente ou futuro") LocalDateTime data,
 
         @Schema(
                 description = "Opcional. Novo status (CANCELADO, CONCLUIDO ou AUSENTE)",
                 example = "CANCELADO"
         ) AgendamentoStatus status,
 
-        @Schema(description = "Opcional. Identificador do novo serviço", example = "2") @Positive(
-                message = "Id do Serviço deve ser positivo"
-        ) Long servicoId
+        @Schema(description = "Opcional. Identificador do novo serviço", example = "2")
+        @Positive(message = "Id do serviço deve ser positivo") Long servicoId
 ) {}

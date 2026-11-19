@@ -1,0 +1,51 @@
+# Execute da raiz do projeto: docker compose --env-file .env -f docker/compose.yaml up -d
+services:
+  postgres:
+    image: postgres:17
+    container_name: trimly-backend-postgres
+    environment:
+      POSTGRES_DB: trimly
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d trimly"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: trimly-backend-api
+    container_name: trimly-backend-api
+    env_file: ../.env
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+      DB_URL: jdbc:postgresql://postgres:5432/trimly
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: trimly-backend-sonarqube
+    profiles: [sonar]
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+volumes:
+  postgres_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

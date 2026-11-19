@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.trimly.backend.config.EndpointConfig;
-import org.trimly.backend.config.openapi.OpenApiExamples;
+import org.trimly.backend.infra.EndpointConfig;
+import org.trimly.backend.infra.openapi.OpenApiExamples;
 import org.trimly.backend.model.service.auth.AuthenticationService;
 import org.trimly.backend.view.dto.auth.AuthLoginRequestDTO;
 import org.trimly.backend.view.dto.auth.AuthResponseDTO;
@@ -30,7 +30,7 @@ import org.trimly.backend.view.dto.usuario.UsuarioCreateDTO;
 @RestController
 @RequestMapping(EndpointConfig.AUTHENTICATION_ENDPOINT)
 @RequiredArgsConstructor
-@Tag(name = "Autenticação", description = "Cadastro e login via JWT (não utilizado pelo frontend atualmente)")
+@Tag(name = "Autenticação", description = "Cadastro e login via JWT")
 public class AuthenticationController {
     /**
      * Orquestração de cadastro e login.
@@ -47,7 +47,7 @@ public class AuthenticationController {
     @PostMapping("/register")
     @Operation(
             summary = "Cadastra um usuário e emite um token",
-            description = "Cria um CLIENTE (regras de POST /api/usuarios) e devolve token JWT. Sem uso pelo frontend."
+            description = "Cria como CLIENTE; e-mail único, senha de 6+ caracteres. Devolve token JWT e o usuário."
     )
     @ApiResponse(
             responseCode = "201",
@@ -57,12 +57,10 @@ public class AuthenticationController {
     @ApiResponse(
             responseCode = "400",
             description = "Corpo ausente, mal formatado ou inválido",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.USUARIO_CRIACAO_INVALIDA),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.USUARIO_CRIACAO_INVALIDA),
+                    @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)
+            })
     )
     @ApiResponse(
             responseCode = "409",
@@ -96,7 +94,7 @@ public class AuthenticationController {
     @PostMapping("/login")
     @Operation(
             summary = "Autentica e emite um token",
-            description = "Devolve token JWT; credenciais inválidas retornam 401. Sem uso pelo frontend."
+            description = "Devolve token JWT e o usuário; credenciais inválidas retornam 401."
     )
     @ApiResponse(
             responseCode = "200",
@@ -106,16 +104,14 @@ public class AuthenticationController {
     @ApiResponse(
             responseCode = "400",
             description = "Corpo ausente, mal formatado ou inválido",
-            content = @Content(
-                    schema = @Schema(implementation = ErrorResponseDTO.class),
-                    examples = {
-                            @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.LOGIN_INVALIDO),
-                            @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)}
-            )
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class), examples = {
+                    @ExampleObject(name = "Campos inválidos", value = OpenApiExamples.LOGIN_INVALIDO),
+                    @ExampleObject(name = "Corpo mal formatado", value = OpenApiExamples.CORPO_INVALIDO)
+            })
     )
     @ApiResponse(
             responseCode = "401",
-            description = "Credenciais inválidas",
+            description = "E-mail ou senha inválidos",
             content = @Content(
                     schema = @Schema(implementation = ErrorResponseDTO.class),
                     examples = @ExampleObject(value = OpenApiExamples.CREDENCIAIS_INVALIDAS)

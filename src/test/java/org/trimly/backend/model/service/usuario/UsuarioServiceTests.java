@@ -26,10 +26,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
-import org.trimly.backend.model.exception.EntityNotFoundException;
+import org.trimly.backend.model.exception.usuario.UsuarioNaoEncontradoException;
 import org.trimly.backend.model.exception.usuario.UsuarioComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException;
-import org.trimly.backend.model.exception.usuario.UsuarioException;
+import org.trimly.backend.model.exception.usuario.UsuarioCargoRepetidoException;
+import org.trimly.backend.model.exception.usuario.UsuarioSenhaInvalidaException;
 import org.trimly.backend.model.repository.UsuarioRepository;
 import org.trimly.backend.view.dto.usuario.UsuarioCreateDTO;
 import org.trimly.backend.view.dto.usuario.UsuarioUpdateDTO;
@@ -99,9 +100,9 @@ class UsuarioServiceTests {
     @DisplayName("Não cria usuário com senha inválida")
     void testeDadoSenhaInvalidaQuandoCriarEntaoLancaExcecaoSemSalvar() {
         UsuarioCreateDTO request = new UsuarioCreateDTO("Ana", "ana@trimly.com", "123");
-        doThrow(new UsuarioException("Senha curta")).when(usuarioValidator).validateSenha("123");
+        doThrow(new UsuarioSenhaInvalidaException("Senha curta")).when(usuarioValidator).validateSenha("123");
 
-        assertThrows(UsuarioException.class, () -> service.create(request));
+        assertThrows(UsuarioSenhaInvalidaException.class, () -> service.create(request));
 
         verifyNoInteractions(mapper, passwordEncoder, repository);
     }
@@ -177,12 +178,12 @@ class UsuarioServiceTests {
     void testeDadoCargoInvalidoQuandoAtualizarEntaoLancaExcecaoSemSalvar() {
         UsuarioEntity entity = usuario(1L, "Ana", "ana@trimly.com");
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        doThrow(new UsuarioException("Já possui esse cargo")).when(usuarioValidator)
+        doThrow(new UsuarioCargoRepetidoException("Já possui esse cargo")).when(usuarioValidator)
                 .validateCargoUpdate(entity, UsuarioCargo.CLIENTE);
 
         UsuarioUpdateDTO request = new UsuarioUpdateDTO(null, null, null, UsuarioCargo.CLIENTE);
 
-        assertThrows(UsuarioException.class, () -> service.update(1L, request));
+        assertThrows(UsuarioCargoRepetidoException.class, () -> service.update(1L, request));
 
         verify(repository, never()).save(any());
     }
@@ -208,7 +209,7 @@ class UsuarioServiceTests {
 
         UsuarioUpdateDTO request = new UsuarioUpdateDTO("Ana Lima", null, null, null);
 
-        assertThrows(EntityNotFoundException.class, () -> service.update(99L, request));
+        assertThrows(UsuarioNaoEncontradoException.class, () -> service.update(99L, request));
     }
 
     @Test
@@ -240,7 +241,7 @@ class UsuarioServiceTests {
     void testeDadoUsuarioInexistenteQuandoDeletarEntaoLancaNaoEncontrado() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> service.deleteById(99L));
+        assertThrows(UsuarioNaoEncontradoException.class, () -> service.deleteById(99L));
 
         verifyNoInteractions(usuarioValidator);
     }
@@ -268,9 +269,9 @@ class UsuarioServiceTests {
     void testeDadoUsuarioInexistenteQuandoBuscarPorIdEntaoLancaNaoEncontrado() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException excecao = assertThrows(EntityNotFoundException.class, () -> service.findById(99L));
+        UsuarioNaoEncontradoException excecao = assertThrows(UsuarioNaoEncontradoException.class, () -> service.findById(99L));
 
-        assertEquals("Usuario não foi encontrado", excecao.getMessage());
+        assertEquals("Usuário não encontrado", excecao.getMessage());
     }
 
     @Test
@@ -287,12 +288,12 @@ class UsuarioServiceTests {
     void testeDadoEmailNaoCadastradoQuandoBuscarPorEmailEntaoLancaNaoEncontrado() {
         when(repository.findByEmail("x@trimly.com")).thenReturn(Optional.empty());
 
-        EntityNotFoundException excecao = assertThrows(
-                EntityNotFoundException.class,
+        UsuarioNaoEncontradoException excecao = assertThrows(
+                UsuarioNaoEncontradoException.class,
                 () -> service.findByEmail("x@trimly.com")
         );
 
-        assertEquals("Usuario com email não foi encontrado", excecao.getMessage());
+        assertEquals("Usuário não encontrado", excecao.getMessage());
     }
 
     @Test

@@ -5,9 +5,11 @@ import org.springframework.stereotype.Component;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
+import org.trimly.backend.model.exception.usuario.UsuarioCargoRepetidoException;
 import org.trimly.backend.model.exception.usuario.UsuarioComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException;
-import org.trimly.backend.model.exception.usuario.UsuarioException;
+import org.trimly.backend.model.exception.usuario.UsuarioSenhaInvalidaException;
+import org.trimly.backend.model.exception.usuario.UsuarioUnicoDonoException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.UsuarioRepository;
 
@@ -46,7 +48,7 @@ public class UsuarioValidator {
                 ? repository.existsByEmail(email)
                 : repository.existsByEmailAndIdNot(email, idExcluido);
         if (emUso) {
-            throw new UsuarioEmailExistenteException("Já existe um usuário com esse e-mail");
+            throw new UsuarioEmailExistenteException();
         }
     }
 
@@ -54,11 +56,11 @@ public class UsuarioValidator {
      * Verifica se a senha informada tem o comprimento mínimo exigido.
      *
      * @param senha - senha em texto puro a ser verificada
-     * @throws UsuarioException - quando a senha é nula ou tem menos de 6 caracteres
+     * @throws UsuarioSenhaInvalidaException - quando a senha é nula ou tem menos de 6 caracteres
      */
     public void validateSenha(String senha) {
         if (senha == null || senha.length() < SENHA_TAMANHO_MINIMO) {
-            throw new UsuarioException("A senha deve ter no mínimo 6 caracteres");
+            throw new UsuarioSenhaInvalidaException();
         }
     }
 
@@ -67,7 +69,8 @@ public class UsuarioValidator {
      *
      * @param usuario - usuário a ter o cargo alterado
      * @param novo - cargo desejado, ou `null` quando o cargo não está sendo alterado
-     * @throws UsuarioException - quando o cargo é igual ao atual, ou quando a mudança remove o único usuário com cargo `DONO`
+     * @throws UsuarioCargoRepetidoException - quando o cargo é igual ao atual
+     * @throws UsuarioUnicoDonoException - quando a mudança remove o único usuário com cargo `DONO`
      */
     public void validateCargoUpdate(UsuarioEntity usuario, UsuarioCargo novo) {
         if (novo == null) {
@@ -75,10 +78,10 @@ public class UsuarioValidator {
         }
         UsuarioCargo atual = usuario.getCargo();
         if (atual == novo) {
-            throw new UsuarioException("O usuário já possui esse cargo");
+            throw new UsuarioCargoRepetidoException();
         }
         if (atual == UsuarioCargo.DONO && repository.countByCargo(UsuarioCargo.DONO) == 1) {
-            throw new UsuarioException("Não é possível remover o cargo DONO do único dono cadastrado");
+            throw new UsuarioUnicoDonoException();
         }
     }
 
@@ -90,9 +93,7 @@ public class UsuarioValidator {
      */
     public void validateSemAgendamentoPendente(Long usuarioId) {
         if (agendamentoRepository.existsByUsuarioIdAndStatus(usuarioId, AgendamentoStatus.AGENDADO)) {
-            throw new UsuarioComAgendamentoPendenteException(
-                    "Não é possível remover um usuário com agendamento pendente"
-            );
+            throw new UsuarioComAgendamentoPendenteException();
         }
     }
 }

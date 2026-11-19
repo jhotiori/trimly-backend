@@ -16,9 +16,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.usuario.UsuarioCargo;
 import org.trimly.backend.model.entity.usuario.UsuarioEntity;
+import org.trimly.backend.model.exception.usuario.UsuarioCargoRepetidoException;
 import org.trimly.backend.model.exception.usuario.UsuarioComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.usuario.UsuarioEmailExistenteException;
-import org.trimly.backend.model.exception.usuario.UsuarioException;
+import org.trimly.backend.model.exception.usuario.UsuarioSenhaInvalidaException;
+import org.trimly.backend.model.exception.usuario.UsuarioUnicoDonoException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.repository.UsuarioRepository;
 
@@ -84,8 +86,8 @@ class UsuarioValidatorTests {
     @DisplayName("Rejeita senha nula ou com menos de 6 caracteres")
     void testeDadoSenhaNulaOuCurtaQuandoValidarSenhaEntaoLancaExcecao() {
         assertAll(
-                () -> assertThrows(UsuarioException.class, () -> validator.validateSenha(null)),
-                () -> assertThrows(UsuarioException.class, () -> validator.validateSenha("12345"))
+                () -> assertThrows(UsuarioSenhaInvalidaException.class, () -> validator.validateSenha(null)),
+                () -> assertThrows(UsuarioSenhaInvalidaException.class, () -> validator.validateSenha("12345"))
         );
     }
 
@@ -106,12 +108,12 @@ class UsuarioValidatorTests {
     void testeDadoMesmoCargoQuandoValidarCargoEntaoLancaCargoRepetido() {
         UsuarioEntity admin = usuario(UsuarioCargo.ADMIN);
 
-        UsuarioException excecao = assertThrows(
-                UsuarioException.class,
+        UsuarioCargoRepetidoException excecao = assertThrows(
+                UsuarioCargoRepetidoException.class,
                 () -> validator.validateCargoUpdate(admin, UsuarioCargo.ADMIN)
         );
 
-        assertEquals("O usuário já possui esse cargo", excecao.getMessage());
+        assertEquals("Usuário já possui esse cargo", excecao.getMessage());
     }
 
     @Test
@@ -121,12 +123,12 @@ class UsuarioValidatorTests {
 
         UsuarioEntity dono = usuario(UsuarioCargo.DONO);
 
-        UsuarioException excecao = assertThrows(
-                UsuarioException.class,
+        UsuarioUnicoDonoException excecao = assertThrows(
+                UsuarioUnicoDonoException.class,
                 () -> validator.validateCargoUpdate(dono, UsuarioCargo.ADMIN)
         );
 
-        assertEquals("Não é possível remover o cargo DONO do único dono cadastrado", excecao.getMessage());
+        assertEquals("Não é possível remover o cargo do único DONO", excecao.getMessage());
     }
 
     @Test

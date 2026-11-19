@@ -1,3 +1,12 @@
+* text=auto
+
 /mvnw text eol=lf
+*.sh text eol=lf
 *.cmd text eol=crlf
-graphify-out/graph.json merge=graphify
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.jar binary
