@@ -48,7 +48,9 @@ openspec/
 *.launch
 *.sublime-workspace
 
-.vscode/
+# Track shared workspace settings, even when a global gitignore hides them.
+!.vscode/
+
 .history/
 
 # =========================

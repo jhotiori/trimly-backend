@@ -42,14 +42,14 @@ public class AgendamentoMapper {
      * @return AgendamentoResponseDTO - o DTO de resposta correspondente
      */
     public AgendamentoResponseDTO toResponse(AgendamentoEntity entity) {
-        return new AgendamentoResponseDTO(
-                entity.getId(),
-                entity.getData(),
-                entity.getDuracao(),
-                entity.getStatus(),
-                entity.getUsuario().getId(),
-                entity.getServico().getId()
-        );
+        return AgendamentoResponseDTO.builder()
+                .id(entity.getId())
+                .data(entity.getData())
+                .duracao(entity.getDuracao())
+                .status(entity.getStatus())
+                .usuarioId(entity.getUsuario().getId())
+                .servicoId(entity.getServico().getId())
+                .build();
     }
 
     /**

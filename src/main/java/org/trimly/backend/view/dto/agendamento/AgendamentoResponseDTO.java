@@ -2,6 +2,7 @@ package org.trimly.backend.view.dto.agendamento;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import lombok.Builder;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 
 /**
@@ -14,6 +15,7 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
  * @param usuarioId - identificador do usuário dono do agendamento
  * @param servicoId - identificador do serviço agendado
  */
+@Builder
 public record AgendamentoResponseDTO(
         @Schema(description = "Identificador do agendamento", example = "1") Long id,
 
