@@ -97,6 +97,7 @@ public class ServicoController {
         log.debug("create servico: nome={}, valor={}, duracao={}", request.nome(), request.valor(), request.duracao());
 
         ServicoEntity entity = service.create(request);
+        log.info("servico criado: nome={}", request.nome());
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(entity));
     }
 
@@ -176,6 +177,7 @@ public class ServicoController {
         );
 
         ServicoEntity entity = service.update(id, request);
+        log.info("servico atualizado: id={}", id);
         return ResponseEntity.ok(mapper.toResponse(entity));
     }
 
@@ -227,6 +229,7 @@ public class ServicoController {
         log.debug("delete servico: id={}", id);
 
         service.deleteById(id);
+        log.info("servico removido: id={}", id);
         return ResponseEntity.noContent().build();
     }
 
@@ -251,6 +254,8 @@ public class ServicoController {
             )
     )
     public ResponseEntity<List<ServicoResponseDTO>> findAll() {
+        log.debug("find servicos");
+
         List<ServicoEntity> entities = service.findAll();
         return ResponseEntity.ok(mapper.toResponseList(entities));
     }
@@ -295,6 +300,8 @@ public class ServicoController {
     public ResponseEntity<ServicoResponseDTO> findById(
             @Parameter(description = "Identificador do serviço", example = "1") @PathVariable Long id
     ) {
+        log.debug("find servico: id={}", id);
+
         ServicoEntity entity = service.findById(id);
         return ResponseEntity.ok(mapper.toResponse(entity));
     }
@@ -332,6 +339,8 @@ public class ServicoController {
             @Parameter(description = "Status do serviço no catálogo", example = "ATIVO")
             @PathVariable ServicoStatus status
     ) {
+        log.debug("find servicos: status={}", status);
+
         List<ServicoEntity> entities = service.findByStatus(status);
         return ResponseEntity.ok(mapper.toResponseList(entities));
     }

@@ -113,6 +113,12 @@ public class DisponibilidadeController {
         );
 
         DisponibilidadeEntity entity = service.create(request);
+        log.info(
+                "disponibilidade criada: diaSemana={}, horaInicio={}, horaFim={}",
+                request.diaSemana(),
+                request.horaInicio(),
+                request.horaFim()
+        );
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(entity));
     }
 
@@ -187,6 +193,7 @@ public class DisponibilidadeController {
         );
 
         DisponibilidadeEntity entity = service.update(id, request);
+        log.info("disponibilidade atualizada: id={}", id);
         return ResponseEntity.ok(mapper.toResponse(entity));
     }
 
@@ -230,6 +237,7 @@ public class DisponibilidadeController {
         log.debug("delete disponibilidade: id={}", id);
 
         service.deleteById(id);
+        log.info("disponibilidade removida: id={}", id);
         return ResponseEntity.noContent().build();
     }
 
@@ -256,6 +264,8 @@ public class DisponibilidadeController {
             )
     )
     public ResponseEntity<List<DisponibilidadeResponseDTO>> findAll() {
+        log.debug("find disponibilidades");
+
         List<DisponibilidadeEntity> entities = service.findAll();
         return ResponseEntity.ok(mapper.toResponseList(entities));
     }
@@ -300,6 +310,8 @@ public class DisponibilidadeController {
     public ResponseEntity<DisponibilidadeResponseDTO> findById(
             @Parameter(description = "Identificador da disponibilidade", example = "1") @PathVariable Long id
     ) {
+        log.debug("find disponibilidade: id={}", id);
+
         DisponibilidadeEntity entity = service.findById(id);
         return ResponseEntity.ok(mapper.toResponse(entity));
     }
@@ -334,6 +346,8 @@ public class DisponibilidadeController {
             @Parameter(description = "Dia da semana, de SEGUNDA a DOMINGO", example = "SEGUNDA")
             @PathVariable String diaSemana
     ) {
+        log.debug("find disponibilidades: diaSemana={}", diaSemana);
+
         List<DisponibilidadeEntity> entities = service.findByDiaSemana(DisponibilidadeDiaSemana.fromString(diaSemana));
         return ResponseEntity.ok(mapper.toResponseList(entities));
     }

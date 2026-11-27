@@ -123,6 +123,11 @@ public class UsuarioController {
         );
 
         UsuarioEntity entity = service.update(id, request);
+        if (request.cargo() == null) {
+            log.info("usuario atualizado: id={}", id);
+        } else {
+            log.info("usuario atualizado: id={}, cargo={}", id, request.cargo());
+        }
         return ResponseEntity.ok(mapper.toResponse(entity));
     }
 
@@ -200,6 +205,8 @@ public class UsuarioController {
             )
     )
     public ResponseEntity<List<UsuarioResponseDTO>> findAll() {
+        log.debug("find usuarios");
+
         List<UsuarioEntity> entities = service.findAll();
         return ResponseEntity.ok(mapper.toResponseList(entities));
     }
@@ -245,6 +252,8 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponseDTO> findById(
             @Parameter(description = "Identificador do usuário", example = "1") @PathVariable Long id
     ) {
+        log.debug("find usuario: id={}", id);
+
         UsuarioEntity entity = service.findById(id);
         return ResponseEntity.ok(mapper.toResponse(entity));
     }
