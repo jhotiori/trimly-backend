@@ -11,13 +11,14 @@ Domain files under `.claude/rules/` load when a matching path is touched; read o
 - [**Configuration**](.claude/rules/configuration.md): env, profiles, banners, Flyway and seeds, tests, Sonar.
 - [**Errors**](.claude/rules/errors.md): exception -> HTTP mapping, messages, log levels.
 - [**Security**](.claude/rules/security.md): JWT, filter chain, authorization matrix.
-- [**Business Rules**](.claude/rules/business-rules.md): update semantics, Agendamento and Disponibilidade validation.
+- [**Business Rules**](.claude/rules/business-rules.md): update semantics, Agendamento, Disponibilidade and Recesso validation.
 
 ## Project
 
 Academic barbershop-scheduling API, Spring Boot. Domain language PT-BR (entities, DTOs, exceptions, validation
 messages); framework/scaffolding English. `Servico` service, `Usuario` user, `Agendamento` booking,
-`Disponibilidade` availability.
+`Disponibilidade` availability, `Recesso` closure period (date range, blocks bookings), `Feriado` national holiday
+(read-only, BrasilAPI).
 
 ## Code Principles
 
@@ -53,7 +54,7 @@ docker compose --env-file .env -f docker/compose.yaml --profile sonar up -d sona
 ## Architecture
 
 3 tiers under `org.trimly.backend`: `model/`, `view/`, `controller/`, plus `infra/`. `model/` has one identical
-layered structure per domain (`servico`, `usuario`, `agendamento`, `disponibilidade`); read one to understand the rest.
+layered structure per domain (`servico`, `usuario`, `agendamento`, `disponibilidade`, `recesso`); read one to understand the rest.
 `auth` is a partial module (orchestration only: `AuthenticationService`, `TokenService`), driving `usuario`.
 
 - `model/entity/<domain>/` - JPA `*Entity` + its enums (`UsuarioCargo`, `AgendamentoStatus`, `ServicoStatus`,
@@ -62,12 +63,15 @@ layered structure per domain (`servico`, `usuario`, `agendamento`, `disponibilid
 - `model/service/<domain>/` - `*Service` (logic/orchestration, may call other services directly) +
   `*Validator` (`@Component`, validation rules, depends on repositories, not sibling services, to avoid
   bean cycles). `auth` has no validator.
-- `model/integration/feriados/` - Feign client for BrasilAPI holidays.
+- `model/integration/feriados/` - Feign client for BrasilAPI holidays (cached per year).
+- `model/service/feriado/` - `FeriadoService`, read-only holiday lookup; no entity, repository or validator.
 - `model/exception/` - one class per error plus handlers, see [errors](.claude/rules/errors.md).
 - `view/dto/<module>/` - `*CreateDTO`, `*UpdateDTO`, `*ResponseDTO`, `*Filter`; `view/dto/auth/`,
   `view/dto/exception/ErrorResponseDTO`. DTOs are records; entities/DTOs use `@Builder`.
-- `view/mapper/` - 4 hand-written `*Mapper` `@Component`s (no MapStruct).
+- `view/mapper/` - 5 hand-written `*Mapper` `@Component`s (no MapStruct).
 - `controller/` - thin `@RestController`s under `/api/<resource>` delegating to the service, plus
-  `AuthenticationController` at `/api/auth` (`POST /register`, `POST /login`). Swagger annotations live here.
-- `infra/` - cross-cutting beans and property records: `EndpointConfig` (base paths), `openapi/`, and `security/`
+  `AuthenticationController` at `/api/auth` (`POST /register`, `POST /login`) and `FeriadoController` at
+  `/api/feriados` (`GET ?ano=`, default current year). Swagger annotations live here.
+- `infra/` - cross-cutting beans and property records: `EndpointConfig` (base paths), `CacheConfig`, `openapi/`, and
+  `security/`
   (see [security](.claude/rules/security.md)).

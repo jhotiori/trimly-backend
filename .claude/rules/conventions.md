@@ -20,9 +20,33 @@ paths:
 - Argument and null handling: `Objects.requireNonNull`/`requireNonNullElse` over manual `if ... throw new
   IllegalArgumentException` or `x != null ? x : y`; `StringUtils.hasText` over `s != null && !s.isBlank()`;
   `"...".formatted(...)` over `String.format`.
-- Comments: none for commented-out code; line comments only for non-obvious intent.
-- Fail first: guards (no-op check, validation, not-found) before the logic. Extract a repeated block into a private
-  method only when that removes real repetition.
+
+## Code rules
+
+Apply to new and touched code; do not refactor untouched code for them.
+
+- Guard clauses: guards (no-op check, validation, not-found) come first and `return`/`throw`; the happy path stays
+  unindented. No `else` after `return`/`throw`; no more than two nesting levels.
+- Immutability: records for DTOs and value types; `final` on fields and locals; return `List.of(...)` or
+  `Stream.toList()`, never a list the caller can mutate. JPA entities stay mutable (JPA requires it).
+- No null: a lookup that may find nothing returns `Optional<T>`; a collection is empty, never `null`. `Optional` is a
+  return type only, never a field or parameter. Exempt: nullable `*UpdateDTO` fields (PATCH, see
+  [business-rules](business-rules.md)) and JPA columns.
+- Focused methods: one job at one level of abstraction. If the name needs "and", or a block needs a comment to be
+  understood, extract a private method. Service orchestrates, validator validates, mapper maps, controller delegates.
+- No magic values: a literal that carries meaning becomes a `private static final` constant
+  (`LIMITE_ANTECEDENCIA_DIAS`), an enum, or a `trimly.*` property; base paths live in `EndpointConfig`. `0`, `1` and
+  `""` with an obvious meaning stay inline.
+- Fail fast at boundaries: validate at the edge (Bean Validation on DTOs, `@Min`/`@Max` on request parameters, domain
+  validators in the service) before any database or external call. Invalid input never travels deeper.
+- Exceptions: catch the narrowest type (`FeignException`, `DataIntegrityViolationException`); never `catch
+  (Exception)` or `Throwable` outside the global handler; never an empty `catch`. A wrapping exception receives the
+  cause, and the failure is logged once (at the catch or in the handler, not both).
+- Comments: inline comments only for complex or ambiguous logic, and they say why (constraint, trade-off, external
+  quirk), never what; if a comment restates the code, delete it or rename instead. No commented-out code. Every
+  comment, inline or Javadoc, uses plain, clear, concise, direct wording. Javadoc follows the section below.
+- Logging: SLF4J with parameters (`log.warn("... {}", id)`), never string concatenation, `System.out` or
+  `printStackTrace`.
 
 ## Formatting
 

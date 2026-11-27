@@ -20,13 +20,15 @@ with every field null is a no-op: entity returned unchanged, no write, no revali
 End = `data` + `Servico.duracao` min. `AgendamentoService.validateHorario` runs, for both `create` and `update`:
 1. `validateIsFeriado` - national holiday (BrasilAPI, `FeriadosClient.listarPorAno`) -> `AgendamentoFeriadoException`
    (409); first, so a holiday wins over the 14-day check.
-2. `validateHorarioFuturo` - start not in the past (`AgendamentoNoPassadoException`), start/end on the same day
+2. `validateIsRecesso` - start date inside a `Recesso` (`dataInicio` and `dataFim` both inclusive, via
+   `RecessoRepository`) -> `AgendamentoRecessoException` (409); right after the holiday check.
+3. `validateHorarioFuturo` - start not in the past (`AgendamentoNoPassadoException`), start/end on the same day
    (`AgendamentoEntreDiasException`).
-3. `validateLimiteAntecedencia` - start at most `now + 14 days` (exactly 14 accepted) ->
+4. `validateLimiteAntecedencia` - start at most `now + 14 days` (exactly 14 accepted) ->
    `AgendamentoAntecedenciaExcedidaException`.
-4. `validateDisponibilidade` - the weekday has a `Disponibilidade` (`AgendamentoSemDisponibilidadeException`) and the
+5. `validateDisponibilidade` - the weekday has a `Disponibilidade` (`AgendamentoSemDisponibilidadeException`) and the
    booking fits fully in one window (`AgendamentoForaDaDisponibilidadeException`).
-5. `validateConflitoDeHorario` - no overlap with other `AGENDADO` bookings that day ->
+6. `validateConflitoDeHorario` - no overlap with other `AGENDADO` bookings that day ->
    `AgendamentoConflitoException`; `update` passes its own id (skipped), `create` passes `null`.
 
 `update` takes `data`, `servicoId`, `status`. After the no-op check it first runs `validateStatusUpdate`: the booking
@@ -40,3 +42,13 @@ current one (`AgendamentoStatusRepetidoException`). `AGENDADO` is the only non-t
 `DisponibilidadeHorarioInvalidoException`), then `validateConflitoDeHorario` (no overlap on the same `diaSemana`,
 whole-day scope since a `Disponibilidade` has no owner, else `DisponibilidadeConflitoException`; application-level
 check, no DB constraint).
+
+## Recesso (`RecessoValidator`)
+
+Closure period (`descricao`, `dataInicio`, `dataFim`, `LocalDate`, both ends inclusive; any length, no 14-day cap).
+Existing `AGENDADO` bookings inside a new or edited `Recesso` are left untouched. `create` runs `validateNoPassado`
+on `dataInicio` (today accepted, else `RecessoNoPassadoException`), `validatePeriodo` (`dataFim` not before
+`dataInicio`, else `RecessoPeriodoInvalidoException`), then `validateConflito` (inclusive overlap with another
+`Recesso` -> `RecessoConflitoException`, 409; `update` passes its own id, `create` passes `null`). `update` applies
+the same order but `validateNoPassado` runs only on a `dataInicio`/`dataFim` present in the request, so an ongoing
+`Recesso` can still change `descricao` or `dataFim`; `validatePeriodo` and `validateConflito` use the merged values.
