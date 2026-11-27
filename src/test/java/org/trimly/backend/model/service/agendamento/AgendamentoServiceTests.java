@@ -35,6 +35,7 @@ import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
 import org.trimly.backend.model.exception.usuario.UsuarioNaoEncontradoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoRecessoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoStatusRepetidoException;
 import org.trimly.backend.model.repository.AgendamentoRepository;
 import org.trimly.backend.model.service.servico.ServicoService;
@@ -113,6 +114,7 @@ class AgendamentoServiceTests {
         assertSame(entity, resultado);
         InOrder ordem = inOrder(agendamentoValidator);
         ordem.verify(agendamentoValidator).validateIsFeriado(INICIO.toLocalDate());
+        ordem.verify(agendamentoValidator).validateIsRecesso(INICIO.toLocalDate());
         ordem.verify(agendamentoValidator).validateHorarioFuturo(INICIO, FIM);
         ordem.verify(agendamentoValidator).validateLimiteAntecedencia(INICIO);
         ordem.verify(agendamentoValidator).validateDisponibilidade(INICIO, FIM);
@@ -130,6 +132,23 @@ class AgendamentoServiceTests {
         assertThrows(AgendamentoFeriadoException.class, () -> service.create(request));
 
         verify(agendamentoValidator).validateIsFeriado(INICIO.toLocalDate());
+        verifyNoMoreInteractions(agendamentoValidator);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Interrompe na checagem de recesso, logo após a de feriado, antes das demais regras")
+    void testeDadoRecessoQuandoCriarEntaoLancaExcecaoSemValidarOutrasRegrasNemSalvar() {
+        AgendamentoCreateDTO request = requisicaoDeCriacao();
+        prepararCriacao(request);
+        doThrow(new AgendamentoRecessoException("Recesso")).when(agendamentoValidator)
+                .validateIsRecesso(INICIO.toLocalDate());
+
+        assertThrows(AgendamentoRecessoException.class, () -> service.create(request));
+
+        InOrder ordem = inOrder(agendamentoValidator);
+        ordem.verify(agendamentoValidator).validateIsFeriado(INICIO.toLocalDate());
+        ordem.verify(agendamentoValidator).validateIsRecesso(INICIO.toLocalDate());
         verifyNoMoreInteractions(agendamentoValidator);
         verify(repository, never()).save(any());
     }

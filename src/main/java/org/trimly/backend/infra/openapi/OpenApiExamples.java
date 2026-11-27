@@ -34,6 +34,13 @@ public final class OpenApiExamples {
             ser nula; Hora de início não pode ser nula"}""";
 
     /**
+     * Exemplo `400` de campos inválidos na criação de recesso.
+     */
+    public static final String RECESSO_CRIACAO_INVALIDA = """
+            {"status": 400, "error": "Bad Request", "message": "Data de fim não pode ser nula; Data de início não \
+            pode ser nula; Descrição não pode ser vazia"}""";
+
+    /**
      * Exemplo `400` de campos inválidos na criação de serviço.
      */
     public static final String SERVICO_CRIACAO_INVALIDA = """
@@ -80,6 +87,11 @@ public final class OpenApiExamples {
     public static final String DISPONIBILIDADE_NAO_ENCONTRADA = "{\"status\": 404, \"error\": \"Not Found\", \"message\": \"Disponibilidade não encontrada\"}";
 
     /**
+     * Exemplo `404` de recesso não encontrado.
+     */
+    public static final String RECESSO_NAO_ENCONTRADO = "{\"status\": 404, \"error\": \"Not Found\", \"message\": \"Recesso não encontrado\"}";
+
+    /**
      * Exemplo `404` de serviço não encontrado.
      */
     public static final String SERVICO_NAO_ENCONTRADO = "{\"status\": 404, \"error\": \"Not Found\", \"message\": \"Serviço não encontrado\"}";
@@ -100,6 +112,11 @@ public final class OpenApiExamples {
     public static final String DISPONIBILIDADE_CONFLITO = """
             {"status": 409, "error": "Conflict", "message": "O horário informado já está ocupado por outra \
             disponibilidade nesse dia"}""";
+
+    /**
+     * Exemplo `409` de recesso sobreposto a outro.
+     */
+    public static final String RECESSO_CONFLITO = "{\"status\": 409, \"error\": \"Conflict\", \"message\": \"Já existe um recesso nesse período\"}";
 
     /**
      * Exemplo `409` de nome de serviço duplicado.
@@ -178,6 +195,18 @@ public final class OpenApiExamples {
             horário de fim"}""";
 
     /**
+     * Exemplo `422` de data de recesso no passado.
+     */
+    public static final String RECESSO_NO_PASSADO = "{\"status\": 422, \"error\": \"Unprocessable Content\", \"message\": \"Recesso não pode ser no passado\"}";
+
+    /**
+     * Exemplo `422` de data de fim anterior à de início.
+     */
+    public static final String RECESSO_PERIODO_INVALIDO = """
+            {"status": 422, "error": "Unprocessable Content", "message": "Data de fim deve ser igual ou posterior à \
+            data de início"}""";
+
+    /**
      * Exemplo `422` de status de serviço repetido.
      */
     public static final String SERVICO_STATUS_REPETIDO = "{\"status\": 422, \"error\": \"Unprocessable Content\", \"message\": \"Serviço já está nesse status\"}";
@@ -207,6 +236,12 @@ public final class OpenApiExamples {
     public static final String ERRO_INESPERADO = """
             {"status": 500, "error": "Internal Server Error", "message": "Ocorreu um erro inesperado ao processar a \
             requisição"}""";
+
+    /**
+     * Exemplo `503` de API de feriados indisponível.
+     */
+    public static final String FERIADOS_INDISPONIVEIS = """
+            {"status": 503, "error": "Service Unavailable", "message": "Feriados indisponíveis no momento"}""";
 
     private OpenApiExamples() {}
 }

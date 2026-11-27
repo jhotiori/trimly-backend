@@ -21,6 +21,7 @@ import org.trimly.backend.model.entity.agendamento.AgendamentoEntity;
 import org.trimly.backend.model.entity.agendamento.AgendamentoStatus;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeDiaSemana;
 import org.trimly.backend.model.entity.disponibilidade.DisponibilidadeEntity;
+import org.trimly.backend.model.entity.recesso.RecessoEntity;
 import org.trimly.backend.model.exception.agendamento.AgendamentoAntecedenciaExcedidaException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoEntreDiasException;
@@ -28,11 +29,13 @@ import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoExceptio
 import org.trimly.backend.model.exception.agendamento.AgendamentoFinalizadoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoForaDaDisponibilidadeException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoNoPassadoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoRecessoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoSemDisponibilidadeException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoStatusRepetidoException;
 import org.trimly.backend.model.integration.feriados.FeriadoResponseDTO;
 import org.trimly.backend.model.integration.feriados.FeriadosClient;
 import org.trimly.backend.model.repository.AgendamentoRepository;
+import org.trimly.backend.model.repository.RecessoRepository;
 import org.trimly.backend.model.service.disponibilidade.DisponibilidadeService;
 
 /**
@@ -65,6 +68,13 @@ class AgendamentoValidatorTests {
      */
     @Mock
     private FeriadosClient feriadosClient;
+
+    /**
+     * Repositório de recessos simulado.
+     * @see {@link RecessoRepository}
+     */
+    @Mock
+    private RecessoRepository recessoRepository;
 
     /**
      * Validador sob teste, com os mocks injetados.
@@ -302,6 +312,39 @@ class AgendamentoValidatorTests {
         assertDoesNotThrow(() -> validator.validateIsFeriado(SEGUNDA));
     }
 
+    @Test
+    @DisplayName("Rejeita data dentro de um recesso, incluindo o primeiro e o último dia")
+    void testeDadoDataDentroDoRecessoQuandoValidarRecessoEntaoLancaRecesso() {
+        LocalDate inicio = LocalDate.of(2030, 1, 7);
+        LocalDate fim = LocalDate.of(2030, 1, 10);
+        List<RecessoEntity> recessos = List.of(recesso(inicio, fim));
+        when(recessoRepository.findByDataInicioLessThanEqualAndDataFimGreaterThanEqual(inicio, inicio))
+                .thenReturn(recessos);
+        when(recessoRepository.findByDataInicioLessThanEqualAndDataFimGreaterThanEqual(fim, fim))
+                .thenReturn(recessos);
+
+        assertAll(
+                () -> assertThrows(AgendamentoRecessoException.class, () -> validator.validateIsRecesso(inicio)),
+                () -> assertThrows(AgendamentoRecessoException.class, () -> validator.validateIsRecesso(fim))
+        );
+    }
+
+    @Test
+    @DisplayName("Aceita data um dia antes do início e um dia depois do fim do recesso")
+    void testeDadoDataForaDoRecessoQuandoValidarRecessoEntaoNaoLanca() {
+        LocalDate diaAntes = LocalDate.of(2030, 1, 6);
+        LocalDate diaDepois = LocalDate.of(2030, 1, 11);
+        when(recessoRepository.findByDataInicioLessThanEqualAndDataFimGreaterThanEqual(diaAntes, diaAntes))
+                .thenReturn(List.of());
+        when(recessoRepository.findByDataInicioLessThanEqualAndDataFimGreaterThanEqual(diaDepois, diaDepois))
+                .thenReturn(List.of());
+
+        assertAll(
+                () -> assertDoesNotThrow(() -> validator.validateIsRecesso(diaAntes)),
+                () -> assertDoesNotThrow(() -> validator.validateIsRecesso(diaDepois))
+        );
+    }
+
     private void buscarAgendadosDoDia(AgendamentoEntity... agendamentos) {
         when(
                 repository.findByStatusAndDataGreaterThanEqualAndDataLessThan(
@@ -310,6 +353,10 @@ class AgendamentoValidatorTests {
                         SEGUNDA.plusDays(1).atStartOfDay()
                 )
         ).thenReturn(List.of(agendamentos));
+    }
+
+    private static RecessoEntity recesso(LocalDate dataInicio, LocalDate dataFim) {
+        return RecessoEntity.builder().descricao("Férias").dataInicio(dataInicio).dataFim(dataFim).build();
     }
 
     private static List<FeriadoResponseDTO> feriadosDe2030() {
