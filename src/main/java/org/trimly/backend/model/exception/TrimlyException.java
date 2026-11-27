@@ -12,4 +12,14 @@ public class TrimlyException extends RuntimeException {
     public TrimlyException(String message) {
         super(message);
     }
+
+    /**
+     * Cria a exceção com a mensagem e a causa informadas.
+     *
+     * @param message - detalhe da falha
+     * @param cause - falha original preservada para o log
+     */
+    public TrimlyException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

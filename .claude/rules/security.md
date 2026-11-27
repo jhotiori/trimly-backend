@@ -46,8 +46,8 @@ still yields 404), a `CLIENTE` gets `false` (403) for unknown ids. `DONO` and `A
 
 | Endpoint | `CLIENTE` | `DONO` / `ADMIN` |
 |---|---|---|
-| `GET` servicos, disponibilidades | yes | yes |
-| `POST`/`PATCH`/`DELETE` servicos, disponibilidades | no | yes |
+| `GET` servicos, disponibilidades, recessos, feriados | yes | yes |
+| `POST`/`PATCH`/`DELETE` servicos, disponibilidades, recessos | no | yes |
 | `POST agendamentos` | own `usuarioId` only | any |
 | `GET agendamentos` | own only (filter forced by `AccessPolicy.restrictFilter`) | all |
 | `GET agendamentos/{id}` | own | any |

@@ -17,15 +17,17 @@ import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoExceptio
 import org.trimly.backend.model.exception.agendamento.AgendamentoFinalizadoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoForaDaDisponibilidadeException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoNoPassadoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoRecessoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoSemDisponibilidadeException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoStatusRepetidoException;
 import org.trimly.backend.model.integration.feriados.FeriadoResponseDTO;
 import org.trimly.backend.model.integration.feriados.FeriadosClient;
 import org.trimly.backend.model.repository.AgendamentoRepository;
+import org.trimly.backend.model.repository.RecessoRepository;
 import org.trimly.backend.model.service.disponibilidade.DisponibilidadeService;
 
 /**
- * Valida status, horário, antecedência, feriado, disponibilidade e conflito de agendamentos.
+ * Valida status, horário, antecedência, feriado, recesso, disponibilidade e conflito de agendamentos.
  */
 @Component
 @RequiredArgsConstructor
@@ -52,6 +54,12 @@ public class AgendamentoValidator {
      * @see {@link FeriadosClient}
      */
     private final FeriadosClient feriadosClient;
+
+    /**
+     * Repositório de recessos, usado para bloquear agendamentos em datas de recesso.
+     * @see {@link RecessoRepository}
+     */
+    private final RecessoRepository recessoRepository;
 
     /**
      * Verifica se o agendamento pode ser alterado e, quando um novo status é informado, se a transição
@@ -184,6 +192,18 @@ public class AgendamentoValidator {
 
         if (isFeriado) {
             throw new AgendamentoFeriadoException();
+        }
+    }
+
+    /**
+     * Verifica se está tentando agendar para um dia dentro de um recesso, com as duas pontas inclusivas.
+     *
+     * @param data - data de um agendamento
+     * @throws AgendamentoRecessoException - quando a data cai dentro de um recesso
+     */
+    public void validateIsRecesso(LocalDate data) {
+        if (!recessoRepository.findByDataInicioLessThanEqualAndDataFimGreaterThanEqual(data, data).isEmpty()) {
+            throw new AgendamentoRecessoException();
         }
     }
 }

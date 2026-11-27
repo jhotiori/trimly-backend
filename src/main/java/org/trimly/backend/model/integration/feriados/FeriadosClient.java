@@ -2,9 +2,11 @@ package org.trimly.backend.model.integration.feriados;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.trimly.backend.infra.CacheConfig;
 
 /**
  * Cliente Feign da API de feriados nacionais da BrasilAPI.
@@ -17,6 +19,7 @@ public interface FeriadosClient {
      * @param ano - ano de referência
      * @return lista de feriados nacionais do ano informado
      */
+    @Cacheable(CacheConfig.FERIADOS_CACHE)
     @GetMapping("/{ano}")
     List<FeriadoResponseDTO> listarPorAno(@PathVariable("ano") int ano);
 }

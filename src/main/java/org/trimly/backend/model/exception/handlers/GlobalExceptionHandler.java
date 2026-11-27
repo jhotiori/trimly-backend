@@ -10,6 +10,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
@@ -61,6 +62,17 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponseDTO> handleParametroInvalido(MethodArgumentTypeMismatchException exception) {
+        return badRequest(exception, "Parâmetro da requisição com valor inválido");
+    }
+
+    /**
+     * Mapeia o parâmetro de consulta fora das restrições (`@Min`, `@Max`) para `400`.
+     *
+     * @param exception - falha de validação dos parâmetros do método
+     * @return ResponseEntity - resposta `400` com o corpo de erro
+     */
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleParametroForaDoIntervalo(HandlerMethodValidationException exception) {
         return badRequest(exception, "Parâmetro da requisição com valor inválido");
     }
 

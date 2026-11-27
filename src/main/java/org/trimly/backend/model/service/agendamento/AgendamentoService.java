@@ -186,6 +186,7 @@ public class AgendamentoService {
 
         log.debug("validate agendamento horario: id={}, inicio={}, fim={}", id, inicio, fim);
         agendamentoValidator.validateIsFeriado(inicio.toLocalDate());
+        agendamentoValidator.validateIsRecesso(inicio.toLocalDate());
         agendamentoValidator.validateHorarioFuturo(inicio, fim);
         agendamentoValidator.validateLimiteAntecedencia(inicio);
         agendamentoValidator.validateDisponibilidade(inicio, fim);

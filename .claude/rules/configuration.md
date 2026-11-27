@@ -45,3 +45,13 @@ paths:
   `sonarqube` (profile `sonar`). Run from the repo root with `--env-file .env`. Containers are named
   `trimly-backend-<name>`.
 - Lombok annotation processing is wired through `maven-compiler-plugin` in `pom.xml`.
+- Maven profiles: `dev` (`activeByDefault`) holds `h2` and `spring-boot-h2console`, so `spring-boot:run`, `verify`
+  and Sonar keep H2; `production` is empty and, activated explicitly, disables `dev`. Production builds
+  (`docker/Dockerfile`, `setup.sh`) use `-Pproduction`; the jar then has no H2.
+
+## BrasilAPI (feriados)
+
+- `FeriadosClient` (`brasilapi-feriados`): timeouts in `application.properties`, connect `2000` ms, read `3000` ms.
+- `@Cacheable(CacheConfig.FERIADOS_CACHE)` on `FeriadosClient.listarPorAno`: one in-memory cache per year
+  (`infra/CacheConfig`, `ConcurrentMapCacheManager`), shared by `FeriadoService` and `AgendamentoValidator`, never
+  expires (holidays of a year are fixed), lost on restart. A failed call is not cached.

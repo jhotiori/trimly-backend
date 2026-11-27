@@ -9,8 +9,12 @@ import org.trimly.backend.model.exception.TrimlyException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoNaoEncontradoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoRecessoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeNaoEncontradaException;
+import org.trimly.backend.model.exception.feriado.FeriadosIndisponiveisException;
+import org.trimly.backend.model.exception.recesso.RecessoConflitoException;
+import org.trimly.backend.model.exception.recesso.RecessoNaoEncontradoException;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
 import org.trimly.backend.model.exception.servico.ServicoNomeDuplicadoException;
@@ -20,7 +24,7 @@ import org.trimly.backend.model.exception.usuario.UsuarioNaoEncontradoException;
 import org.trimly.backend.view.dto.exception.ErrorResponseDTO;
 
 /**
- * Traduz `TrimlyException` em `404`, `409` ou `422` por classe; novos subtipos herdam `422`.
+ * Traduz `TrimlyException` em `404`, `409`, `422` ou `503` por classe; novos subtipos herdam `422`.
  */
 @Slf4j
 @RestControllerAdvice
@@ -34,6 +38,7 @@ public class DomainExceptionHandler {
     @ExceptionHandler({
             AgendamentoNaoEncontradoException.class,
             DisponibilidadeNaoEncontradaException.class,
+            RecessoNaoEncontradoException.class,
             ServicoNaoEncontradoException.class,
             UsuarioNaoEncontradoException.class
     })
@@ -50,7 +55,9 @@ public class DomainExceptionHandler {
     @ExceptionHandler({
             AgendamentoConflitoException.class,
             AgendamentoFeriadoException.class,
+            AgendamentoRecessoException.class,
             DisponibilidadeConflitoException.class,
+            RecessoConflitoException.class,
             ServicoNomeDuplicadoException.class,
             UsuarioEmailExistenteException.class,
             ServicoComAgendamentoPendenteException.class,
@@ -58,6 +65,17 @@ public class DomainExceptionHandler {
     })
     public ResponseEntity<ErrorResponseDTO> handleConflito(TrimlyException exception) {
         return build(HttpStatus.CONFLICT, exception);
+    }
+
+    /**
+     * Mapeia a indisponibilidade da API de feriados para `503`.
+     *
+     * @param exception - falha da integração com a BrasilAPI
+     * @return ResponseEntity - resposta `503` com o corpo de erro
+     */
+    @ExceptionHandler(FeriadosIndisponiveisException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIndisponivel(TrimlyException exception) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, exception);
     }
 
     /**

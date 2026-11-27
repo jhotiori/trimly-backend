@@ -25,6 +25,16 @@ public final class EndpointConfig {
     public static final String DISPONIBILIDADES_ENDPOINT = "/api/disponibilidades";
 
     /**
+     * Caminho base do controller de recessos.
+     */
+    public static final String RECESSOS_ENDPOINT = "/api/recessos";
+
+    /**
+     * Caminho base do controller de feriados.
+     */
+    public static final String FERIADOS_ENDPOINT = "/api/feriados";
+
+    /**
      * Caminho base do controller de autenticação.
      */
     public static final String AUTHENTICATION_ENDPOINT = "/api/auth";

@@ -144,6 +144,12 @@ public class AgendamentoController {
         );
 
         AgendamentoEntity entity = service.create(request);
+        log.info(
+                "agendamento criado: usuarioId={}, servicoId={}, data={}",
+                request.usuarioId(),
+                request.servicoId(),
+                request.data()
+        );
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(entity));
     }
 
@@ -236,6 +242,7 @@ public class AgendamentoController {
         );
 
         AgendamentoEntity entity = service.update(id, request);
+        log.info("agendamento atualizado: id={}, status={}", id, request.status());
         return ResponseEntity.ok(mapper.toResponse(entity));
     }
 
@@ -279,6 +286,7 @@ public class AgendamentoController {
         log.debug("delete agendamento: id={}", id);
 
         service.deleteById(id);
+        log.info("agendamento removido: id={}", id);
         return ResponseEntity.noContent().build();
     }
 
@@ -327,6 +335,14 @@ public class AgendamentoController {
             @Parameter(description = "Filtra pelo serviço agendado", example = "1")
             @RequestParam(required = false) Long servicoId
     ) {
+        log.debug(
+                "find agendamentos: status={}, data={}, usuarioId={}, servicoId={}",
+                status,
+                data,
+                usuarioId,
+                servicoId
+        );
+
         AgendamentoFilter filtro = accessPolicy
                 .restrictFilter(new AgendamentoFilter(status, data, usuarioId, servicoId));
         List<AgendamentoEntity> entities = service.findAll(filtro);
@@ -374,6 +390,8 @@ public class AgendamentoController {
     public ResponseEntity<AgendamentoResponseDTO> findById(
             @Parameter(description = "Identificador do agendamento", example = "1") @PathVariable Long id
     ) {
+        log.debug("find agendamento: id={}", id);
+
         AgendamentoEntity entity = service.findById(id);
         return ResponseEntity.ok(mapper.toResponse(entity));
     }
