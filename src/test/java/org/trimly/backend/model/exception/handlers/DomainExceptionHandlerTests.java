@@ -21,7 +21,10 @@ import org.trimly.backend.model.exception.TrimlyException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoConflitoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoFeriadoException;
 import org.trimly.backend.model.exception.agendamento.AgendamentoNoPassadoException;
+import org.trimly.backend.model.exception.agendamento.AgendamentoRecessoException;
 import org.trimly.backend.model.exception.disponibilidade.DisponibilidadeConflitoException;
+import org.trimly.backend.model.exception.recesso.RecessoConflitoException;
+import org.trimly.backend.model.exception.recesso.RecessoNaoEncontradoException;
 import org.trimly.backend.model.exception.servico.ServicoComAgendamentoPendenteException;
 import org.trimly.backend.model.exception.servico.ServicoNaoEncontradoException;
 import org.trimly.backend.model.exception.servico.ServicoStatusRepetidoException;
@@ -75,6 +78,24 @@ class DomainExceptionHandlerTests {
     }
 
     @Test
+    @DisplayName("Converte agendamento em recesso em 409")
+    void testeDadoAgendamentoEmRecessoQuandoLancadaEntaoRetornaConflito() throws Exception {
+        mockMvc.perform(get("/erro/agendamento-recesso")).andExpect(status().isConflict());
+    }
+
+    @Test
+    @DisplayName("Converte conflito de recesso em 409")
+    void testeDadoConflitoDeRecessoQuandoLancadaEntaoRetornaConflito() throws Exception {
+        mockMvc.perform(get("/erro/recesso-conflito")).andExpect(status().isConflict());
+    }
+
+    @Test
+    @DisplayName("Converte recesso não encontrado em 404")
+    void testeDadoRecessoNaoEncontradoQuandoLancadaEntaoRetornaNaoEncontrado() throws Exception {
+        mockMvc.perform(get("/erro/recesso-nao-encontrado")).andExpect(status().isNotFound());
+    }
+
+    @Test
     @DisplayName("Converte nome de serviço duplicado em 409")
     void testeDadoNomeDeServicoDuplicadoQuandoLancadaEntaoRetornaConflito() throws Exception {
         mockMvc.perform(get("/erro/servico-duplicado")).andExpect(status().isConflict());
@@ -119,6 +140,9 @@ class DomainExceptionHandlerTests {
                 Map.entry("nao-encontrado", new ServicoNaoEncontradoException("Não encontrado")),
                 Map.entry("agendamento-conflito", new AgendamentoConflitoException("Horário ocupado")),
                 Map.entry("agendamento-feriado", new AgendamentoFeriadoException("Feriado")),
+                Map.entry("agendamento-recesso", new AgendamentoRecessoException("Recesso")),
+                Map.entry("recesso-conflito", new RecessoConflitoException("Recesso sobreposto")),
+                Map.entry("recesso-nao-encontrado", new RecessoNaoEncontradoException("Recesso inexistente")),
                 Map.entry("disponibilidade-conflito", new DisponibilidadeConflitoException("Janela ocupada")),
                 Map.entry("servico-duplicado", new ServicoNomeDuplicadoException("Nome duplicado")),
                 Map.entry("usuario-email", new UsuarioEmailExistenteException("E-mail em uso")),
